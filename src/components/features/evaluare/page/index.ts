@@ -1,0 +1,1 @@
+export { EvaluarePage } from './EvaluarePage'

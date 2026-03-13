@@ -1,0 +1,1 @@
+export { ObiectivSection } from './ObiectivSection'

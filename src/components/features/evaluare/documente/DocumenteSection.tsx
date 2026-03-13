@@ -1,0 +1,149 @@
+'use client'
+
+import { useState } from 'react'
+
+import { FileCheck } from 'lucide-react'
+
+import { Typography, Stack, Button } from '@/components/ui'
+import { useUpdateEvaluare } from '@/hooks/use-evaluari'
+import { DOCUMENTE_APLICABILE, ANEXE_STANDARD } from '@/lib/constants'
+import type { Evaluare } from '@/lib/types'
+
+type Props = { evaluare: Evaluare }
+
+const parseStringArray = (val: string | null): string[] => {
+  if (!val) return []
+  try {
+    const parsed = JSON.parse(val)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
+export const DocumenteSection = ({ evaluare }: Props) => {
+  const update = useUpdateEvaluare(evaluare.id)
+
+  const [selectedDoc, setSelectedDoc] = useState<string[]>(
+    parseStringArray(evaluare.documenteAplicabile),
+  )
+  const [selectedAnexe, setSelectedAnexe] = useState<string[]>(
+    parseStringArray(evaluare.anexeSelectate),
+  )
+  const [observatii, setObservatii] = useState(evaluare.observatiiDocumente ?? '')
+  const [isDirty, setIsDirty] = useState(false)
+
+  const toggleDoc = (id: string) => {
+    setSelectedDoc((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]))
+    setIsDirty(true)
+  }
+
+  const toggleAnexa = (anexa: string) => {
+    setSelectedAnexe((prev) =>
+      prev.includes(anexa) ? prev.filter((a) => a !== anexa) : [...prev, anexa],
+    )
+    setIsDirty(true)
+  }
+
+  const handleSave = () => {
+    update.mutate({
+      documenteAplicabile: JSON.stringify(selectedDoc),
+      anexeSelectate: JSON.stringify(selectedAnexe),
+      observatiiDocumente: observatii,
+    })
+    setIsDirty(false)
+  }
+
+  return (
+    <section id='documente-section' className='scroll-mt-20'>
+      <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
+        <Typography variant='h3' className='mb-6 text-navy-700'>
+          📋 Documente &amp; Anexe
+        </Typography>
+
+        <Stack gap='6'>
+          {/* Documente aplicabile */}
+          <div>
+            <Typography variant='h4' className='mb-4 text-navy-700'>
+              Documente aplicabile
+            </Typography>
+            <Stack gap='3'>
+              {DOCUMENTE_APLICABILE.map((doc) => (
+                <label
+                  key={doc.id}
+                  className='flex cursor-pointer items-start gap-3 rounded-lg border border-primary-100 p-3 hover:bg-primary-50'
+                >
+                  <input
+                    type='checkbox'
+                    checked={selectedDoc.includes(doc.id)}
+                    onChange={() => toggleDoc(doc.id)}
+                    className='mt-0.5 rounded border-primary-300 text-primary-600 focus:ring-primary-500'
+                  />
+                  <div>
+                    <Typography variant='body-sm' className='font-medium text-navy-700'>
+                      {doc.label}
+                    </Typography>
+                    <Typography variant='caption' className='text-navy-500'>
+                      {doc.descriere}
+                    </Typography>
+                  </div>
+                </label>
+              ))}
+            </Stack>
+          </div>
+
+          {/* Anexe standard */}
+          <div>
+            <Typography variant='h4' className='mb-4 text-navy-700'>
+              Anexe selectate
+            </Typography>
+            <div className='grid grid-cols-1 gap-2 md:grid-cols-2'>
+              {ANEXE_STANDARD.map((anexa) => (
+                <label
+                  key={anexa}
+                  className='flex cursor-pointer items-center gap-3 rounded-lg border border-primary-100 p-3 hover:bg-primary-50'
+                >
+                  <input
+                    type='checkbox'
+                    checked={selectedAnexe.includes(anexa)}
+                    onChange={() => toggleAnexa(anexa)}
+                    className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
+                  />
+                  <Stack direction='row' align='center' gap='2'>
+                    <FileCheck className='size-4 shrink-0 text-primary-500' />
+                    <Typography variant='body-sm' className='text-navy-700'>
+                      {anexa}
+                    </Typography>
+                  </Stack>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          {/* Observații */}
+          <div>
+            <label className='mb-1.5 block text-sm font-medium text-navy-700'>
+              Observații documente
+            </label>
+            <textarea
+              value={observatii}
+              onChange={(e) => {
+                setObservatii(e.target.value)
+                setIsDirty(true)
+              }}
+              rows={3}
+              placeholder='Observații sau cerințe suplimentare privind documentele...'
+              className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+            />
+          </div>
+
+          <div className='flex justify-end'>
+            <Button onClick={handleSave} loading={update.isPending} disabled={!isDirty}>
+              Salvează documente
+            </Button>
+          </div>
+        </Stack>
+      </div>
+    </section>
+  )
+}
