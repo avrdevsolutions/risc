@@ -16,12 +16,19 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
+    "@libsql/client": "^0.17.0",
+    "@lukemorales/query-key-factory": "^1.3.4",
+    "@tanstack/react-query": "^5.90.21",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.1",
     "lucide-react": "^0.576.0",
+    "nanoid": "^5.1.6",
     "next": "15.5.12",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.71.2",
     "tailwind-merge": "^2.5.5",
     "zod": "^3.24.1"
   },
@@ -41,6 +48,7 @@
     "@typescript-eslint/parser": "^8.56.1",
     "@vitejs/plugin-react": "^5.1.4",
     "autoprefixer": "^10.4.20",
+    "drizzle-kit": "^0.31.9",
     "eslint": "^8.57.1",
     "eslint-config-next": "15.5.12",
     "eslint-import-resolver-typescript": "^3.10.1",
