@@ -8,10 +8,27 @@ import { useForm } from 'react-hook-form'
 import { Typography, Stack, Button } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { FAZE_LUCRARII } from '@/lib/constants'
-import { ProiectSchema, type ProiectFormValues } from '@/lib/schemas'
+import { ProiectSchema } from '@/lib/schemas'
+import type { ProiectFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
 
 type Props = { evaluare: Evaluare }
+
+const toFormValues = (evaluare: Evaluare): ProiectFormValues => ({
+  denumireProiect: evaluare.denumireProiect ?? '',
+  codProiect: evaluare.codProiect ?? '',
+  adresaLocatie: evaluare.adresaLocatie ?? '',
+  localitate: evaluare.localitate ?? '',
+  judet: evaluare.judet ?? '',
+  beneficiar: evaluare.beneficiar ?? '',
+  cuiBeneficiar: evaluare.cuiBeneficiar ?? '',
+  antreprenor: evaluare.antreprenor ?? '',
+  cuiAntreprenor: evaluare.cuiAntreprenor ?? '',
+  subantreprenor: evaluare.subantreprenor ?? '',
+  fazaLucrarii: evaluare.fazaLucrarii ?? '',
+  fazaLucrariiCustom: evaluare.fazaLucrariiCustom ?? '',
+  descriereObiectiv: evaluare.descriereObiectiv ?? '',
+})
 
 export const ProiectSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
@@ -24,42 +41,14 @@ export const ProiectSection = ({ evaluare }: Props) => {
     formState: { errors, isDirty },
   } = useForm<ProiectFormValues>({
     resolver: zodResolver(ProiectSchema),
-    defaultValues: {
-      denumireProiect: evaluare.denumireProiect ?? '',
-      codProiect: evaluare.codProiect ?? '',
-      adresaLocatie: evaluare.adresaLocatie ?? '',
-      localitate: evaluare.localitate ?? '',
-      judet: evaluare.judet ?? '',
-      beneficiar: evaluare.beneficiar ?? '',
-      cuiBeneficiar: evaluare.cuiBeneficiar ?? '',
-      antreprenor: evaluare.antreprenor ?? '',
-      cuiAntreprenor: evaluare.cuiAntreprenor ?? '',
-      subantreprenor: evaluare.subantreprenor ?? '',
-      fazaLucrarii: evaluare.fazaLucrarii ?? '',
-      fazaLucrariiCustom: evaluare.fazaLucrariiCustom ?? '',
-      descriereObiectiv: evaluare.descriereObiectiv ?? '',
-    },
+    defaultValues: toFormValues(evaluare),
   })
 
   const fazaLucrarii = watch('fazaLucrarii')
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    reset({
-      denumireProiect: evaluare.denumireProiect ?? '',
-      codProiect: evaluare.codProiect ?? '',
-      adresaLocatie: evaluare.adresaLocatie ?? '',
-      localitate: evaluare.localitate ?? '',
-      judet: evaluare.judet ?? '',
-      beneficiar: evaluare.beneficiar ?? '',
-      cuiBeneficiar: evaluare.cuiBeneficiar ?? '',
-      antreprenor: evaluare.antreprenor ?? '',
-      cuiAntreprenor: evaluare.cuiAntreprenor ?? '',
-      subantreprenor: evaluare.subantreprenor ?? '',
-      fazaLucrarii: evaluare.fazaLucrarii ?? '',
-      fazaLucrariiCustom: evaluare.fazaLucrariiCustom ?? '',
-      descriereObiectiv: evaluare.descriereObiectiv ?? '',
-    })
+    reset(toFormValues(evaluare))
   }, [evaluare.id, reset])
 
   const onSubmit = (data: ProiectFormValues) => {
@@ -75,7 +64,6 @@ export const ProiectSection = ({ evaluare }: Props) => {
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <Stack gap='6'>
-            {/* Row 1: Denumire + Cod */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
               <div className='md:col-span-2'>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
@@ -104,9 +92,8 @@ export const ProiectSection = ({ evaluare }: Props) => {
               </div>
             </div>
 
-            {/* Row 2: Adresă + Localitate + Județ */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
-              <div className='md:col-span-1'>
+              <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Adresă locație <span className='text-error-500'>*</span>
                 </label>
@@ -140,7 +127,6 @@ export const ProiectSection = ({ evaluare }: Props) => {
               </div>
             </div>
 
-            {/* Row 3: Beneficiar */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
@@ -169,7 +155,6 @@ export const ProiectSection = ({ evaluare }: Props) => {
               </div>
             </div>
 
-            {/* Row 4: Antreprenor */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
@@ -198,7 +183,6 @@ export const ProiectSection = ({ evaluare }: Props) => {
               </div>
             </div>
 
-            {/* Row 5: Subantreprenor */}
             <div>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                 Subantreprenor (opțional)
@@ -211,7 +195,6 @@ export const ProiectSection = ({ evaluare }: Props) => {
               />
             </div>
 
-            {/* Row 6: Faza lucrării */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
@@ -252,7 +235,6 @@ export const ProiectSection = ({ evaluare }: Props) => {
               )}
             </div>
 
-            {/* Row 7: Descriere obiectiv */}
             <div>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                 Descriere obiectiv (opțional)

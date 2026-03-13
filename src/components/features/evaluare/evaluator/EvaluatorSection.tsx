@@ -7,10 +7,20 @@ import { useForm } from 'react-hook-form'
 
 import { Typography, Stack, Button } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { EvaluatorSchema, type EvaluatorFormValues } from '@/lib/schemas'
+import { EvaluatorSchema } from '@/lib/schemas'
+import type { EvaluatorFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
 
 type Props = { evaluare: Evaluare }
+
+const toFormValues = (evaluare: Evaluare): EvaluatorFormValues => ({
+  numeEvaluator: evaluare.numeEvaluator ?? '',
+  functieEvaluator: evaluare.functieEvaluator ?? '',
+  firmaEvaluator: evaluare.firmaEvaluator ?? '',
+  nrDocument: evaluare.nrDocument ?? '',
+  dataEvaluarii: evaluare.dataEvaluarii ?? '',
+  dataRevizuirii: evaluare.dataRevizuirii ?? '',
+})
 
 export const EvaluatorSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
@@ -22,26 +32,12 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
     formState: { errors, isDirty },
   } = useForm<EvaluatorFormValues>({
     resolver: zodResolver(EvaluatorSchema),
-    defaultValues: {
-      numeEvaluator: evaluare.numeEvaluator ?? '',
-      functieEvaluator: evaluare.functieEvaluator ?? '',
-      firmaEvaluator: evaluare.firmaEvaluator ?? '',
-      nrDocument: evaluare.nrDocument ?? '',
-      dataEvaluarii: evaluare.dataEvaluarii ?? '',
-      dataRevizuirii: evaluare.dataRevizuirii ?? '',
-    },
+    defaultValues: toFormValues(evaluare),
   })
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    reset({
-      numeEvaluator: evaluare.numeEvaluator ?? '',
-      functieEvaluator: evaluare.functieEvaluator ?? '',
-      firmaEvaluator: evaluare.firmaEvaluator ?? '',
-      nrDocument: evaluare.nrDocument ?? '',
-      dataEvaluarii: evaluare.dataEvaluarii ?? '',
-      dataRevizuirii: evaluare.dataRevizuirii ?? '',
-    })
+    reset(toFormValues(evaluare))
   }, [evaluare.id, reset])
 
   const onSubmit = (data: EvaluatorFormValues) => {

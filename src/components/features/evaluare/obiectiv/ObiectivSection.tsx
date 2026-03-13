@@ -26,6 +26,17 @@ type ObiectivFormValues = z.infer<typeof ObiectivSchema>
 
 type Props = { evaluare: Evaluare }
 
+const toFormValues = (evaluare: Evaluare): ObiectivFormValues => ({
+  suprafataTotala: evaluare.suprafataTotala ?? '',
+  descriereAmplasare: evaluare.descriereAmplasare ?? '',
+  tipImprejmuire: evaluare.tipImprejmuire ?? '',
+  tipAcces: evaluare.tipAcces ?? '',
+  vecinNord: evaluare.vecinNord ?? '',
+  vecinEst: evaluare.vecinEst ?? '',
+  vecinSud: evaluare.vecinSud ?? '',
+  vecinVest: evaluare.vecinVest ?? '',
+})
+
 export const ObiectivSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
 
@@ -36,30 +47,12 @@ export const ObiectivSection = ({ evaluare }: Props) => {
     formState: { isDirty },
   } = useForm<ObiectivFormValues>({
     resolver: zodResolver(ObiectivSchema),
-    defaultValues: {
-      suprafataTotala: evaluare.suprafataTotala ?? '',
-      descriereAmplasare: evaluare.descriereAmplasare ?? '',
-      tipImprejmuire: evaluare.tipImprejmuire ?? '',
-      tipAcces: evaluare.tipAcces ?? '',
-      vecinNord: evaluare.vecinNord ?? '',
-      vecinEst: evaluare.vecinEst ?? '',
-      vecinSud: evaluare.vecinSud ?? '',
-      vecinVest: evaluare.vecinVest ?? '',
-    },
+    defaultValues: toFormValues(evaluare),
   })
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    reset({
-      suprafataTotala: evaluare.suprafataTotala ?? '',
-      descriereAmplasare: evaluare.descriereAmplasare ?? '',
-      tipImprejmuire: evaluare.tipImprejmuire ?? '',
-      tipAcces: evaluare.tipAcces ?? '',
-      vecinNord: evaluare.vecinNord ?? '',
-      vecinEst: evaluare.vecinEst ?? '',
-      vecinSud: evaluare.vecinSud ?? '',
-      vecinVest: evaluare.vecinVest ?? '',
-    })
+    reset(toFormValues(evaluare))
   }, [evaluare.id, reset])
 
   const onSubmit = (data: ObiectivFormValues) => {
@@ -136,42 +129,26 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                 Vecinătăți
               </Typography>
               <div className='grid grid-cols-2 gap-4'>
-                <div>
-                  <label className='mb-1.5 block text-xs font-medium text-navy-600'>Nord</label>
-                  <input
-                    {...register('vecinNord')}
-                    type='text'
-                    placeholder='Vecinătate nord'
-                    className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                  />
-                </div>
-                <div>
-                  <label className='mb-1.5 block text-xs font-medium text-navy-600'>Est</label>
-                  <input
-                    {...register('vecinEst')}
-                    type='text'
-                    placeholder='Vecinătate est'
-                    className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                  />
-                </div>
-                <div>
-                  <label className='mb-1.5 block text-xs font-medium text-navy-600'>Sud</label>
-                  <input
-                    {...register('vecinSud')}
-                    type='text'
-                    placeholder='Vecinătate sud'
-                    className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                  />
-                </div>
-                <div>
-                  <label className='mb-1.5 block text-xs font-medium text-navy-600'>Vest</label>
-                  <input
-                    {...register('vecinVest')}
-                    type='text'
-                    placeholder='Vecinătate vest'
-                    className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                  />
-                </div>
+                {(
+                  [
+                    { field: 'vecinNord', label: 'Nord' },
+                    { field: 'vecinEst', label: 'Est' },
+                    { field: 'vecinSud', label: 'Sud' },
+                    { field: 'vecinVest', label: 'Vest' },
+                  ] as const
+                ).map(({ field, label }) => (
+                  <div key={field}>
+                    <label className='mb-1.5 block text-xs font-medium text-navy-600'>
+                      {label}
+                    </label>
+                    <input
+                      {...register(field)}
+                      type='text'
+                      placeholder={`Vecinătate ${label.toLowerCase()}`}
+                      className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 

@@ -7,10 +7,20 @@ import { useForm } from 'react-hook-form'
 
 import { Typography, Stack, Button } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { AprobareSchema, type AprobareFormValues } from '@/lib/schemas'
+import { AprobareSchema } from '@/lib/schemas'
+import type { AprobareFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
 
 type Props = { evaluare: Evaluare }
+
+const toFormValues = (evaluare: Evaluare): AprobareFormValues => ({
+  sefSantier: evaluare.sefSantier ?? '',
+  functieSefSantier: evaluare.functieSefSantier ?? '',
+  responsabilSSM: evaluare.responsabilSSM ?? '',
+  functieResponsabilSSM: evaluare.functieResponsabilSSM ?? '',
+  dataAprobarii: evaluare.dataAprobarii ?? '',
+  observatiiGenerale: evaluare.observatiiGenerale ?? '',
+})
 
 export const AprobareSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
@@ -22,26 +32,12 @@ export const AprobareSection = ({ evaluare }: Props) => {
     formState: { errors, isDirty },
   } = useForm<AprobareFormValues>({
     resolver: zodResolver(AprobareSchema),
-    defaultValues: {
-      sefSantier: evaluare.sefSantier ?? '',
-      functieSefSantier: evaluare.functieSefSantier ?? '',
-      responsabilSSM: evaluare.responsabilSSM ?? '',
-      functieResponsabilSSM: evaluare.functieResponsabilSSM ?? '',
-      dataAprobarii: evaluare.dataAprobarii ?? '',
-      observatiiGenerale: evaluare.observatiiGenerale ?? '',
-    },
+    defaultValues: toFormValues(evaluare),
   })
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    reset({
-      sefSantier: evaluare.sefSantier ?? '',
-      functieSefSantier: evaluare.functieSefSantier ?? '',
-      responsabilSSM: evaluare.responsabilSSM ?? '',
-      functieResponsabilSSM: evaluare.functieResponsabilSSM ?? '',
-      dataAprobarii: evaluare.dataAprobarii ?? '',
-      observatiiGenerale: evaluare.observatiiGenerale ?? '',
-    })
+    reset(toFormValues(evaluare))
   }, [evaluare.id, reset])
 
   const onSubmit = (data: AprobareFormValues) => {
@@ -61,7 +57,6 @@ export const AprobareSection = ({ evaluare }: Props) => {
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
           <Stack gap='6'>
             <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
-              {/* Șef șantier */}
               <div className='rounded-lg border border-primary-100 p-4'>
                 <Typography variant='body-sm' className='mb-3 font-semibold text-navy-700'>
                   Șef de șantier
@@ -100,7 +95,6 @@ export const AprobareSection = ({ evaluare }: Props) => {
                 </Stack>
               </div>
 
-              {/* Responsabil SSM */}
               <div className='rounded-lg border border-primary-100 p-4'>
                 <Typography variant='body-sm' className='mb-3 font-semibold text-navy-700'>
                   Responsabil SSM
