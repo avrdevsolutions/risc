@@ -1,8 +1,10 @@
 'use client'
 
+import { useState } from 'react'
+
 import Link from 'next/link'
 
-import { ArrowLeft, CheckCircle, Circle, ExternalLink } from 'lucide-react'
+import { ArrowLeft, CheckCircle, Circle, FileDown } from 'lucide-react'
 
 import { Typography, Stack, Button, Badge } from '@/components/ui'
 import { useEvaluare, useUpdateEvaluare } from '@/hooks/use-evaluari'
@@ -84,22 +86,57 @@ const StatusBar = ({
   </div>
 )
 
-const ExportSection = ({ id: _id }: { id: string }) => (
-  <section id='export-section' className='scroll-mt-20'>
-    <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
-      <Typography variant='h3' className='mb-4 text-navy-700'>
-        📄 Export
-      </Typography>
-      <Typography variant='body-sm' className='mb-4 text-navy-500'>
-        Exportul documentului de evaluare de risc nu este încă disponibil în această versiune.
-      </Typography>
-      <Button variant='outline' disabled className='opacity-50'>
-        <ExternalLink className='size-4' />
-        Export PDF (în curând)
-      </Button>
-    </div>
-  </section>
-)
+const ExportSection = ({ id }: { id: string }) => {
+  const [isExporting, setIsExporting] = useState(false)
+  const [exportError, setExportError] = useState<string | null>(null)
+
+  const handleExport = async () => {
+    setIsExporting(true)
+    setExportError(null)
+    try {
+      const response = await fetch(`/api/evaluari/${id}/export`)
+      if (!response.ok) {
+        throw new Error('Eroare la generarea documentului')
+      }
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const disposition = response.headers.get('Content-Disposition') ?? ''
+      const filenameMatch = disposition.match(/filename="([^"]+)"/)
+      const filename = filenameMatch ? filenameMatch[1] : `evaluare-risc-${id}.docx`
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      setExportError('Exportul a eșuat. Vă rugăm să încercați din nou.')
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
+  return (
+    <section id='export-section' className='scroll-mt-20'>
+      <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
+        <Typography variant='h3' className='mb-4 text-navy-700'>
+          📄 Export
+        </Typography>
+        <Typography variant='body-sm' className='mb-4 text-navy-500'>
+          Exportați evaluarea de risc în format Microsoft Word (.docx).
+        </Typography>
+        {exportError && (
+          <Typography variant='body-sm' className='mb-4 text-error-600'>
+            {exportError}
+          </Typography>
+        )}
+        <Button variant='outline' onClick={handleExport} loading={isExporting}>
+          <FileDown className='size-4' />
+          Export Word (.docx)
+        </Button>
+      </div>
+    </section>
+  )
+}
 
 export const EvaluarePage = ({ id }: Props) => {
   const { data: evaluare, isLoading, isError } = useEvaluare(id)
