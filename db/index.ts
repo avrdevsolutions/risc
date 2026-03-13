@@ -3,7 +3,12 @@ import { createClient } from '@libsql/client'
 
 import * as schema from './schema'
 
-const getClient = () => {
+type DbInstance = ReturnType<typeof drizzle<typeof schema>>
+
+// Singleton pattern to prevent connection exhaustion in development
+const globalForDb = global as unknown as { db: DbInstance | undefined }
+
+const createDb = (): DbInstance => {
   const url = process.env.TURSO_DATABASE_URL
   const authToken = process.env.TURSO_AUTH_TOKEN
 
@@ -11,14 +16,23 @@ const getClient = () => {
     throw new Error('TURSO_DATABASE_URL is required')
   }
 
-  return createClient({ url, authToken })
+  const client = createClient({ url, authToken })
+  return drizzle(client, { schema })
 }
 
-// Singleton pattern to prevent connection exhaustion in development
-const globalForDb = global as unknown as { db: ReturnType<typeof drizzle> }
-
-export const db = globalForDb.db || drizzle(getClient(), { schema })
-
-if (process.env.NODE_ENV !== 'production') {
-  globalForDb.db = db
+export const getDb = (): DbInstance => {
+  if (!globalForDb.db) {
+    globalForDb.db = createDb()
+  }
+  return globalForDb.db
 }
+
+// Convenience export — lazily initialised on first access via Proxy.
+// Using a Proxy means callers import `db` directly (not `getDb()`) while still
+// deferring the actual DB connection until the first query is executed.
+// This avoids throwing at build time when TURSO_DATABASE_URL is not set.
+export const db = new Proxy({} as DbInstance, {
+  get(_target, prop) {
+    return getDb()[prop as keyof DbInstance]
+  },
+})

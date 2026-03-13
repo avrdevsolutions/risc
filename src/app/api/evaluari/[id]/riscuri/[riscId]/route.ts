@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 
 import { eq, and } from 'drizzle-orm'
 
+import { serializeArrayField } from '@/lib/utils'
+
 import { db } from '../../../../../../../db'
 import { evaluari, riscuri } from '../../../../../../../db/schema'
 
@@ -21,13 +23,8 @@ export const PATCH = async (req: Request, { params }: Params) => {
       return NextResponse.json({ error: 'Riscul nu a fost găsit' }, { status: 404 })
     }
 
-    const persoaneExpuse = Array.isArray(body.persoaneExpuse)
-      ? JSON.stringify(body.persoaneExpuse)
-      : body.persoaneExpuse
-
-    const masuriExistente = Array.isArray(body.masuriExistente)
-      ? JSON.stringify(body.masuriExistente)
-      : body.masuriExistente
+    const persoaneExpuse = serializeArrayField(body.persoaneExpuse)
+    const masuriExistente = serializeArrayField(body.masuriExistente)
 
     const updatePayload = {
       ...body,

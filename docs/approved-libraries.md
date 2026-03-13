@@ -26,6 +26,13 @@ corepack enable && corepack prepare pnpm@latest --activate
 | `clsx` | ^2.1 | Conditional className utility |
 | `tailwind-merge` | ^2.5 | Merge Tailwind classes |
 | `zod` | ^3.24 | Schema validation |
+| `@libsql/client` | ^0.17 | Turso/libsql database client (edge-compatible SQLite) |
+| `drizzle-orm` | ^0.45 | Type-safe ORM for Turso/libsql (ADR-0011 approved alternative) |
+| `react-hook-form` | ^7.71 | Complex form management (ADR-0012) |
+| `@hookform/resolvers` | ^5.2 | Zod resolver for react-hook-form (ADR-0012) |
+| `nanoid` | ^5.1 | Cryptographically secure unique ID generation |
+| `@tanstack/react-query` | ^5.90 | Client-side data fetching and server state management (ADR-0005) |
+| `@lukemorales/query-key-factory` | ^1.3 | Typed query key management for TanStack Query (ADR-0005) |
 
 ### Dev / Tooling
 
@@ -49,6 +56,7 @@ corepack enable && corepack prepare pnpm@latest --activate
 | `@types/node` | ^20 | Node type defs |
 | `@types/react` | ^18 | React type defs |
 | `@types/react-dom` | ^18 | React DOM type defs |
+| `drizzle-kit` | ^0.31 | Drizzle schema migrations and push CLI |
 
 ---
 

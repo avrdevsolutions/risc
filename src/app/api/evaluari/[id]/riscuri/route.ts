@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { eq, asc } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+import { serializeArrayField } from '@/lib/utils'
+
 import { db } from '../../../../../../db'
 import { evaluari, riscuri } from '../../../../../../db/schema'
 
@@ -43,14 +45,6 @@ export const POST = async (req: Request, { params }: Params) => {
     const existingRiscuri = await db.select().from(riscuri).where(eq(riscuri.evaluareId, id))
     const maxOrdine = existingRiscuri.reduce((max, r) => Math.max(max, r.ordine), 0)
 
-    const persoaneExpuse = Array.isArray(body.persoaneExpuse)
-      ? JSON.stringify(body.persoaneExpuse)
-      : (body.persoaneExpuse ?? null)
-
-    const masuriExistente = Array.isArray(body.masuriExistente)
-      ? JSON.stringify(body.masuriExistente)
-      : (body.masuriExistente ?? null)
-
     await db.insert(riscuri).values({
       id: riscId,
       evaluareId: id,
@@ -60,11 +54,11 @@ export const POST = async (req: Request, { params }: Params) => {
       pericol: body.pericol ?? null,
       pericolCustom: body.pericolCustom ?? null,
       descrierePericol: body.descrierePericol ?? null,
-      persoaneExpuse,
+      persoaneExpuse: (serializeArrayField(body.persoaneExpuse) as string) ?? null,
       numarPersoaneExpuse: body.numarPersoaneExpuse ?? null,
       probabilitateInitiala: body.probabilitateInitiala ?? null,
       severitateInitiala: body.severitateInitiala ?? null,
-      masuriExistente,
+      masuriExistente: (serializeArrayField(body.masuriExistente) as string) ?? null,
       masuriExistenteCustom: body.masuriExistenteCustom ?? null,
       masuriSuplimentare: body.masuriSuplimentare ?? null,
       probabilitateReziduala: body.probabilitateReziduala ?? null,

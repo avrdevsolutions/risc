@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 
 const RootLayout = ({ children }: { children: ReactNode }) => (
   <html lang='ro'>
-    <body>
+    <body className='font-sans'>
       <QueryProvider>{children}</QueryProvider>
     </body>
   </html>

@@ -22,6 +22,7 @@ import {
 import type { RiscFormValues } from '@/lib/schemas'
 import { RiscSchema } from '@/lib/schemas'
 import type { Risc } from '@/lib/types'
+import { parseJsonArray } from '@/lib/utils'
 
 type Props = {
   onClose: () => void
@@ -52,16 +53,6 @@ const ScoreDisplay = ({ p, s }: { p: number; s: number }) => {
   )
 }
 
-const parseJson = (val: string | null | undefined): string[] => {
-  if (!val) return []
-  try {
-    const parsed = JSON.parse(val)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return val ? [val] : []
-  }
-}
-
 export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Props) => {
   const {
     register,
@@ -78,11 +69,11 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
       pericol: initialData?.pericol ?? '',
       pericolCustom: initialData?.pericolCustom ?? '',
       descrierePericol: initialData?.descrierePericol ?? '',
-      persoaneExpuse: parseJson(initialData?.persoaneExpuse),
+      persoaneExpuse: parseJsonArray(initialData?.persoaneExpuse),
       numarPersoaneExpuse: initialData?.numarPersoaneExpuse ?? undefined,
       probabilitateInitiala: initialData?.probabilitateInitiala ?? 1,
       severitateInitiala: initialData?.severitateInitiala ?? 1,
-      masuriExistente: parseJson(initialData?.masuriExistente),
+      masuriExistente: parseJsonArray(initialData?.masuriExistente),
       masuriExistenteCustom: initialData?.masuriExistenteCustom ?? '',
       masuriSuplimentare: initialData?.masuriSuplimentare ?? '',
       probabilitateReziduala: initialData?.probabilitateReziduala ?? 1,

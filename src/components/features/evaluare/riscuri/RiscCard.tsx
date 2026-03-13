@@ -12,22 +12,13 @@ import {
   SEVERITATE_LABELS,
 } from '@/lib/constants'
 import type { Risc } from '@/lib/types'
+import { parseJsonArray } from '@/lib/utils'
 
 type Props = {
   risc: Risc
   index: number
   onEdit: () => void
   onDelete: () => void
-}
-
-const parseJson = (val: string | null): string[] => {
-  if (!val) return []
-  try {
-    const parsed = JSON.parse(val)
-    return Array.isArray(parsed) ? parsed : []
-  } catch {
-    return val ? [val] : []
-  }
 }
 
 const RiskBadge = ({
@@ -60,8 +51,8 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
 
   const activitate = risc.activitateCustom || risc.activitate || '—'
   const pericol = risc.pericolCustom || risc.pericol || '—'
-  const persoaneExpuse = parseJson(risc.persoaneExpuse)
-  const masuriExistente = parseJson(risc.masuriExistente)
+  const persoaneExpuse = parseJsonArray(risc.persoaneExpuse)
+  const masuriExistente = parseJsonArray(risc.masuriExistente)
 
   const hasScoreInitial = risc.probabilitateInitiala && risc.severitateInitiala
   const hasScoreRezidual = risc.probabilitateReziduala && risc.severitateReziduala

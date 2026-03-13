@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
@@ -32,6 +32,8 @@ const toFormValues = (evaluare: Evaluare): ProiectFormValues => ({
 
 export const ProiectSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
+  const evaluareRef = useRef(evaluare)
+  evaluareRef.current = evaluare
 
   const {
     register,
@@ -46,9 +48,8 @@ export const ProiectSection = ({ evaluare }: Props) => {
 
   const fazaLucrarii = watch('fazaLucrarii')
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    reset(toFormValues(evaluare))
+    reset(toFormValues(evaluareRef.current))
   }, [evaluare.id, reset])
 
   const onSubmit = (data: ProiectFormValues) => {
