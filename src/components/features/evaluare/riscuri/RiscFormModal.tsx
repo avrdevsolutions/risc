@@ -13,7 +13,7 @@ import {
   PERSOANE_EXPUSE,
   MASURI_COLECTIVE,
   MASURI_ORGANIZATORICE,
-  EIP_OPTIONS,
+  MASURI_EIP,
   PROBABILITATE_LABELS,
   SEVERITATE_LABELS,
   getRiskLevel,
@@ -31,7 +31,7 @@ type Props = {
   isPending?: boolean
 }
 
-const ALL_MASURI = [...MASURI_COLECTIVE, ...MASURI_ORGANIZATORICE, ...EIP_OPTIONS]
+const ALL_MASURI = [...MASURI_COLECTIVE, ...MASURI_ORGANIZATORICE, ...MASURI_EIP]
 
 const ScoreDisplay = ({ p, s }: { p: number; s: number }) => {
   if (!p || !s) return null
@@ -137,14 +137,14 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                 <select {...register('activitate')} className={inputCls}>
                   <option value=''>Selectați activitatea...</option>
                   {ACTIVITATI.map((a) => (
-                    <option key={a} value={a}>
-                      {a}
+                    <option key={a.value} value={a.value}>
+                      {a.icon} {a.label}
                     </option>
                   ))}
                 </select>
                 {errors.activitate && <p className={errorCls}>{errors.activitate.message}</p>}
               </div>
-              {activitate === 'Altă activitate' && (
+              {activitate === 'custom' && (
                 <div>
                   <label className={labelCls}>
                     Specificați activitatea <span className='text-error-500'>*</span>
@@ -163,14 +163,14 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                 <select {...register('pericol')} className={inputCls}>
                   <option value=''>Selectați pericolul...</option>
                   {PERICOLE.map((p) => (
-                    <option key={p} value={p}>
-                      {p}
+                    <option key={p.value} value={p.value}>
+                      {p.label}
                     </option>
                   ))}
                 </select>
                 {errors.pericol && <p className={errorCls}>{errors.pericol.message}</p>}
               </div>
-              {pericol === 'Alt pericol' && (
+              {pericol === 'custom' && (
                 <div>
                   <label className={labelCls}>
                     Specificați pericolul <span className='text-error-500'>*</span>
@@ -295,22 +295,22 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                     <>
                       {ALL_MASURI.map((m) => (
                         <label
-                          key={m}
+                          key={m.value}
                           className='flex cursor-pointer items-center gap-2 text-sm text-navy-700'
                         >
                           <input
                             type='checkbox'
-                            value={m}
-                            checked={field.value?.includes(m)}
+                            value={m.value}
+                            checked={field.value?.includes(m.value)}
                             onChange={(e) => {
                               const next = e.target.checked
-                                ? [...(field.value ?? []), m]
-                                : (field.value ?? []).filter((v) => v !== m)
+                                ? [...(field.value ?? []), m.value]
+                                : (field.value ?? []).filter((v) => v !== m.value)
                               field.onChange(next)
                             }}
                             className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                           />
-                          {m}
+                          {m.label}
                         </label>
                       ))}
                     </>

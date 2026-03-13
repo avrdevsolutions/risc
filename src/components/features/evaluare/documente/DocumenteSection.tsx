@@ -6,7 +6,7 @@ import { FileCheck } from 'lucide-react'
 
 import { Typography, Stack, Button } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { DOCUMENTE_APLICABILE, ANEXE_STANDARD } from '@/lib/constants'
+import { DOCUMENTE_SSM, ANEXE_EVALUARE } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
 
 type Props = { evaluare: Evaluare }
@@ -68,15 +68,15 @@ export const DocumenteSection = ({ evaluare }: Props) => {
               Documente aplicabile
             </Typography>
             <Stack gap='3'>
-              {DOCUMENTE_APLICABILE.map((doc) => (
+              {DOCUMENTE_SSM.map((doc) => (
                 <label
-                  key={doc.id}
+                  key={doc.value}
                   className='flex cursor-pointer items-start gap-3 rounded-lg border border-primary-100 p-3 hover:bg-primary-50'
                 >
                   <input
                     type='checkbox'
-                    checked={selectedDoc.includes(doc.id)}
-                    onChange={() => toggleDoc(doc.id)}
+                    checked={selectedDoc.includes(doc.value)}
+                    onChange={() => toggleDoc(doc.value)}
                     className='mt-0.5 rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                   />
                   <div>
@@ -98,21 +98,21 @@ export const DocumenteSection = ({ evaluare }: Props) => {
               Anexe selectate
             </Typography>
             <div className='grid grid-cols-1 gap-2 md:grid-cols-2'>
-              {ANEXE_STANDARD.map((anexa) => (
+              {ANEXE_EVALUARE.map((anexa) => (
                 <label
-                  key={anexa}
+                  key={anexa.value}
                   className='flex cursor-pointer items-center gap-3 rounded-lg border border-primary-100 p-3 hover:bg-primary-50'
                 >
                   <input
                     type='checkbox'
-                    checked={selectedAnexe.includes(anexa)}
-                    onChange={() => toggleAnexa(anexa)}
+                    checked={selectedAnexe.includes(anexa.value)}
+                    onChange={() => toggleAnexa(anexa.value)}
                     className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                   />
                   <Stack direction='row' align='center' gap='2'>
                     <FileCheck className='size-4 shrink-0 text-primary-500' />
                     <Typography variant='body-sm' className='text-navy-700'>
-                      {anexa}
+                      {anexa.label}
                     </Typography>
                   </Stack>
                 </label>
