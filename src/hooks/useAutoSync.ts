@@ -26,11 +26,11 @@ type UseAutoSyncResult = {
  * not on individual field edits. To get a true inactivity reset, the
  * caller should update these values on each edit.
  *
- * Also registers a `beforeunload` handler that shows the browser's native
- * "Are you sure?" dialog when the user tries to leave with unsaved changes.
+ * Data is always safe in localStorage (via Zustand persist), so no
+ * `beforeunload` warning is shown — refreshing does not lose data.
  */
 export const useAutoSync = ({
-  evaluareId,
+  evaluareId: _evaluareId,
   isDirty,
   isSyncing,
   onSync,
@@ -64,19 +64,6 @@ export const useAutoSync = ({
       setSecondsUntilAutoSync(null)
     }
   }, [isDirty, isSyncing, delayMs])
-
-  // Warn user before leaving with unsaved changes
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (!isDirty) return
-      e.preventDefault()
-      // Modern browsers ignore the custom string but require returnValue to be set
-      e.returnValue = 'Aveți modificări nesalvate. Sigur doriți să părăsiți pagina?'
-    }
-
-    window.addEventListener('beforeunload', handleBeforeUnload)
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
-  }, [isDirty, evaluareId])
 
   return { secondsUntilAutoSync }
 }
