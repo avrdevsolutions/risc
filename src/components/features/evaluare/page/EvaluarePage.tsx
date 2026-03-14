@@ -17,6 +17,7 @@ import { SectiuniNav } from '../nav'
 import { ObiectivSection } from '../obiectiv'
 import { ProiectSection } from '../proiect'
 import { RiscuriSection } from '../riscuri'
+import { SumarSection } from '../sumar'
 
 type Props = { id: string }
 
@@ -201,6 +202,7 @@ export const EvaluarePage = ({ id }: Props) => {
           <EvaluatorSection evaluare={evaluare} />
           <ObiectivSection evaluare={evaluare} />
           <RiscuriSection evaluare={evaluare} />
+          <SumarSection evaluare={evaluare} />
           <AprobareSection evaluare={evaluare} />
           <DocumenteSection evaluare={evaluare} />
           <ExportSection id={id} />
