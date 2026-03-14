@@ -205,8 +205,7 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
   const pRez = watch('probabilitateReziduala')
   const sRez = watch('severitateReziduala')
 
-  const inputCls =
-    'w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+  const inputCls = 'form-input'
   const labelCls = 'mb-1.5 block text-sm font-medium text-navy-700'
   const errorCls = 'mt-1 text-xs text-error-600'
 

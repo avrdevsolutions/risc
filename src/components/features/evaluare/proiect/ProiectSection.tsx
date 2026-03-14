@@ -66,9 +66,9 @@ export const ProiectSection = ({ evaluare }: Props) => {
 
   return (
     <section id='proiect-section' className='scroll-mt-20'>
-      <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
-        <Typography variant='h3' className='mb-6 text-navy-700'>
-          🏢 Date Identificare
+      <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
+        <Typography variant='h3' className='mb-6 text-navy-900'>
+          Date de identificare
         </Typography>
 
         <form noValidate>
@@ -82,7 +82,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   {...register('denumireProiect')}
                   type='text'
                   placeholder='Ex: Magazin XYZ, Depozit ABC'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
                 {errors.denumireProiect && (
                   <p className='mt-1 text-xs text-error-600'>{errors.denumireProiect.message}</p>
@@ -94,7 +94,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   {...register('codProiect')}
                   type='text'
                   placeholder='Ex: RSEC-2026-001'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
               </div>
             </div>
@@ -108,7 +108,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   {...register('adresaLocatie')}
                   type='text'
                   placeholder='Strada, număr'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
                 {errors.adresaLocatie && (
                   <p className='mt-1 text-xs text-error-600'>{errors.adresaLocatie.message}</p>
@@ -120,7 +120,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   {...register('localitate')}
                   type='text'
                   placeholder='Ex: București'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
               </div>
               <div>
@@ -129,7 +129,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   {...register('judet')}
                   type='text'
                   placeholder='Ex: Ilfov'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
               </div>
             </div>
@@ -143,7 +143,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   {...register('beneficiar')}
                   type='text'
                   placeholder='Denumire beneficiar'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
                 {errors.beneficiar && (
                   <p className='mt-1 text-xs text-error-600'>{errors.beneficiar.message}</p>
@@ -157,7 +157,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   {...register('cuiBeneficiar')}
                   type='text'
                   placeholder='Ex: RO12345678'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
               </div>
             </div>
@@ -171,7 +171,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   {...register('antreprenor')}
                   type='text'
                   placeholder='Firmă de securitate / Evaluator autorizat'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
                 {errors.antreprenor && (
                   <p className='mt-1 text-xs text-error-600'>{errors.antreprenor.message}</p>
@@ -185,7 +185,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   {...register('cuiAntreprenor')}
                   type='text'
                   placeholder='Ex: RO87654321'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
               </div>
             </div>
@@ -198,7 +198,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                 {...register('subantreprenor')}
                 type='text'
                 placeholder='Denumire subcontractant'
-                className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                className='form-input'
               />
             </div>
 
@@ -207,10 +207,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Tip unitate <span className='text-error-500'>*</span>
                 </label>
-                <select
-                  {...register('fazaLucrarii')}
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                >
+                <select {...register('fazaLucrarii')} className='form-input'>
                   <option value=''>Selectați tipul...</option>
                   {TIP_UNITATE.map((tip) => (
                     <option key={tip} value={tip}>
@@ -231,7 +228,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                     {...register('fazaLucrariiCustom')}
                     type='text'
                     placeholder='Descrieți tipul obiectivului'
-                    className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                    className='form-input'
                   />
                   {errors.fazaLucrariiCustom && (
                     <p className='mt-1 text-xs text-error-600'>
@@ -250,7 +247,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
                 {...register('descriereObiectiv')}
                 rows={3}
                 placeholder='Descrieți pe scurt obiectivul evaluat...'
-                className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                className='form-input'
               />
             </div>
 

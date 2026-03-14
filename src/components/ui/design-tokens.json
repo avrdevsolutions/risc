@@ -1,12 +1,45 @@
 {
-  "version": 1,
-  "lastUpdatedBy": "template-seed",
+  "version": 2,
+  "lastUpdatedBy": "ui-ux-redesign",
   "colors": {
     "scaled": {
-      "primary": ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"],
-      "secondary": ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"]
+      "primary": {
+        "description": "Warm indigo — buttons, links, active states",
+        "shades": ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"],
+        "keyValues": {
+          "50": "#eef2ff",
+          "100": "#e0e7ff",
+          "500": "#6366f1",
+          "600": "#4f46e5"
+        }
+      },
+      "navy": {
+        "description": "Warm stone grays — text, backgrounds, borders",
+        "shades": ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"],
+        "keyValues": {
+          "50": "#fafaf9",
+          "200": "#e7e5e4",
+          "500": "#78716c",
+          "700": "#44403c",
+          "900": "#1c1917"
+        }
+      },
+      "secondary": {
+        "description": "Orange — semantic color for secondary actions",
+        "shades": ["50", "100", "200", "300", "400", "500", "600", "700", "800", "900", "950"]
+      },
+      "accent": {
+        "description": "Warm amber — highlights, progress, CTAs",
+        "shades": ["400", "500", "600"],
+        "keyValues": {
+          "400": "#fbbf24",
+          "500": "#f59e0b"
+        }
+      }
     },
-    "flat": {},
+    "flat": {
+      "surface": "#ffffff"
+    },
     "semantic": {
       "success": ["50", "100", "500", "600", "700"],
       "warning": ["50", "100", "500", "600", "700"],
@@ -17,13 +50,14 @@
   },
   "fonts": {
     "sans": {
-      "family": "Geist Sans",
-      "variable": "--font-geist-sans",
-      "fallback": ["system-ui", "sans-serif"]
+      "family": "Inter",
+      "variable": "--font-inter",
+      "source": "next/font/google",
+      "subsets": ["latin"],
+      "fallback": ["system-ui", "-apple-system", "sans-serif"]
     },
     "mono": {
-      "family": "Geist Mono",
-      "variable": "--font-geist-mono",
+      "family": "monospace",
       "fallback": ["monospace"]
     }
   },
@@ -37,7 +71,8 @@
       "4xl": "2rem"
     },
     "boxShadow": {
-      "inner-lg": "inset 0 2px 4px 0 rgb(0 0 0 / 0.1)"
+      "inner-lg": "inset 0 2px 4px 0 rgb(0 0 0 / 0.1)",
+      "card": "0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)"
     }
   }
 }
