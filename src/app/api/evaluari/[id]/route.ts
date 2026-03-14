@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { eq } from 'drizzle-orm'
 
+import { checkOwnership } from '@/lib/api-utils'
 import { auth } from '@/lib/auth'
 
 import { db } from '../../../../../db'
@@ -20,9 +21,8 @@ export const GET = async (_req: Request, { params }: Params) => {
     if (!evaluare) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
-    if (evaluare.userId && evaluare.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(evaluare.userId, session.user.id)
+    if (ownershipError) return ownershipError
     const riscuriList = await db.select().from(riscuri).where(eq(riscuri.evaluareId, id))
     return NextResponse.json({ data: { ...evaluare, riscuri: riscuriList } })
   } catch (err) {
@@ -45,9 +45,8 @@ export const PATCH = async (req: Request, { params }: Params) => {
     if (!existing) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
-    if (existing.userId && existing.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(existing.userId, session.user.id)
+    if (ownershipError) return ownershipError
 
     // Strip non-column keys to prevent invalid updates
     const { riscuri: _r, ...updateData } = body
@@ -76,9 +75,8 @@ export const DELETE = async (_req: Request, { params }: Params) => {
     if (!existing) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
-    if (existing.userId && existing.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(existing.userId, session.user.id)
+    if (ownershipError) return ownershipError
     await db.delete(evaluari).where(eq(evaluari.id, id))
     return NextResponse.json({ data: { id } })
   } catch (err) {

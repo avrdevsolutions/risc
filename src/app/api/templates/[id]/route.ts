@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+import { checkOwnership } from '@/lib/api-utils'
 import { auth } from '@/lib/auth'
 
 import { db } from '../../../../../db'
@@ -21,9 +22,8 @@ export const GET = async (_req: Request, { params }: Params) => {
     if (!template) {
       return NextResponse.json({ error: 'Template-ul nu a fost găsit' }, { status: 404 })
     }
-    if (template.userId && template.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(template.userId, session.user.id)
+    if (ownershipError) return ownershipError
     return NextResponse.json({ data: template })
   } catch (err) {
     console.error('Error fetching template:', err)
@@ -42,9 +42,8 @@ export const DELETE = async (_req: Request, { params }: Params) => {
     if (!existing) {
       return NextResponse.json({ error: 'Template-ul nu a fost găsit' }, { status: 404 })
     }
-    if (existing.userId && existing.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(existing.userId, session.user.id)
+    if (ownershipError) return ownershipError
     await db.delete(templates).where(eq(templates.id, id))
     return NextResponse.json({ data: { id } })
   } catch (err) {
@@ -65,9 +64,8 @@ export const POST = async (_req: Request, { params }: Params) => {
     if (!template) {
       return NextResponse.json({ error: 'Template-ul nu a fost găsit' }, { status: 404 })
     }
-    if (template.userId && template.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(template.userId, session.user.id)
+    if (ownershipError) return ownershipError
 
     let continutParsed: Record<string, unknown> = {}
     try {

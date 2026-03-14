@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { eq, and } from 'drizzle-orm'
 
+import { checkOwnership } from '@/lib/api-utils'
 import { auth } from '@/lib/auth'
 import { serializeArrayField } from '@/lib/utils'
 
@@ -24,9 +25,8 @@ export const PATCH = async (req: Request, { params }: Params) => {
     if (!evaluare) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
-    if (evaluare.userId && evaluare.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(evaluare.userId, session.user.id)
+    if (ownershipError) return ownershipError
 
     const [existing] = await db
       .select()
@@ -71,9 +71,8 @@ export const DELETE = async (_req: Request, { params }: Params) => {
     if (!evaluare) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
-    if (evaluare.userId && evaluare.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(evaluare.userId, session.user.id)
+    if (ownershipError) return ownershipError
 
     const [existing] = await db
       .select()

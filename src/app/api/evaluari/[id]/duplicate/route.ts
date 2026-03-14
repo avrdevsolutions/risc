@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { eq, asc } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+import { checkOwnership } from '@/lib/api-utils'
 import { auth } from '@/lib/auth'
 
 import { db } from '../../../../../../db'
@@ -21,9 +22,8 @@ export const POST = async (_req: Request, { params }: Params) => {
     if (!original) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
-    if (original.userId && original.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(original.userId, session.user.id)
+    if (ownershipError) return ownershipError
 
     const originalRiscuri = await db
       .select()

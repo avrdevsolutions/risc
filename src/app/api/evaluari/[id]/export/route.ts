@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
 
+import { checkOwnership } from '@/lib/api-utils'
 import { auth } from '@/lib/auth'
 import { generateEvaluareDocx } from '@/lib/docx-generator'
 
@@ -27,12 +28,8 @@ export const GET = async (_req: Request, { params }: Params) => {
         headers: { 'Content-Type': 'application/json' },
       })
     }
-    if (evaluare.userId && evaluare.userId !== session.user.id) {
-      return new Response(JSON.stringify({ error: 'Acces interzis' }), {
-        status: 403,
-        headers: { 'Content-Type': 'application/json' },
-      })
-    }
+    const ownershipError = checkOwnership(evaluare.userId, session.user.id)
+    if (ownershipError) return ownershipError
 
     const riscuriList = await db.select().from(riscuri).where(eq(riscuri.evaluareId, id))
 

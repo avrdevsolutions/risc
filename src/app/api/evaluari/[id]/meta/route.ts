@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 
 import { eq } from 'drizzle-orm'
 
+import { checkOwnership } from '@/lib/api-utils'
 import { auth } from '@/lib/auth'
 
 import { db } from '../../../../../../db'
@@ -27,9 +28,8 @@ export const GET = async (_req: Request, { params }: Params) => {
     if (!row) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
-    if (row.userId && row.userId !== session.user.id) {
-      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
-    }
+    const ownershipError = checkOwnership(row.userId, session.user.id)
+    if (ownershipError) return ownershipError
     return NextResponse.json({ id: row.id, updatedAt: row.updatedAt })
   } catch (err) {
     console.error('Error fetching evaluare meta:', err)
