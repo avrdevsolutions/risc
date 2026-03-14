@@ -6,9 +6,9 @@ import { queryKeys } from '@/lib/query-keys'
 import type { RiscFormValues } from '@/lib/schemas'
 import type { Risc, EvaluareWithRiscuri, ApiResponse } from '@/lib/types'
 
-const riscuriUrl = (evaluareId: string) => `/api/evaluari/${evaluareId}/riscuri`
+const riscuriUrl = (evaluareId: string) => `/api/securitate-fizica/${evaluareId}/riscuri`
 const riscUrl = (evaluareId: string, riscId: string) =>
-  `/api/evaluari/${evaluareId}/riscuri/${riscId}`
+  `/api/securitate-fizica/${evaluareId}/riscuri/${riscId}`
 
 export const useRiscuri = (evaluareId: string) =>
   useQuery({

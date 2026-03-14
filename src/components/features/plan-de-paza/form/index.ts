@@ -1,0 +1,1 @@
+export { PlanDePazaFormPage } from './PlanDePazaFormPage'

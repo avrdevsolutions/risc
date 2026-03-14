@@ -2,15 +2,10 @@
 
 import { useRouter } from 'next/navigation'
 
-import { PlusCircle, Copy, Trash2, ClipboardList, AlertCircle, ArrowRight } from 'lucide-react'
+import { PlusCircle, FileText, AlertCircle, Trash2 } from 'lucide-react'
 
 import { Typography, Button, Stack } from '@/components/ui'
-import {
-  useEvaluari,
-  useCreateEvaluare,
-  useDeleteEvaluare,
-  useDuplicateEvaluare,
-} from '@/hooks/use-evaluari'
+import { usePlanuri, useCreatePlan, useDeletePlan } from '@/hooks/use-plan-de-paza'
 import type { Evaluare } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -26,15 +21,13 @@ const formatDate = (iso: string) =>
     year: 'numeric',
   })
 
-const EvaluareCard = ({
-  evaluare,
+const PlanCard = ({
+  plan,
   onOpen,
-  onDuplicate,
   onDelete,
 }: {
-  evaluare: Evaluare
+  plan: Evaluare
   onOpen: () => void
-  onDuplicate: () => void
   onDelete: () => void
 }) => (
   <div
@@ -48,63 +41,41 @@ const EvaluareCard = ({
         onOpen()
       }
     }}
-    aria-label={`Deschide evaluarea: ${evaluare.denumireProiect ?? 'Evaluare nouă'}`}
+    aria-label={`Deschide planul: ${plan.denumireProiect ?? 'Plan nou'}`}
   >
     <div className='flex items-start gap-3'>
       <div className='min-w-0 flex-1'>
-        {/* Status dot + status text */}
         <div className='mb-2 flex items-center gap-2'>
           <span
             className={cn(
               'size-2 shrink-0 rounded-full',
-              evaluare.status === 'completed' ? 'bg-success-500' : 'bg-accent-500',
+              plan.status === 'completed' ? 'bg-success-500' : 'bg-accent-500',
             )}
           />
-          <span className='text-xs font-medium text-navy-500'>{statusLabel[evaluare.status]}</span>
-          {evaluare.fazaLucrarii && (
-            <span className='text-xs text-navy-400'>· {evaluare.fazaLucrarii}</span>
-          )}
+          <span className='text-xs font-medium text-navy-500'>{statusLabel[plan.status]}</span>
         </div>
-
-        {/* Title */}
         <Typography variant='h4' className='truncate text-navy-900'>
-          {evaluare.denumireProiect ?? 'Evaluare nouă'}
+          {plan.denumireProiect ?? 'Plan nou'}
         </Typography>
-
-        {/* Meta info */}
         <div className='mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1'>
-          {evaluare.adresaLocatie && (
-            <span className='text-xs text-navy-500'>📍 {evaluare.adresaLocatie}</span>
+          {plan.adresaLocatie && (
+            <span className='text-xs text-navy-500'>📍 {plan.adresaLocatie}</span>
           )}
-          <span className='text-xs text-navy-400'>Modificat: {formatDate(evaluare.updatedAt)}</span>
+          <span className='text-xs text-navy-400'>Modificat: {formatDate(plan.updatedAt)}</span>
         </div>
       </div>
-
-      {/* Action buttons — stop card click propagation */}
       <div className='flex shrink-0 items-center gap-1' onClick={(e) => e.stopPropagation()}>
         <Button
           variant='ghost'
           size='icon'
-          onClick={onDuplicate}
-          aria-label='Duplică evaluarea'
-          title='Duplică'
-          className='size-8 opacity-0 transition-opacity group-hover:opacity-100'
-        >
-          <Copy className='size-3.5' />
-        </Button>
-        <Button
-          variant='ghost'
-          size='icon'
           onClick={onDelete}
-          aria-label='Șterge evaluarea'
+          aria-label='Șterge planul'
           title='Șterge'
           className='size-8 text-error-600 opacity-0 transition-opacity hover:bg-error-50 group-hover:opacity-100'
         >
           <Trash2 className='size-3.5' />
         </Button>
       </div>
-
-      <ArrowRight className='size-5 shrink-0 self-center text-navy-300 transition-transform group-hover:translate-x-0.5' />
     </div>
   </div>
 )
@@ -120,27 +91,21 @@ const SkeletonCard = () => (
   </div>
 )
 
-export const DashboardPage = () => {
+export const PlanDePazaDashboardPage = () => {
   const router = useRouter()
-  const { data: evaluari, isLoading, isError } = useEvaluari()
-  const createMutation = useCreateEvaluare()
-  const deleteMutation = useDeleteEvaluare()
-  const duplicateMutation = useDuplicateEvaluare()
+  const { data: planuri, isLoading, isError } = usePlanuri()
+  const createMutation = useCreatePlan()
+  const deleteMutation = useDeletePlan()
 
   const handleCreate = async () => {
     const created = await createMutation.mutateAsync()
-    router.push(`/securitate-fizica/${created.id}`)
+    router.push(`/plan-de-paza/${created.id}`)
   }
 
   const handleDelete = (id: string) => {
-    if (confirm('Sigur doriți să ștergeți această evaluare?')) {
+    if (confirm('Sigur doriți să ștergeți acest plan?')) {
       deleteMutation.mutate(id)
     }
-  }
-
-  const handleDuplicate = async (id: string) => {
-    const copy = await duplicateMutation.mutateAsync(id)
-    router.push(`/securitate-fizica/${copy.id}`)
   }
 
   return (
@@ -148,15 +113,15 @@ export const DashboardPage = () => {
       <Stack direction='row' justify='between' align='center' gap='4' className='mb-8'>
         <div>
           <Typography variant='h2' className='text-navy-900'>
-            Evaluările mele
+            Planuri de Pază
           </Typography>
           <Typography variant='body-sm' className='mt-1 text-navy-500'>
-            Gestionează evaluările de securitate și sănătate
+            Planuri de pază conform Legii 333/2003
           </Typography>
         </div>
         <Button onClick={handleCreate} loading={createMutation.isPending} className='shrink-0'>
           <PlusCircle className='size-4' />
-          Evaluare nouă
+          Plan nou
         </Button>
       </Stack>
 
@@ -172,38 +137,37 @@ export const DashboardPage = () => {
         <div className='flex items-center gap-3 rounded-xl border border-error-100 bg-error-50 p-4 text-error-700'>
           <AlertCircle className='size-5 shrink-0' />
           <Typography variant='body-sm'>
-            Eroare la încărcarea evaluărilor. Verificați conexiunea la baza de date.
+            Eroare la încărcarea planurilor. Verificați conexiunea la baza de date.
           </Typography>
         </div>
       )}
 
-      {!isLoading && !isError && evaluari?.length === 0 && (
+      {!isLoading && !isError && planuri?.length === 0 && (
         <div className='flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-navy-200 py-20 text-center'>
           <div className='mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary-50'>
-            <ClipboardList className='size-8 text-primary-500' />
+            <FileText className='size-8 text-primary-500' />
           </div>
           <Typography variant='h4' className='text-navy-700'>
-            Nicio evaluare creată încă
+            Niciun plan de pază creat încă
           </Typography>
           <Typography variant='body-sm' className='mt-1 max-w-xs text-navy-400'>
-            Creați primul raport de evaluare a securității fizice pentru a începe
+            Creați primul plan de pază conform Legii 333/2003
           </Typography>
           <Button className='mt-6' onClick={handleCreate} loading={createMutation.isPending}>
             <PlusCircle className='size-4' />
-            Creează evaluare
+            Creează plan
           </Button>
         </div>
       )}
 
-      {!isLoading && !isError && evaluari && evaluari.length > 0 && (
+      {!isLoading && !isError && planuri && planuri.length > 0 && (
         <Stack gap='3'>
-          {evaluari.map((ev) => (
-            <EvaluareCard
-              key={ev.id}
-              evaluare={ev}
-              onOpen={() => router.push(`/securitate-fizica/${ev.id}`)}
-              onDuplicate={() => handleDuplicate(ev.id)}
-              onDelete={() => handleDelete(ev.id)}
+          {planuri.map((plan) => (
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              onOpen={() => router.push(`/plan-de-paza/${plan.id}`)}
+              onDelete={() => handleDelete(plan.id)}
             />
           ))}
         </Stack>

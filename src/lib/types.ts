@@ -3,6 +3,7 @@ export type RiscStatus = 'deschis' | 'in_lucru' | 'inchis'
 
 export type Evaluare = {
   id: string
+  evalType: string
   status: EvaluareStatus
   createdAt: string
   updatedAt: string

@@ -1,0 +1,1 @@
+export { PlanDePazaDashboardPage } from './PlanDePazaDashboardPage'

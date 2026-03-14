@@ -50,7 +50,7 @@ const StatusBar = ({
       {/* Left: Back + Title */}
       <Stack direction='row' align='center' gap='2' className='min-w-0 flex-1'>
         <Link
-          href='/evaluari'
+          href='/securitate-fizica'
           className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-navy-500 transition-colors hover:text-navy-800'
         >
           <ArrowLeft className='size-4' />
@@ -117,7 +117,7 @@ const ExportSection = ({ id }: { id: string }) => {
     setIsExporting(true)
     setExportError(null)
     try {
-      const response = await fetch(`/api/evaluari/${id}/export`)
+      const response = await fetch(`/api/securitate-fizica/${id}/export`)
       if (!response.ok) {
         throw new Error('Eroare la generarea documentului')
       }
@@ -327,7 +327,7 @@ export const EvaluarePage = ({ id }: Props) => {
           <Typography variant='body-sm' className='mt-2 text-error-600'>
             Verificați conexiunea la baza de date sau reveniți mai târziu.
           </Typography>
-          <Link href='/evaluari'>
+          <Link href='/securitate-fizica'>
             <Button variant='outline' className='mt-4'>
               <ArrowLeft className='size-4' />
               Înapoi la liste

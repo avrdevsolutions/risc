@@ -1,17 +1,5 @@
-import { DashboardPage } from '@/components/features/dashboard'
-import { Header } from '@/components/layout/header'
+import { redirect } from 'next/navigation'
 
-import type { Metadata } from 'next'
-
-export const metadata: Metadata = {
-  title: 'Evaluări de risc',
+export default function EvaluariRedirect() {
+  redirect('/securitate-fizica')
 }
-
-const EvaluariPage = () => (
-  <>
-    <Header />
-    <DashboardPage />
-  </>
-)
-
-export default EvaluariPage

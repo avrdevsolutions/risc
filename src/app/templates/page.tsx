@@ -26,7 +26,7 @@ const TemplatesPage = () => (
           Salvați o evaluare ca șablon pentru a o reutiliza.
         </p>
         <Link
-          href='/evaluari'
+          href='/securitate-fizica'
           className='mt-4 inline-flex items-center gap-2 rounded-md border border-primary-300 px-4 py-2 text-sm font-medium text-primary-700 hover:bg-primary-50'
         >
           ← Înapoi la evaluări
