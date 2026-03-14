@@ -8,11 +8,11 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'Evaluare de Risc SSM',
-    template: '%s | Evaluare de Risc SSM',
+    default: 'Evaluări Securitate Fizică',
+    template: '%s | Evaluări Securitate Fizică',
   },
   description:
-    'Aplicație pentru evaluarea riscurilor de securitate și sănătate în muncă pe șantiere de construcții',
+    'Rapoarte de evaluare și tratare a riscurilor la securitatea fizică — Conform Instrucțiunilor M.A.I. nr. 9/2013',
 }
 
 const RootLayout = ({ children }: { children: ReactNode }) => (

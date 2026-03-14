@@ -7,7 +7,7 @@ import { FileCheck } from 'lucide-react'
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useAutosave } from '@/hooks/useAutosave'
-import { DOCUMENTE_SSM, ANEXE_EVALUARE } from '@/lib/constants'
+import { DOCUMENTE_SUPORT, CADRU_LEGAL } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
 
 import { AutosaveIndicator } from '../AutosaveIndicator'
@@ -32,14 +32,22 @@ export const DocumenteSection = ({ evaluare }: Props) => {
   const [selectedDoc, setSelectedDoc] = useState<string[]>(
     parseStringArray(evaluare.documenteAplicabile),
   )
-  const [selectedAnexe, setSelectedAnexe] = useState<string[]>(
-    parseStringArray(evaluare.anexeSelectate),
-  )
+  const [selectedAnexe, setSelectedAnexe] = useState<string[]>(() => {
+    const saved = parseStringArray(evaluare.anexeSelectate)
+    if (saved.length > 0) return saved
+    // Pre-select default cadru legal items for new evaluations
+    return CADRU_LEGAL.filter((item) => item.checked).map((item) => item.value)
+  })
   const [observatii, setObservatii] = useState(evaluare.observatiiDocumente ?? '')
 
   useEffect(() => {
     setSelectedDoc(parseStringArray(evaluareRef.current.documenteAplicabile))
-    setSelectedAnexe(parseStringArray(evaluareRef.current.anexeSelectate))
+    const savedAnexe = parseStringArray(evaluareRef.current.anexeSelectate)
+    setSelectedAnexe(
+      savedAnexe.length > 0
+        ? savedAnexe
+        : CADRU_LEGAL.filter((item) => item.checked).map((item) => item.value),
+    )
     setObservatii(evaluareRef.current.observatiiDocumente ?? '')
   }, [evaluare.id])
 
@@ -72,17 +80,17 @@ export const DocumenteSection = ({ evaluare }: Props) => {
     <section id='documente-section' className='scroll-mt-20'>
       <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
         <Typography variant='h3' className='mb-6 text-navy-700'>
-          📋 Documente &amp; Anexe
+          📋 Documente Suport
         </Typography>
 
         <Stack gap='6'>
           {/* Documente aplicabile */}
           <div>
             <Typography variant='h4' className='mb-4 text-navy-700'>
-              Documente aplicabile
+              Documente suport
             </Typography>
             <Stack gap='3'>
-              {DOCUMENTE_SSM.map((doc) => (
+              {DOCUMENTE_SUPORT.map((doc) => (
                 <label
                   key={doc.value}
                   className='flex cursor-pointer items-start gap-3 rounded-lg border border-primary-100 p-3 hover:bg-primary-50'
@@ -97,36 +105,33 @@ export const DocumenteSection = ({ evaluare }: Props) => {
                     <Typography variant='body-sm' className='font-medium text-navy-700'>
                       {doc.label}
                     </Typography>
-                    <Typography variant='caption' className='text-navy-500'>
-                      {doc.descriere}
-                    </Typography>
                   </div>
                 </label>
               ))}
             </Stack>
           </div>
 
-          {/* Anexe standard */}
+          {/* Cadru legal */}
           <div>
             <Typography variant='h4' className='mb-4 text-navy-700'>
-              Anexe selectate
+              Cadru legal aplicabil
             </Typography>
-            <div className='grid grid-cols-1 gap-2 md:grid-cols-2'>
-              {ANEXE_EVALUARE.map((anexa) => (
+            <div className='grid grid-cols-1 gap-2'>
+              {CADRU_LEGAL.map((item) => (
                 <label
-                  key={anexa.value}
+                  key={item.value}
                   className='flex cursor-pointer items-center gap-3 rounded-lg border border-primary-100 p-3 hover:bg-primary-50'
                 >
                   <input
                     type='checkbox'
-                    checked={selectedAnexe.includes(anexa.value)}
-                    onChange={() => toggleAnexa(anexa.value)}
+                    checked={selectedAnexe.includes(item.value)}
+                    onChange={() => toggleAnexa(item.value)}
                     className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                   />
                   <Stack direction='row' align='center' gap='2'>
                     <FileCheck className='size-4 shrink-0 text-primary-500' />
                     <Typography variant='body-sm' className='text-navy-700'>
-                      {anexa.label}
+                      {item.label}
                     </Typography>
                   </Stack>
                 </label>
@@ -143,7 +148,7 @@ export const DocumenteSection = ({ evaluare }: Props) => {
               value={observatii}
               onChange={(e) => setObservatii(e.target.value)}
               rows={3}
-              placeholder='Observații sau cerințe suplimentare privind documentele...'
+              placeholder='Observații sau cerințe suplimentare privind documentele și cadrul legal...'
               className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
             />
           </div>

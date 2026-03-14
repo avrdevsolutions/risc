@@ -8,10 +8,9 @@ import { Typography, Stack, Button, Badge } from '@/components/ui'
 import {
   getRiskLevel,
   getRiskColor,
-  ACTIVITATI,
-  PERICOLE,
+  AMENINTARI,
   PROBABILITATE_LABELS,
-  SEVERITATE_LABELS,
+  IMPACT_LABELS,
 } from '@/lib/constants'
 import type { Risc } from '@/lib/types'
 import { getLabel, parseJsonArray } from '@/lib/utils'
@@ -26,8 +25,7 @@ type Props = {
 const RISK_BORDER_COLOR: Record<string, string> = {
   scazut: 'border-l-success-500',
   mediu: 'border-l-warning-500',
-  ridicat: 'border-l-warning-600',
-  critic: 'border-l-error-500',
+  ridicat: 'border-l-error-500',
 }
 
 const RiskBadge = ({
@@ -41,7 +39,6 @@ const RiskBadge = ({
   const colors = getRiskColor(level)
   const score = probabilitate * severitate
   const labels: Record<string, string> = {
-    critic: 'Critic',
     ridicat: 'Ridicat',
     mediu: 'Mediu',
     scazut: 'Scăzut',
@@ -58,9 +55,8 @@ const RiskBadge = ({
 export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
   const [expanded, setExpanded] = useState(false)
 
-  const activitateLabel = risc.activitateCustom || getLabel(risc.activitate, ACTIVITATI)
-  const pericolLabel = risc.pericolCustom || getLabel(risc.pericol, PERICOLE)
-  const persoaneExpuse = parseJsonArray(risc.persoaneExpuse)
+  const amenintareLabel = risc.activitateCustom || getLabel(risc.activitate, AMENINTARI)
+  const consecinteFizice = parseJsonArray(risc.persoaneExpuse)
   const masuriExistente = parseJsonArray(risc.masuriExistente)
 
   const hasScoreInitial = risc.probabilitateInitiala && risc.severitateInitiala
@@ -94,11 +90,13 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
           <Stack direction='row' justify='between' align='start' gap='2'>
             <div className='min-w-0'>
               <Typography variant='body-sm' className='font-semibold text-navy-700'>
-                {pericolLabel}
+                {amenintareLabel}
               </Typography>
-              <Typography variant='caption' className='text-navy-500'>
-                {activitateLabel}
-              </Typography>
+              {risc.descrierePericol && (
+                <Typography variant='caption' className='text-navy-500'>
+                  {risc.descrierePericol}
+                </Typography>
+              )}
             </div>
             <Stack direction='row' gap='1' className='shrink-0'>
               {hasScoreInitial && (
@@ -138,18 +136,15 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
           <div className='grid grid-cols-1 gap-4 text-sm md:grid-cols-2'>
             {risc.descrierePericol && (
               <div className='md:col-span-2'>
-                <span className='font-medium text-navy-600'>Descriere pericol: </span>
+                <span className='font-medium text-navy-600'>Descriere amenințare: </span>
                 <span className='text-navy-700'>{risc.descrierePericol}</span>
               </div>
             )}
 
-            {persoaneExpuse.length > 0 && (
+            {consecinteFizice.length > 0 && (
               <div>
-                <span className='font-medium text-navy-600'>Persoane expuse: </span>
-                <span className='text-navy-700'>{persoaneExpuse.join(', ')}</span>
-                {risc.numarPersoaneExpuse && (
-                  <span className='text-navy-500'> ({risc.numarPersoaneExpuse} pers.)</span>
-                )}
+                <span className='font-medium text-navy-600'>Consecințe posibile: </span>
+                <span className='text-navy-700'>{consecinteFizice.join(', ')}</span>
               </div>
             )}
 
@@ -158,8 +153,8 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
                 <span className='font-medium text-navy-600'>Risc inițial: </span>
                 <span className='text-navy-700'>
                   P={risc.probabilitateInitiala} (
-                  {PROBABILITATE_LABELS[risc.probabilitateInitiala! - 1]}) × S=
-                  {risc.severitateInitiala} ({SEVERITATE_LABELS[risc.severitateInitiala! - 1]}) ={' '}
+                  {PROBABILITATE_LABELS[risc.probabilitateInitiala! - 1]}) × I=
+                  {risc.severitateInitiala} ({IMPACT_LABELS[risc.severitateInitiala! - 1]}) ={' '}
                   <strong>{risc.probabilitateInitiala! * risc.severitateInitiala!}</strong>
                 </span>
               </div>

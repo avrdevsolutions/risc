@@ -13,29 +13,25 @@ type Props = {
 const CELL_COLORS: Record<string, string> = {
   scazut: 'bg-success-100 hover:bg-success-100 text-success-800',
   mediu: 'bg-warning-100 hover:bg-warning-100 text-warning-800',
-  ridicat: 'bg-warning-50 hover:bg-warning-100 text-warning-700',
-  critic: 'bg-error-100 hover:bg-error-100 text-error-800',
+  ridicat: 'bg-error-100 hover:bg-error-100 text-error-800',
 }
 
 const SELECTED_RING: Record<string, string> = {
   scazut: 'ring-2 ring-success-600 ring-offset-1',
   mediu: 'ring-2 ring-warning-600 ring-offset-1',
-  ridicat: 'ring-2 ring-warning-500 ring-offset-1',
-  critic: 'ring-2 ring-error-600 ring-offset-1',
+  ridicat: 'ring-2 ring-error-600 ring-offset-1',
 }
 
 const SCORE_BG: Record<string, string> = {
   scazut: 'bg-success-100 text-success-800',
   mediu: 'bg-warning-100 text-warning-800',
-  ridicat: 'bg-warning-50 text-warning-700',
-  critic: 'bg-error-100 text-error-800',
+  ridicat: 'bg-error-100 text-error-800',
 }
 
 const RISK_LABELS: Record<string, string> = {
   scazut: 'Scăzut',
   mediu: 'Mediu',
   ridicat: 'Ridicat',
-  critic: 'Critic',
 }
 
 /**
@@ -78,7 +74,7 @@ export const RiscMatrix = ({ probabilitate, severitate, onChange, label }: Props
                             CELL_COLORS[level],
                             isSelected && SELECTED_RING[level],
                           )}
-                          aria-label={`P=${p}, S=${s}, Scor=${score}`}
+                          aria-label={`P=${p}, I=${s}, Scor=${score}`}
                           aria-pressed={isSelected}
                         >
                           {score}
@@ -94,7 +90,7 @@ export const RiscMatrix = ({ probabilitate, severitate, onChange, label }: Props
               <td />
               {[1, 2, 3, 4, 5].map((s) => (
                 <td key={s} className='pt-1 text-center text-xs font-semibold text-navy-500'>
-                  S={s}
+                  I={s}
                 </td>
               ))}
             </tr>
@@ -116,12 +112,7 @@ export const RiscMatrix = ({ probabilitate, severitate, onChange, label }: Props
         >
           {RISK_LABELS[currentLevel]}
         </span>
-        <span
-          className={cn(
-            'inline-block size-3 rounded-full',
-            colors.bg,
-          )}
-        />
+        <span className={cn('inline-block size-3 rounded-full', colors.bg)} />
       </div>
     </div>
   )

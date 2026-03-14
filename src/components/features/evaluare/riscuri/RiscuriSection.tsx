@@ -16,7 +16,7 @@ import { RiscFormModal } from './RiscFormModal'
 type Props = { evaluare: EvaluareWithRiscuri }
 
 const SumarRiscuri = ({ riscuri }: { riscuri: Risc[] }) => {
-  const counts = { critic: 0, ridicat: 0, mediu: 0, scazut: 0 }
+  const counts = { ridicat: 0, mediu: 0, scazut: 0 }
   riscuri.forEach((r) => {
     if (r.probabilitateInitiala && r.severitateInitiala) {
       const level = getRiskLevel(r.probabilitateInitiala, r.severitateInitiala)
@@ -25,28 +25,20 @@ const SumarRiscuri = ({ riscuri }: { riscuri: Risc[] }) => {
   })
 
   return (
-    <div className='grid grid-cols-2 gap-2 sm:grid-cols-4'>
+    <div className='grid grid-cols-3 gap-2'>
       <div className='rounded-lg bg-error-50 p-3 text-center'>
         <Typography variant='h3' className='text-error-600'>
-          {counts.critic}
+          {counts.ridicat}
         </Typography>
         <Typography variant='caption' className='text-error-700'>
-          Critice
+          Ridicate
         </Typography>
       </div>
       <div className='rounded-lg bg-warning-50 p-3 text-center'>
         <Typography variant='h3' className='text-warning-600'>
-          {counts.ridicat}
-        </Typography>
-        <Typography variant='caption' className='text-warning-700'>
-          Ridicate
-        </Typography>
-      </div>
-      <div className='rounded-lg bg-primary-50 p-3 text-center'>
-        <Typography variant='h3' className='text-primary-600'>
           {counts.mediu}
         </Typography>
-        <Typography variant='caption' className='text-primary-700'>
+        <Typography variant='caption' className='text-warning-700'>
           Medii
         </Typography>
       </div>
@@ -111,7 +103,7 @@ export const RiscuriSection = ({ evaluare }: Props) => {
       <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
         <Stack direction='row' justify='between' align='center' gap='4' className='mb-6'>
           <Typography variant='h3' className='text-navy-700'>
-            ⚠️ Identificare Riscuri
+            ⚠️ Surse de Risc
           </Typography>
         </Stack>
 
@@ -122,9 +114,7 @@ export const RiscuriSection = ({ evaluare }: Props) => {
         )}
 
         {evaluare.riscuri.length === 0 ? (
-          <p className='mb-4 text-center text-sm italic text-navy-400'>
-            Niciun risc adăugat încă.
-          </p>
+          <p className='mb-4 text-center text-sm italic text-navy-400'>Niciun risc adăugat încă.</p>
         ) : (
           <Stack gap='3' className='mb-4'>
             {evaluare.riscuri.map((risc, i) => (
@@ -146,7 +136,7 @@ export const RiscuriSection = ({ evaluare }: Props) => {
           className='flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary-300 px-4 py-3 text-sm font-medium text-primary-600 transition-colors hover:border-primary-400 hover:bg-primary-50'
         >
           <Plus className='size-4' />
-          Adaugă risc
+          Adaugă amenințare
         </button>
       </div>
 

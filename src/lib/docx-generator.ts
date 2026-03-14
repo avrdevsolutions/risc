@@ -17,14 +17,16 @@ import {
 } from 'docx'
 
 import {
-  ACTIVITATI,
-  ANEXE_EVALUARE,
-  DOCUMENTE_SSM,
-  MASURI_COLECTIVE,
-  MASURI_EIP,
+  AMENINTARI,
+  CADRU_LEGAL,
+  DOCUMENTE_SUPORT,
+  MASURI_ALARMARE,
+  MASURI_CCTV,
+  MASURI_CONTROL_ACCES,
+  MASURI_MECANOFIZICE,
   MASURI_ORGANIZATORICE,
   NIVEL_RISC,
-  PERICOLE,
+  PAZA_UMANA,
   getNivelRisc,
 } from './constants'
 
@@ -93,21 +95,25 @@ type DbRisc = {
 
 // ─── label maps (built from constants — single source of truth) ──────────────
 
-const ALL_MASURI = [...MASURI_EIP, ...MASURI_COLECTIVE, ...MASURI_ORGANIZATORICE]
+const ALL_MASURI = [
+  ...MASURI_MECANOFIZICE,
+  ...MASURI_CONTROL_ACCES,
+  ...MASURI_ALARMARE,
+  ...MASURI_CCTV,
+  ...PAZA_UMANA,
+  ...MASURI_ORGANIZATORICE,
+]
 const MASURI_LABEL_MAP: Record<string, string> = Object.fromEntries(
   ALL_MASURI.map((m) => [m.value, m.label]),
 )
-const ACTIVITATI_LABEL_MAP: Record<string, string> = Object.fromEntries(
-  ACTIVITATI.map((a) => [a.value, a.label]),
-)
-const PERICOLE_LABEL_MAP: Record<string, string> = Object.fromEntries(
-  PERICOLE.map((p) => [p.value, p.label]),
+const AMENINTARI_LABEL_MAP: Record<string, string> = Object.fromEntries(
+  AMENINTARI.map((a) => [a.value, a.label]),
 )
 const DOCUMENTE_LABEL_MAP: Record<string, string> = Object.fromEntries(
-  DOCUMENTE_SSM.map((d) => [d.value, d.label]),
+  DOCUMENTE_SUPORT.map((d) => [d.value, d.label]),
 )
-const ANEXE_LABEL_MAP: Record<string, string> = Object.fromEntries(
-  ANEXE_EVALUARE.map((a) => [a.value, a.label]),
+const CADRU_LEGAL_LABEL_MAP: Record<string, string> = Object.fromEntries(
+  CADRU_LEGAL.map((a) => [a.value, a.label]),
 )
 
 const STATUS_LABEL: Record<string, string> = {
@@ -131,11 +137,8 @@ const parseJsonArray = (val: string | null | undefined): string[] => {
 /** Resolve a measure value key to its human-readable label. Falls back to the raw value. */
 const resolveMasuraLabel = (value: string): string => MASURI_LABEL_MAP[value] ?? value
 
-/** Resolve an ACTIVITATI value key to its label. Falls back to the raw value. */
-const resolveActivitateLabel = (value: string): string => ACTIVITATI_LABEL_MAP[value] ?? value
-
-/** Resolve a PERICOLE value key to its label. Falls back to the raw value. */
-const resolvePericolLabel = (value: string): string => PERICOLE_LABEL_MAP[value] ?? value
+/** Resolve an AMENINTARI value key to its label. Falls back to the raw value. */
+const resolveAmenintareLabel = (value: string): string => AMENINTARI_LABEL_MAP[value] ?? value
 
 // Strip hex # prefix for docx shading fill
 const hexColor = (hex: string) => hex.replace('#', '')
@@ -225,7 +228,7 @@ const buildHeader = (evaluare: DbEvaluare) =>
                   new Paragraph({
                     children: [
                       new TextRun({
-                        text: 'EVALUARE DE RISC SSM',
+                        text: 'RAPORT EVALUARE SECURITATE FIZICĂ',
                         bold: true,
                         font: 'Arial',
                         size: 22,
@@ -299,7 +302,12 @@ const buildFooter = () =>
           new TextRun({ text: 'Pagina ', font: 'Arial', size: 18, color: '888888' }),
           new TextRun({ children: [PageNumber.CURRENT], font: 'Arial', size: 18, color: '888888' }),
           new TextRun({ text: ' din ', font: 'Arial', size: 18, color: '888888' }),
-          new TextRun({ children: [PageNumber.TOTAL_PAGES], font: 'Arial', size: 18, color: '888888' }),
+          new TextRun({
+            children: [PageNumber.TOTAL_PAGES],
+            font: 'Arial',
+            size: 18,
+            color: '888888',
+          }),
         ],
       }),
     ],
@@ -310,17 +318,14 @@ const buildInfoGenerale = (evaluare: DbEvaluare): Paragraph[] => {
     .filter(Boolean)
     .join(', ')
   return [
-    sectionTitle('1. INFORMAȚII GENERALE'),
-    infoRow('Denumire proiect', evaluare.denumireProiect),
-    infoRow('Cod proiect', evaluare.codProiect),
+    sectionTitle('1. NOMINALIZAREA UNITĂȚII'),
+    infoRow('Denumire obiectiv', evaluare.denumireProiect),
+    infoRow('Nr. raport', evaluare.codProiect),
     infoRow('Beneficiar', evaluare.beneficiar),
-    infoRow('Antreprenor', evaluare.antreprenor),
-    ...(evaluare.subantreprenor ? [infoRow('Subantreprenor', evaluare.subantreprenor)] : []),
+    infoRow('Firmă evaluatoare', evaluare.antreprenor),
+    ...(evaluare.subantreprenor ? [infoRow('Subcontractant', evaluare.subantreprenor)] : []),
     infoRow('Adresă locație', adresa || null),
-    infoRow(
-      'Faza lucrării',
-      evaluare.fazaLucrariiCustom || evaluare.fazaLucrarii,
-    ),
+    infoRow('Tip unitate', evaluare.fazaLucrariiCustom || evaluare.fazaLucrarii),
   ]
 }
 
@@ -334,33 +339,36 @@ const buildDateEvaluare = (evaluare: DbEvaluare): Paragraph[] => [
 ]
 
 const buildDescriere = (evaluare: DbEvaluare): Paragraph[] => {
-  const rows: Paragraph[] = [sectionTitle('3. DESCRIERE OBIECTIV ȘI AMPLASAMENT')]
-  if (evaluare.suprafataTotala) rows.push(infoRow('Suprafață totală', `${evaluare.suprafataTotala} mp`))
-  if (evaluare.tipImprejmuire) rows.push(infoRow('Tip împrejmuire', evaluare.tipImprejmuire))
-  if (evaluare.tipAcces) rows.push(infoRow('Tip acces', evaluare.tipAcces))
+  const rows: Paragraph[] = [sectionTitle('3. AMPLASARE ȘI FACTORI EXTERNI')]
+  if (evaluare.suprafataTotala)
+    rows.push(infoRow('Suprafață totală', `${evaluare.suprafataTotala} mp`))
+  if (evaluare.tipImprejmuire) rows.push(infoRow('Zonă amplasare', evaluare.tipImprejmuire))
+  if (evaluare.tipAcces) rows.push(infoRow('Accesibilitate', evaluare.tipAcces))
+  if (evaluare.vecinNord) rows.push(infoRow('Nivel amenințări zonă', evaluare.vecinNord))
+  if (evaluare.vecinEst) rows.push(infoRow('Regim activitate', evaluare.vecinEst))
+  if (evaluare.vecinSud) rows.push(infoRow('Flux persoane', evaluare.vecinSud))
   if (evaluare.descriereAmplasare) {
     rows.push(
       new Paragraph({
-        children: [new TextRun({ text: 'Descriere amplasare:', bold: true, font: 'Arial', size: 22 })],
+        children: [
+          new TextRun({
+            text: 'Descriere amplasare și factori externi:',
+            bold: true,
+            font: 'Arial',
+            size: 22,
+          }),
+        ],
         spacing: { after: 60 },
       }),
       bodyParagraph(evaluare.descriereAmplasare),
     )
   }
-  const vecini = [
-    evaluare.vecinNord && `N: ${evaluare.vecinNord}`,
-    evaluare.vecinEst && `E: ${evaluare.vecinEst}`,
-    evaluare.vecinSud && `S: ${evaluare.vecinSud}`,
-    evaluare.vecinVest && `V: ${evaluare.vecinVest}`,
-  ].filter(Boolean)
-  if (vecini.length > 0) rows.push(infoRow('Vecinătăți', vecini.join(' | ')))
   return rows
 }
 
 const buildRiscTable = (risc: DbRisc, index: number): (Paragraph | Table)[] => {
-  const activitate = risc.activitateCustom || resolveActivitateLabel(risc.activitate || '')
-  const pericol = risc.pericolCustom || resolvePericolLabel(risc.pericol || '')
-  const persoaneExpuse = parseJsonArray(risc.persoaneExpuse)
+  const amenintare = risc.activitateCustom || resolveAmenintareLabel(risc.activitate || '')
+  const consecinte = parseJsonArray(risc.persoaneExpuse)
   const masuriValues = parseJsonArray(risc.masuriExistente)
   const masuriLabels = masuriValues.map(resolveMasuraLabel)
   if (risc.masuriExistenteCustom) masuriLabels.push(risc.masuriExistenteCustom)
@@ -387,19 +395,20 @@ const buildRiscTable = (risc: DbRisc, index: number): (Paragraph | Table)[] => {
         new TableRow({
           children: [
             tableCell(
-              cellText(`RISC #${index}  — ${pericol}`, { bold: true, color: '1e3a5f' }),
+              cellText(`AMENINȚARE #${index}  — ${amenintare}`, { bold: true, color: '1e3a5f' }),
               { widthDxa: COL, shading: '#EEF2FF' },
             ),
           ],
         }),
-        // Activitate & pericol
+        // Amenintare details
         new TableRow({
           children: [
             tableCell(
               [
-                cellText(`Activitate: ${activitate}`),
-                cellText(`Persoane expuse: ${persoaneExpuse.join(', ') || '—'}${risc.numarPersoaneExpuse ? ` (${risc.numarPersoaneExpuse} pers.)` : ''}`),
-                ...(risc.descrierePericol ? [cellText(`Descriere pericol: ${risc.descrierePericol}`)] : []),
+                ...(consecinte.length > 0
+                  ? [cellText(`Consecințe posibile: ${consecinte.join(', ')}`)]
+                  : []),
+                ...(risc.descrierePericol ? [cellText(`Descriere: ${risc.descrierePericol}`)] : []),
               ],
               { widthDxa: COL },
             ),
@@ -414,11 +423,14 @@ const buildRiscTable = (risc: DbRisc, index: number): (Paragraph | Table)[] => {
       rows: [
         new TableRow({
           children: [
-            tableCell(cellText('RISC INIȚIAL', { bold: true }), { widthDxa: W1, shading: nivelInit?.bgColor }),
+            tableCell(cellText('RISC INIȚIAL', { bold: true }), {
+              widthDxa: W1,
+              shading: nivelInit?.bgColor,
+            }),
             tableCell(
               cellText(
                 scoreInit > 0
-                  ? `P=${pInit} × S=${sInit} = ${scoreInit} — ${nivelInit?.label ?? ''}`
+                  ? `P=${pInit} × I=${sInit} = ${scoreInit} — ${nivelInit?.label ?? ''}`
                   : 'Necompletat',
                 { bold: scoreInit > 0 },
               ),
@@ -428,11 +440,14 @@ const buildRiscTable = (risc: DbRisc, index: number): (Paragraph | Table)[] => {
         }),
         new TableRow({
           children: [
-            tableCell(cellText('RISC REZIDUAL', { bold: true }), { widthDxa: W1, shading: nivelRez?.bgColor }),
+            tableCell(cellText('RISC REZIDUAL', { bold: true }), {
+              widthDxa: W1,
+              shading: nivelRez?.bgColor,
+            }),
             tableCell(
               cellText(
                 scoreRez > 0
-                  ? `P=${pRez} × S=${sRez} = ${scoreRez} — ${nivelRez?.label ?? ''}`
+                  ? `P=${pRez} × I=${sRez} = ${scoreRez} — ${nivelRez?.label ?? ''}`
                   : 'Necompletat',
                 { bold: scoreRez > 0 },
               ),
@@ -443,10 +458,9 @@ const buildRiscTable = (risc: DbRisc, index: number): (Paragraph | Table)[] => {
         new TableRow({
           children: [
             tableCell(cellText('Măsuri de protecție', { bold: true }), { widthDxa: W1 }),
-            tableCell(
-              cellText(masuriLabels.length > 0 ? masuriLabels.join('; ') : '—'),
-              { widthDxa: W2 },
-            ),
+            tableCell(cellText(masuriLabels.length > 0 ? masuriLabels.join('; ') : '—'), {
+              widthDxa: W2,
+            }),
           ],
         }),
         ...(risc.masuriSuplimentare
@@ -510,34 +524,41 @@ const buildMatriceRisc = (riscuri: DbRisc[]): (Paragraph | Table)[] => {
 
   const headerRow = new TableRow({
     children: [
-      tableCell(cellText('P \\ S', { bold: true }), { widthDxa: CELL_W }),
+      tableCell(cellText('P \\ I', { bold: true }), { widthDxa: CELL_W }),
       ...[1, 2, 3, 4, 5].map((s) =>
-        tableCell(cellText(`S=${s}`, { bold: true }), { widthDxa: CELL_W, shading: '#F0F0F0' }),
+        tableCell(cellText(`I=${s}`, { bold: true }), { widthDxa: CELL_W, shading: '#F0F0F0' }),
       ),
     ],
   })
 
-  const dataRows = [5, 4, 3, 2, 1].map((p, rowIdx) =>
-    new TableRow({
-      children: [
-        tableCell(cellText(`P=${p}`, { bold: true }), { widthDxa: CELL_W, shading: '#F0F0F0' }),
-        ...[0, 1, 2, 3, 4].map((colIdx) => {
-          const s = colIdx + 1
-          const count = counts[rowIdx][colIdx]
-          const shading = getCellShading(p, s)
-          return tableCell(
-            cellText(count > 0 ? `${count}` : '', { bold: count > 0 }),
-            { widthDxa: CELL_W, shading },
-          )
-        }),
-      ],
-    }),
+  const dataRows = [5, 4, 3, 2, 1].map(
+    (p, rowIdx) =>
+      new TableRow({
+        children: [
+          tableCell(cellText(`P=${p}`, { bold: true }), { widthDxa: CELL_W, shading: '#F0F0F0' }),
+          ...[0, 1, 2, 3, 4].map((colIdx) => {
+            const s = colIdx + 1
+            const count = counts[rowIdx][colIdx]
+            const shading = getCellShading(p, s)
+            return tableCell(cellText(count > 0 ? `${count}` : '', { bold: count > 0 }), {
+              widthDxa: CELL_W,
+              shading,
+            })
+          }),
+        ],
+      }),
   )
 
   return [
     sectionTitle('5. MATRICE RISC SUMAR'),
     new Paragraph({
-      children: [new TextRun({ text: 'Numărul de riscuri identificate per celulă (risc inițial):', font: 'Arial', size: 20 })],
+      children: [
+        new TextRun({
+          text: 'Numărul de amenințări identificate per celulă (risc inițial):',
+          font: 'Arial',
+          size: 20,
+        }),
+      ],
       spacing: { after: 120 },
     }),
     new Table({
@@ -548,14 +569,27 @@ const buildMatriceRisc = (riscuri: DbRisc[]): (Paragraph | Table)[] => {
     new Paragraph({ text: '', spacing: { after: 240 } }),
     new Paragraph({
       children: [
-        new TextRun({ text: '■ ', color: hexColor(NIVEL_RISC.scazut.color), font: 'Arial', size: 20 }),
+        new TextRun({
+          text: '■ ',
+          color: hexColor(NIVEL_RISC.scazut.color),
+          font: 'Arial',
+          size: 20,
+        }),
         new TextRun({ text: 'Scăzut (1–4)   ', font: 'Arial', size: 20 }),
-        new TextRun({ text: '■ ', color: hexColor(NIVEL_RISC.mediu.color), font: 'Arial', size: 20 }),
-        new TextRun({ text: 'Mediu (5–9)   ', font: 'Arial', size: 20 }),
-        new TextRun({ text: '■ ', color: hexColor(NIVEL_RISC.ridicat.color), font: 'Arial', size: 20 }),
-        new TextRun({ text: 'Ridicat (10–15)   ', font: 'Arial', size: 20 }),
-        new TextRun({ text: '■ ', color: hexColor(NIVEL_RISC.critic.color), font: 'Arial', size: 20 }),
-        new TextRun({ text: 'Critic (16–25)', font: 'Arial', size: 20 }),
+        new TextRun({
+          text: '■ ',
+          color: hexColor(NIVEL_RISC.mediu.color),
+          font: 'Arial',
+          size: 20,
+        }),
+        new TextRun({ text: 'Mediu (5–12)   ', font: 'Arial', size: 20 }),
+        new TextRun({
+          text: '■ ',
+          color: hexColor(NIVEL_RISC.ridicat.color),
+          font: 'Arial',
+          size: 20,
+        }),
+        new TextRun({ text: 'Ridicat (13–25)', font: 'Arial', size: 20 }),
       ],
       spacing: { after: 120 },
     }),
@@ -567,7 +601,7 @@ const buildSemnaturi = (evaluare: DbEvaluare): (Paragraph | Table)[] => {
   const W = Math.floor(COL / 3)
 
   return [
-    sectionTitle('6. SEMNĂTURI ȘI APROBARE'),
+    sectionTitle('6. SEMNĂTURI ȘI ASUMARE'),
     infoRow('Data aprobării', evaluare.dataAprobarii),
     new Paragraph({ text: '', spacing: { after: 240 } }),
     new Table({
@@ -577,8 +611,8 @@ const buildSemnaturi = (evaluare: DbEvaluare): (Paragraph | Table)[] => {
         new TableRow({
           children: [
             tableCell(cellText('Evaluator', { bold: true }), { widthDxa: W }),
-            tableCell(cellText('Șef Șantier', { bold: true }), { widthDxa: W }),
-            tableCell(cellText('Responsabil SSM', { bold: true }), { widthDxa: W }),
+            tableCell(cellText('Conducător unitate', { bold: true }), { widthDxa: W }),
+            tableCell(cellText('Responsabil securitate fizică', { bold: true }), { widthDxa: W }),
           ],
         }),
         new TableRow({
@@ -618,29 +652,17 @@ const buildSemnaturi = (evaluare: DbEvaluare): (Paragraph | Table)[] => {
 
 const buildDocumente = (evaluare: DbEvaluare): Paragraph[] => {
   const docValues = parseJsonArray(evaluare.documenteAplicabile)
-  const anexaValues = parseJsonArray(evaluare.anexeSelectate)
+  const cadruLegalValues = parseJsonArray(evaluare.anexeSelectate)
 
-  // Legacy keys from old format (single-letter IDs) mapped to their labels
-  const legacyDocLabels: Record<string, string> = {
-    a: 'Plan propriu de securitate și sănătate în muncă',
-    b: 'Instrucțiuni proprii SSM',
-    c: 'Fișe de expunere la riscuri',
-    d: 'Registrul unic de evidență a accidentelor de muncă',
-    e: 'Registrul unic de evidență a incidentelor periculoase',
-    f: 'Registrul unic de evidență a accidentărilor în muncă',
-    g: 'Fișe de instruire individuală',
-    h: 'Proces-verbal de instruire',
-  }
+  const resolveDocLabel = (v: string) => DOCUMENTE_LABEL_MAP[v] ?? v
+  const resolveCadruLegalLabel = (v: string) => CADRU_LEGAL_LABEL_MAP[v] ?? v
 
-  const resolveDocLabel = (v: string) =>
-    DOCUMENTE_LABEL_MAP[v] ?? legacyDocLabels[v] ?? v
-
-  const rows: Paragraph[] = [sectionTitle('7. DOCUMENTE APLICABILE')]
+  const rows: Paragraph[] = [sectionTitle('7. DOCUMENTE SUPORT')]
 
   if (docValues.length > 0) {
     rows.push(
       new Paragraph({
-        children: [new TextRun({ text: 'Documente SSM:', bold: true, font: 'Arial', size: 22 })],
+        children: [new TextRun({ text: 'Documente suport:', bold: true, font: 'Arial', size: 22 })],
         spacing: { after: 80 },
       }),
     )
@@ -658,19 +680,21 @@ const buildDocumente = (evaluare: DbEvaluare): Paragraph[] => {
     }
   }
 
-  if (anexaValues.length > 0) {
+  if (cadruLegalValues.length > 0) {
     rows.push(
       new Paragraph({
-        children: [new TextRun({ text: 'Anexe:', bold: true, font: 'Arial', size: 22 })],
+        children: [
+          new TextRun({ text: 'Cadru legal aplicabil:', bold: true, font: 'Arial', size: 22 }),
+        ],
         spacing: { before: 200, after: 80 },
       }),
     )
-    for (const v of anexaValues) {
+    for (const v of cadruLegalValues) {
       rows.push(
         new Paragraph({
           children: [
             new TextRun({ text: '— ', font: 'Arial', size: 22 }),
-            new TextRun({ text: ANEXE_LABEL_MAP[v] ?? v, font: 'Arial', size: 22 }),
+            new TextRun({ text: resolveCadruLegalLabel(v), font: 'Arial', size: 22 }),
           ],
           spacing: { after: 60 },
           indent: { left: 360 },
@@ -694,12 +718,14 @@ export const generateEvaluareDocx = async (
 ): Promise<Buffer> => {
   const sortedRiscuri = [...riscuri].sort((a, b) => a.ordine - b.ordine)
 
-  const riscuriContent: (Paragraph | Table)[] = [sectionTitle('4. EVALUARE RISCURI')]
+  const riscuriContent: (Paragraph | Table)[] = [
+    sectionTitle('4. ANALIZA AMENINȚĂRILOR ȘI RISCURILOR'),
+  ]
   for (let i = 0; i < sortedRiscuri.length; i++) {
     riscuriContent.push(...buildRiscTable(sortedRiscuri[i], i + 1))
   }
   if (sortedRiscuri.length === 0) {
-    riscuriContent.push(bodyParagraph('Nu au fost identificate riscuri.'))
+    riscuriContent.push(bodyParagraph('Nu au fost identificate amenințări.'))
   }
 
   const doc = new Document({

@@ -37,7 +37,9 @@ const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
     evaluare.responsabilSSM,
     evaluare.dataAprobarii,
   ]
-  const filledFields = requiredFields.filter((v) => v !== null && v !== undefined && v !== '').length
+  const filledFields = requiredFields.filter(
+    (v) => v !== null && v !== undefined && v !== '',
+  ).length
 
   // Count riscuri as a single required item (1 or more risks needed)
   const hasRiscuri = evaluare.riscuri.length > 0
@@ -50,11 +52,7 @@ const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
 const ProgressBar = ({ evaluare }: { evaluare: EvaluareWithRiscuri }) => {
   const progress = computeProgress(evaluare)
   const colorClass =
-    progress >= 80
-      ? 'text-success-600'
-      : progress >= 40
-        ? 'text-warning-600'
-        : 'text-error-600'
+    progress >= 80 ? 'text-success-600' : progress >= 40 ? 'text-warning-600' : 'text-error-600'
 
   return (
     <div className='mb-6 rounded-xl bg-navy-800 px-5 py-4 shadow-card'>
@@ -110,7 +108,7 @@ const StatusBar = ({
         {evaluare.status === 'completed' ? 'Finalizat' : 'Ciornă'}
       </Badge>
       <Typography variant='caption' className='text-navy-400'>
-        {evaluare.riscuri.length} riscuri identificate
+        {evaluare.riscuri.length} amenințări identificate
       </Typography>
       {evaluare.status === 'draft' && (
         <Button
@@ -176,7 +174,8 @@ const ExportSection = ({ id }: { id: string }) => {
           📄 Export
         </Typography>
         <Typography variant='body-sm' className='mb-4 text-navy-500'>
-          Exportați evaluarea de risc în format Microsoft Word (.docx).
+          Exportați raportul de evaluare a securității fizice în format Microsoft Word (.docx) —
+          Conform Instrucțiunilor M.A.I. nr. 9/2013.
         </Typography>
         {exportError && (
           <Typography variant='body-sm' className='mb-4 text-error-600'>
