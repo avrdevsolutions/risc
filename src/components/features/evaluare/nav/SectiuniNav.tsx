@@ -34,7 +34,7 @@ export const SectiuniNav = () => {
                   className={cn(
                     'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors',
                     isActive
-                      ? 'border-l-2 border-primary-500 bg-primary-50 pl-[6px] font-semibold text-primary-700'
+                      ? 'border-l-2 border-primary-500 bg-primary-50 pl-1.5 font-semibold text-primary-700'
                       : 'text-navy-600 hover:bg-primary-50 hover:text-navy-800',
                   )}
                 >

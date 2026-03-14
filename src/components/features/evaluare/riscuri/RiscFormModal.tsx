@@ -126,6 +126,8 @@ const RiskComparisonWidget = ({
   const rezColors = getRiskColor(rezLevel)
   const reduction = initScore > 0 ? Math.round(((initScore - rezScore) / initScore) * 100) : 0
   const isValid = rezScore <= initScore
+  const reductionAbs = Math.abs(reduction)
+  const isReduction = reduction >= 0
 
   return (
     <div className='rounded-lg border border-primary-100 bg-primary-50 p-3'>
@@ -153,7 +155,7 @@ const RiskComparisonWidget = ({
       <div className='mt-2 text-center text-xs'>
         {isValid ? (
           <span className='font-semibold text-success-600'>
-            ↓ {reduction}% reducere risc
+            {isReduction ? '↓' : '↑'} {reductionAbs}% {isReduction ? 'reducere' : 'creștere'} risc
           </span>
         ) : (
           <span className='font-semibold text-error-600'>

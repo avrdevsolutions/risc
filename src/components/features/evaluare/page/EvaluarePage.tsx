@@ -23,7 +23,7 @@ import { SumarSection } from '../sumar'
 type Props = { id: string }
 
 const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
-  const required: (string | null | undefined)[] = [
+  const requiredFields: (string | null | undefined)[] = [
     evaluare.denumireProiect,
     evaluare.adresaLocatie,
     evaluare.beneficiar,
@@ -37,10 +37,14 @@ const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
     evaluare.responsabilSSM,
     evaluare.dataAprobarii,
   ]
-  const riscuriCount = evaluare.riscuri.length > 0 ? 1 : null
-  const allFields = [...required, riscuriCount]
-  const filled = allFields.filter((v) => v !== null && v !== undefined && v !== '').length
-  return Math.round((filled / allFields.length) * 100)
+  const filledFields = requiredFields.filter((v) => v !== null && v !== undefined && v !== '').length
+
+  // Count riscuri as a single required item (1 or more risks needed)
+  const hasRiscuri = evaluare.riscuri.length > 0
+  const totalItems = requiredFields.length + 1
+  const filledItems = filledFields + (hasRiscuri ? 1 : 0)
+
+  return Math.round((filledItems / totalItems) * 100)
 }
 
 const ProgressBar = ({ evaluare }: { evaluare: EvaluareWithRiscuri }) => {

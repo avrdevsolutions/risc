@@ -50,7 +50,9 @@ export const useActiveSection = (sectionIds: string[]): string | null => {
     return () => {
       observerRef.current?.disconnect()
     }
-  }, [sectionIds.join(',')]) // eslint-disable-line react-hooks/exhaustive-deps
+    // sectionIds is a stable reference (derived from a constant in usage)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return activeId
 }
