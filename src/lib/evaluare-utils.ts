@@ -5,6 +5,8 @@ import type { EvaluareWithRiscuri } from '@/lib/types'
  * based on required fields and the presence of at least one risc.
  */
 export const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
+  // Exclude auto-populated date fields (dataEvaluarii, dataRevizuirii, dataAprobarii)
+  // so that a blank new evaluation correctly shows 0% progress.
   const requiredFields: (string | null | undefined)[] = [
     evaluare.denumireProiect,
     evaluare.adresaLocatie,
@@ -13,11 +15,8 @@ export const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
     evaluare.fazaLucrarii,
     evaluare.numeEvaluator,
     evaluare.functieEvaluator,
-    evaluare.dataEvaluarii,
-    evaluare.dataRevizuirii,
     evaluare.sefSantier,
     evaluare.responsabilSSM,
-    evaluare.dataAprobarii,
   ]
   const filledFields = requiredFields.filter(
     (v) => v !== null && v !== undefined && v !== '',

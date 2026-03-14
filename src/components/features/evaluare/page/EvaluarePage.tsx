@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import Link from 'next/link'
 
@@ -13,6 +13,8 @@ import { SECTIUNI_NAVIGARE } from '@/lib/constants'
 import { computeProgress } from '@/lib/evaluare-utils'
 import type { EvaluareWithRiscuri } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
+import { useEvaluareSyncStore } from '@/stores/evaluare-sync-store'
 
 import { AprobareSection } from '../aprobare'
 import { CadruOrganizationalSection } from '../cadruOrganizational'
@@ -31,10 +33,12 @@ type Props = { id: string }
 
 const StatusBar = ({
   evaluare,
+  displayProjectName,
   onMarkComplete,
   isPending,
 }: {
   evaluare: EvaluareWithRiscuri
+  displayProjectName: string
   onMarkComplete: () => void
   isPending: boolean
 }) => (
@@ -55,7 +59,7 @@ const StatusBar = ({
         <span className='shrink-0 text-navy-200'>|</span>
         <div className='min-w-0 flex-1'>
           <Typography variant='h4' className='truncate text-sm text-navy-900 sm:text-base'>
-            {evaluare.denumireProiect ?? 'Evaluare nouă'}
+            {displayProjectName}
           </Typography>
           {evaluare.adresaLocatie && (
             <Typography variant='caption' className='hidden truncate text-navy-500 sm:block'>
@@ -262,6 +266,23 @@ export const EvaluarePage = ({ id }: Props) => {
   const update = useUpdateEvaluare(id)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
+  // Read the project name from the local form store so the header updates
+  // in real-time as the user types — before the data is synced to the DB.
+  const localProjectName = useEvaluareFormStore(
+    (s) => s.evaluareDataMap[id]?.denumireProiect as string | undefined,
+  )
+
+  // Reset the sync store whenever the evaluare ID changes so that isDirty and
+  // lastSyncedAt from a previous evaluation do not bleed into the new one.
+  // Use a ref to skip the reset on the very first mount (no "previous" ID).
+  const previousEvaluareIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (previousEvaluareIdRef.current !== null && previousEvaluareIdRef.current !== id) {
+      useEvaluareSyncStore.getState().reset()
+    }
+    previousEvaluareIdRef.current = id
+  }, [id])
+
   // Disable browser scroll restoration and force scroll to top on mount so the
   // page always starts at section 1 — not at the position the browser remembered
   // from a previous visit (which could cause the IntersectionObserver to
@@ -319,11 +340,16 @@ export const EvaluarePage = ({ id }: Props) => {
 
   const progress = computeProgress(evaluare)
 
+  // Derive the display project name: local store (real-time) takes precedence
+  // over query-cache data so the header updates as the user types.
+  const displayProjectName = (localProjectName ?? evaluare.denumireProiect) || 'Evaluare nouă'
+
   return (
     <EvaluareSyncProvider evaluareId={id}>
       {/* Full-width status bar — sits outside the constrained content area */}
       <StatusBar
         evaluare={evaluare}
+        displayProjectName={displayProjectName}
         onMarkComplete={handleToggleStatus}
         isPending={update.isPending}
       />
