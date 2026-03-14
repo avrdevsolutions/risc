@@ -39,7 +39,8 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
-  const { formData, setField } = useEvaluareSyncContext()
+  const { setField } = useEvaluareSyncContext()
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const {
     register,
@@ -49,17 +50,17 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
     formState: { errors },
   } = useForm<EvaluatorFormValues>({
     resolver: zodResolver(EvaluatorSchema),
-    defaultValues: toFormValues(evaluare, formData),
+    defaultValues: toFormValues(evaluare, localInit),
   })
 
   const [obiective, setObiective] = useState<string[]>(
     parseJsonArray(
-      (formData.obiectiveEvaluare as string | undefined) ?? evaluare.obiectiveEvaluare,
+      (localInit.obiectiveEvaluare as string | undefined) ?? evaluare.obiectiveEvaluare,
     ),
   )
   const [metode, setMetode] = useState<string[]>(
     parseJsonArray(
-      (formData.metodeInstrumente as string | undefined) ?? evaluare.metodeInstrumente,
+      (localInit.metodeInstrumente as string | undefined) ?? evaluare.metodeInstrumente,
     ),
   )
 

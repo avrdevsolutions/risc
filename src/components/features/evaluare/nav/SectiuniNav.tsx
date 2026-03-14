@@ -4,10 +4,9 @@ import { useMemo } from 'react'
 
 import { useActiveSection } from '@/hooks/useActiveSection'
 import { SECTIUNI_NAVIGARE } from '@/lib/constants'
+import { computeProgress } from '@/lib/evaluare-utils'
 import type { EvaluareWithRiscuri } from '@/lib/types'
 import { cn } from '@/lib/utils'
-
-import { computeProgress } from '../page/EvaluarePage'
 
 const SECTION_IDS = SECTIUNI_NAVIGARE.map((s) => s.id)
 

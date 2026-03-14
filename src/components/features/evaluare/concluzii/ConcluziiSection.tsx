@@ -11,6 +11,7 @@ import { useSectionSync } from '@/hooks/useSectionSync'
 import { getRiskLevel, AMENINTARI } from '@/lib/constants'
 import type { EvaluareWithRiscuri, Risc } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: EvaluareWithRiscuri }
 
@@ -37,29 +38,30 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
-  const { formData, setField } = useEvaluareSyncContext()
+  const { setField } = useEvaluareSyncContext()
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const [nivelRiscGlobal, setNivelRiscGlobal] = useState(
-    (formData.nivelRiscGlobalAsumat as string | undefined) ?? evaluare.nivelRiscGlobalAsumat ?? '',
+    (localInit.nivelRiscGlobalAsumat as string | undefined) ?? evaluare.nivelRiscGlobalAsumat ?? '',
   )
   const [nivelRiscRezidual, setNivelRiscRezidual] = useState(
-    (formData.nivelRiscRezidualGlobal as string | undefined) ??
+    (localInit.nivelRiscRezidualGlobal as string | undefined) ??
       evaluare.nivelRiscRezidualGlobal ??
       '',
   )
   const [termenImplementare, setTermenImplementare] = useState(
-    (formData.termenImplementareGlobal as string | undefined) ??
+    (localInit.termenImplementareGlobal as string | undefined) ??
       evaluare.termenImplementareGlobal ??
       '',
   )
   const [concluziiGenerale, setConcluziiGenerale] = useState(
-    (formData.concluziiGenerale as string | undefined) ?? evaluare.concluziiGenerale ?? '',
+    (localInit.concluziiGenerale as string | undefined) ?? evaluare.concluziiGenerale ?? '',
   )
   const [masuriObligatorii, setMasuriObligatorii] = useState(
-    (formData.masuriObligatorii as string | undefined) ?? evaluare.masuriObligatorii ?? '',
+    (localInit.masuriObligatorii as string | undefined) ?? evaluare.masuriObligatorii ?? '',
   )
   const [masuriRecomandate, setMasuriRecomandate] = useState(
-    (formData.masuriRecomandate as string | undefined) ?? evaluare.masuriRecomandate ?? '',
+    (localInit.masuriRecomandate as string | undefined) ?? evaluare.masuriRecomandate ?? '',
   )
 
   useEffect(() => {

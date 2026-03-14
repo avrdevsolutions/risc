@@ -71,18 +71,19 @@ export const ObiectivSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
-  const { formData, setField } = useEvaluareSyncContext()
+  const { setField } = useEvaluareSyncContext()
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const { register, watch, reset, getValues } = useForm<ObiectivFormValues>({
     resolver: zodResolver(ObiectivSchema),
-    defaultValues: toFormValues(evaluare, formData),
+    defaultValues: toFormValues(evaluare, localInit),
   })
 
   const [caiAcces, setCaiAcces] = useState<string[]>(
-    parseJsonArray((formData.caiAcces as string | undefined) ?? evaluare.caiAcces),
+    parseJsonArray((localInit.caiAcces as string | undefined) ?? evaluare.caiAcces),
   )
   const [vecinatatiBifate, setVecinatatiBifate] = useState<string[]>(
-    parseJsonArray((formData.vecinatatiBifate as string | undefined) ?? evaluare.vecinatatiBifate),
+    parseJsonArray((localInit.vecinatatiBifate as string | undefined) ?? evaluare.vecinatatiBifate),
   )
 
   useEffect(() => {

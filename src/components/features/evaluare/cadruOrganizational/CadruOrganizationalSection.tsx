@@ -16,6 +16,7 @@ import {
 } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
 import { parseJsonArray } from '@/lib/utils'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: Evaluare }
 
@@ -23,41 +24,42 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
-  const { formData, setField } = useEvaluareSyncContext()
+  const { setField } = useEvaluareSyncContext()
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const [regimActivitate, setRegimActivitate] = useState(
-    (formData.cadruRegimActivitate as string | undefined) ?? evaluare.cadruRegimActivitate ?? '',
+    (localInit.cadruRegimActivitate as string | undefined) ?? evaluare.cadruRegimActivitate ?? '',
   )
   const [programLucru, setProgramLucru] = useState(
-    (formData.cadruProgramLucru as string | undefined) ?? evaluare.cadruProgramLucru ?? '',
+    (localInit.cadruProgramLucru as string | undefined) ?? evaluare.cadruProgramLucru ?? '',
   )
   const [fluxPersoane, setFluxPersoane] = useState(
-    (formData.cadruFluxPersoane as string | undefined) ?? evaluare.cadruFluxPersoane ?? '',
+    (localInit.cadruFluxPersoane as string | undefined) ?? evaluare.cadruFluxPersoane ?? '',
   )
   const [fluxBunuri, setFluxBunuri] = useState(
-    (formData.cadruFluxBunuri as string | undefined) ?? evaluare.cadruFluxBunuri ?? '',
+    (localInit.cadruFluxBunuri as string | undefined) ?? evaluare.cadruFluxBunuri ?? '',
   )
   const [numarAngajati, setNumarAngajati] = useState(
-    (formData.cadruNumarAngajati as string | undefined) ??
+    (localInit.cadruNumarAngajati as string | undefined) ??
       (evaluare.cadruNumarAngajati != null ? String(evaluare.cadruNumarAngajati) : ''),
   )
   const [zoneFunctionale, setZoneFunctionale] = useState<string[]>(
     parseJsonArray(
-      (formData.cadruZoneFunctionale as string | undefined) ?? evaluare.cadruZoneFunctionale,
+      (localInit.cadruZoneFunctionale as string | undefined) ?? evaluare.cadruZoneFunctionale,
     ),
   )
   const [bunuriValori, setBunuriValori] = useState<string[]>(
     parseJsonArray(
-      (formData.cadruBunuriValori as string | undefined) ?? evaluare.cadruBunuriValori,
+      (localInit.cadruBunuriValori as string | undefined) ?? evaluare.cadruBunuriValori,
     ),
   )
   const [sistemeTehnice, setSistemeTehnice] = useState<string[]>(
     parseJsonArray(
-      (formData.cadruSistemeTehnice as string | undefined) ?? evaluare.cadruSistemeTehnice,
+      (localInit.cadruSistemeTehnice as string | undefined) ?? evaluare.cadruSistemeTehnice,
     ),
   )
   const [factoriVulnerabilitate, setFactoriVulnerabilitate] = useState(
-    (formData.cadruFactoriVulnerabilitate as string | undefined) ??
+    (localInit.cadruFactoriVulnerabilitate as string | undefined) ??
       evaluare.cadruFactoriVulnerabilitate ??
       '',
   )

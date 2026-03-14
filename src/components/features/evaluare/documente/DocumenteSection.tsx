@@ -10,6 +10,7 @@ import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useSectionSync } from '@/hooks/useSectionSync'
 import { DOCUMENTE_SUPORT, CADRU_LEGAL } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: Evaluare }
 
@@ -27,22 +28,23 @@ export const DocumenteSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
-  const { formData, setField } = useEvaluareSyncContext()
+  const { setField } = useEvaluareSyncContext()
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const [selectedDoc, setSelectedDoc] = useState<string[]>(
     parseStringArray(
-      (formData.documenteAplicabile as string | undefined) ?? evaluare.documenteAplicabile,
+      (localInit.documenteAplicabile as string | undefined) ?? evaluare.documenteAplicabile,
     ),
   )
   const [selectedAnexe, setSelectedAnexe] = useState<string[]>(() => {
     const saved = parseStringArray(
-      (formData.anexeSelectate as string | undefined) ?? evaluare.anexeSelectate,
+      (localInit.anexeSelectate as string | undefined) ?? evaluare.anexeSelectate,
     )
     if (saved.length > 0) return saved
     return CADRU_LEGAL.filter((item) => item.checked).map((item) => item.value)
   })
   const [observatii, setObservatii] = useState(
-    (formData.observatiiDocumente as string | undefined) ?? evaluare.observatiiDocumente ?? '',
+    (localInit.observatiiDocumente as string | undefined) ?? evaluare.observatiiDocumente ?? '',
   )
 
   useEffect(() => {

@@ -107,6 +107,8 @@ export const DatePicker = ({
   const [viewYear, setViewYear] = useState(selectedDate?.getFullYear() ?? today.getFullYear())
   const [viewMonth, setViewMonth] = useState(selectedDate?.getMonth() ?? today.getMonth())
   const containerRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
+  const dialogRef = useRef<HTMLDivElement>(null)
 
   // Close on click outside
   useEffect(() => {
@@ -119,6 +121,29 @@ export const DatePicker = ({
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
+
+  // Auto-focus first focusable element in dialog when opened;
+  // return focus to trigger when closed.
+  useEffect(() => {
+    if (open) {
+      // Focus the selected or today button, falling back to the first day cell
+      const firstDay = dialogRef.current?.querySelector<HTMLElement>(
+        'button[aria-pressed="true"], button[aria-label]',
+      )
+      firstDay?.focus()
+    } else {
+      triggerRef.current?.focus()
+    }
+  }, [open])
+
+  const handleClose = () => setOpen(false)
+
+  const handleDialogKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === 'Escape') {
+      e.preventDefault()
+      handleClose()
+    }
+  }
 
   const handleDayClick = (date: Date) => {
     onChange?.(formatIso(date))
@@ -155,6 +180,7 @@ export const DatePicker = ({
   return (
     <div ref={containerRef} className='relative'>
       <button
+        ref={triggerRef}
         type='button'
         id={id}
         disabled={disabled}
@@ -175,8 +201,11 @@ export const DatePicker = ({
 
       {open && (
         <div
+          ref={dialogRef}
           role='dialog'
           aria-label='Calendar'
+          aria-modal='true'
+          onKeyDown={handleDialogKeyDown}
           className='absolute z-50 mt-1.5 w-72 rounded-2xl border border-navy-100 bg-white p-4 shadow-xl'
         >
           {/* Month/Year navigation */}
@@ -257,7 +286,7 @@ export const DatePicker = ({
             </button>
             <button
               type='button'
-              onClick={() => setOpen(false)}
+              onClick={handleClose}
               className='flex items-center gap-1 text-sm text-navy-400 hover:text-navy-700'
             >
               <X className='size-3.5' />

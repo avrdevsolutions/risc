@@ -6,7 +6,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { Typography, Stack } from '@/components/ui'
-import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useFormLocalPersist } from '@/hooks/useFormLocalPersist'
 import { useSectionSync } from '@/hooks/useSectionSync'
@@ -44,7 +43,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
-  const { formData } = useEvaluareSyncContext()
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const {
     register,
@@ -54,7 +53,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
     formState: { errors },
   } = useForm<ProiectFormValues>({
     resolver: zodResolver(ProiectSchema),
-    defaultValues: toFormValues(evaluare, formData),
+    defaultValues: toFormValues(evaluare, localInit),
   })
 
   const fazaLucrarii = watch('fazaLucrarii')

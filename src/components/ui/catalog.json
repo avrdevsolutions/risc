@@ -43,6 +43,18 @@
       "path": "src/components/ui/separator",
       "pattern": "cva",
       "axes": ["orientation", "thickness", "variant"]
+    },
+    {
+      "name": "DatePicker",
+      "path": "src/components/ui/date-picker",
+      "pattern": "controlled",
+      "axes": []
+    },
+    {
+      "name": "Select",
+      "path": "src/components/ui/select",
+      "pattern": "controlled",
+      "axes": []
     }
   ]
 }

@@ -17,6 +17,7 @@ import {
 } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
 import { parseJsonArray } from '@/lib/utils'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: Evaluare }
 
@@ -62,41 +63,42 @@ export const MasuriSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
-  const { formData, setField } = useEvaluareSyncContext()
+  const { setField } = useEvaluareSyncContext()
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const [mecanofizice, setMecanofizice] = useState<string[]>(
     parseJsonArray(
-      (formData.masuriMecanofizice as string | undefined) ?? evaluare.masuriMecanofizice,
+      (localInit.masuriMecanofizice as string | undefined) ?? evaluare.masuriMecanofizice,
     ),
   )
   const [controlAcces, setControlAcces] = useState<string[]>(
     parseJsonArray(
-      (formData.masuriControlAcces as string | undefined) ?? evaluare.masuriControlAcces,
+      (localInit.masuriControlAcces as string | undefined) ?? evaluare.masuriControlAcces,
     ),
   )
   const [alarmare, setAlarmare] = useState<string[]>(
-    parseJsonArray((formData.masuriAlarmare as string | undefined) ?? evaluare.masuriAlarmare),
+    parseJsonArray((localInit.masuriAlarmare as string | undefined) ?? evaluare.masuriAlarmare),
   )
   const [cctv, setCctv] = useState<string[]>(
-    parseJsonArray((formData.masuriCctv as string | undefined) ?? evaluare.masuriCctv),
+    parseJsonArray((localInit.masuriCctv as string | undefined) ?? evaluare.masuriCctv),
   )
   const [pazaUmana, setPazaUmana] = useState<string[]>(
-    parseJsonArray((formData.pazaUmana as string | undefined) ?? evaluare.pazaUmana),
+    parseJsonArray((localInit.pazaUmana as string | undefined) ?? evaluare.pazaUmana),
   )
   const [numarAgenti, setNumarAgenti] = useState(
-    (formData.numarAgenti as string | undefined) ??
+    (localInit.numarAgenti as string | undefined) ??
       (evaluare.numarAgenti != null ? String(evaluare.numarAgenti) : ''),
   )
   const [organizatorice, setOrganizatorice] = useState<string[]>(
     parseJsonArray(
-      (formData.masuriOrganizatorice as string | undefined) ?? evaluare.masuriOrganizatorice,
+      (localInit.masuriOrganizatorice as string | undefined) ?? evaluare.masuriOrganizatorice,
     ),
   )
   const [asigurari, setAsigurari] = useState<string[]>(
-    parseJsonArray((formData.masuriAsigurari as string | undefined) ?? evaluare.masuriAsigurari),
+    parseJsonArray((localInit.masuriAsigurari as string | undefined) ?? evaluare.masuriAsigurari),
   )
   const [observatii, setObservatii] = useState(
-    (formData.observatiiMasuri as string | undefined) ?? evaluare.observatiiMasuri ?? '',
+    (localInit.observatiiMasuri as string | undefined) ?? evaluare.observatiiMasuri ?? '',
   )
 
   useEffect(() => {

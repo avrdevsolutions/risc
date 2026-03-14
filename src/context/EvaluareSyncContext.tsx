@@ -2,8 +2,6 @@
 
 import { createContext, useCallback, useContext, useRef } from 'react'
 
-import { useShallow } from 'zustand/react/shallow'
-
 import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 /**
@@ -13,8 +11,13 @@ import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
  * When the user clicks "Salvează progresul", the SyncButton calls `syncAll()`
  * which invokes every registered handler in parallel.
  *
- * Also exposes per-evaluare form data (from localStorage via Zustand) so
- * sections can restore local state on refresh without waiting for the DB.
+ * Write helpers (`setField`, `setFields`) are exposed for convenience so
+ * sections don't need to import the store directly — they delegate to
+ * `getState()` (non-reactive) to avoid triggering provider re-renders.
+ *
+ * Sections read initial local data directly from
+ * `useEvaluareFormStore.getState().getFormData(evaluareId)` — not through
+ * context — so that Zustand state changes never propagate through the tree.
  */
 
 type SaveHandler = () => Promise<void>
@@ -25,8 +28,6 @@ type EvaluareSyncContextValue = {
   registerHandler: (sectionId: string, handler: SaveHandler) => void
   unregisterHandler: (sectionId: string) => void
   syncAll: () => Promise<void>
-  /** Local form data for this evaluare (from localStorage) */
-  formData: FormData
   /** Persist a single field value to localStorage */
   setField: (name: string, value: unknown) => void
   /** Persist multiple field values at once */
@@ -46,32 +47,20 @@ type Props = { children: React.ReactNode; evaluareId: string }
 export const EvaluareSyncProvider = ({ children, evaluareId }: Props) => {
   const handlersRef = useRef<Map<string, SaveHandler>>(new Map())
 
-  const {
-    evaluareDataMap,
-    setField: storeSetField,
-    setFields: storeSetFields,
-  } = useEvaluareFormStore(
-    useShallow((s) => ({
-      evaluareDataMap: s.evaluareDataMap,
-      setField: s.setField,
-      setFields: s.setFields,
-    })),
-  )
-
-  const formData: FormData = evaluareDataMap[evaluareId] ?? {}
-
+  // Use getState() (non-reactive) so that writing to the store never causes
+  // the provider — or any of its consumers — to re-render.
   const setField = useCallback(
     (name: string, value: unknown) => {
-      storeSetField(evaluareId, name, value)
+      useEvaluareFormStore.getState().setField(evaluareId, name, value)
     },
-    [evaluareId, storeSetField],
+    [evaluareId],
   )
 
   const setFields = useCallback(
     (fields: FormData) => {
-      storeSetFields(evaluareId, fields)
+      useEvaluareFormStore.getState().setFields(evaluareId, fields)
     },
-    [evaluareId, storeSetFields],
+    [evaluareId],
   )
 
   const registerHandler = useCallback((sectionId: string, handler: SaveHandler) => {
@@ -94,7 +83,6 @@ export const EvaluareSyncProvider = ({ children, evaluareId }: Props) => {
         registerHandler,
         unregisterHandler,
         syncAll,
-        formData,
         setField,
         setFields,
       }}
