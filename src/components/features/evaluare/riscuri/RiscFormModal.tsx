@@ -8,12 +8,13 @@ import { useForm, Controller } from 'react-hook-form'
 
 import { Typography, Stack, Button } from '@/components/ui'
 import {
-  ACTIVITATI,
-  PERICOLE,
-  PERSOANE_EXPUSE,
-  MASURI_COLECTIVE,
+  AMENINTARI,
+  MASURI_MECANOFIZICE,
+  MASURI_CONTROL_ACCES,
+  MASURI_ALARMARE,
+  MASURI_CCTV,
   MASURI_ORGANIZATORICE,
-  MASURI_EIP,
+  PAZA_UMANA,
   getRiskLevel,
   getRiskColor,
 } from '@/lib/constants'
@@ -32,7 +33,6 @@ type Props = {
 }
 
 const RISK_LABELS: Record<string, string> = {
-  critic: 'Critic',
   ridicat: 'Ridicat',
   mediu: 'Mediu',
   scazut: 'Scăzut',
@@ -133,21 +133,13 @@ const RiskComparisonWidget = ({
     <div className='rounded-lg border border-primary-100 bg-primary-50 p-3'>
       <div className='flex items-center justify-center gap-3'>
         <span
-          className={cn(
-            'rounded-lg px-3 py-1.5 text-sm font-bold',
-            initColors.bg,
-            initColors.text,
-          )}
+          className={cn('rounded-lg px-3 py-1.5 text-sm font-bold', initColors.bg, initColors.text)}
         >
           {initScore} {RISK_LABELS[initLevel].toUpperCase()}
         </span>
         <ArrowRight className='size-5 text-navy-400' />
         <span
-          className={cn(
-            'rounded-lg px-3 py-1.5 text-sm font-bold',
-            rezColors.bg,
-            rezColors.text,
-          )}
+          className={cn('rounded-lg px-3 py-1.5 text-sm font-bold', rezColors.bg, rezColors.text)}
         >
           {rezScore} {RISK_LABELS[rezLevel].toUpperCase()}
         </span>
@@ -208,7 +200,6 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
   }, [onClose])
 
   const activitate = watch('activitate')
-  const pericol = watch('pericol')
   const pInit = watch('probabilitateInitiala')
   const sInit = watch('severitateInitiala')
   const pRez = watch('probabilitateReziduala')
@@ -242,15 +233,15 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
           className='max-h-[80vh] overflow-y-auto px-6 py-5'
         >
           <Stack gap='6'>
-            {/* Activitate */}
+            {/* Amenințare */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div>
                 <label className={labelCls}>
-                  Activitate <span className='text-error-500'>*</span>
+                  Amenințare <span className='text-error-500'>*</span>
                 </label>
                 <select {...register('activitate')} className={inputCls}>
-                  <option value=''>Selectați activitatea...</option>
-                  {ACTIVITATI.map((a) => (
+                  <option value=''>Selectați amenințarea...</option>
+                  {AMENINTARI.map((a) => (
                     <option key={a.value} value={a.value}>
                       {a.icon} {a.label}
                     </option>
@@ -261,53 +252,27 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
               {activitate === 'custom' && (
                 <div>
                   <label className={labelCls}>
-                    Specificați activitatea <span className='text-error-500'>*</span>
+                    Specificați amenințarea <span className='text-error-500'>*</span>
                   </label>
                   <input {...register('activitateCustom')} type='text' className={inputCls} />
                 </div>
               )}
             </div>
 
-            {/* Pericol */}
-            <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
-              <div>
-                <label className={labelCls}>
-                  Pericol <span className='text-error-500'>*</span>
-                </label>
-                <select {...register('pericol')} className={inputCls}>
-                  <option value=''>Selectați pericolul...</option>
-                  {PERICOLE.map((p) => (
-                    <option key={p.value} value={p.value}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.pericol && <p className={errorCls}>{errors.pericol.message}</p>}
-              </div>
-              {pericol === 'custom' && (
-                <div>
-                  <label className={labelCls}>
-                    Specificați pericolul <span className='text-error-500'>*</span>
-                  </label>
-                  <input {...register('pericolCustom')} type='text' className={inputCls} />
-                </div>
-              )}
-            </div>
-
             <div>
-              <label className={labelCls}>Descriere pericol (opțional)</label>
+              <label className={labelCls}>Descriere amenințare (opțional)</label>
               <textarea
                 {...register('descrierePericol')}
                 rows={2}
                 className={inputCls}
-                placeholder='Descrieți pericolul...'
+                placeholder='Descrieți amenințarea și contextul specific...'
               />
             </div>
 
-            {/* Persoane expuse */}
+            {/* Consecințe */}
             <div>
               <label className={labelCls}>
-                Persoane expuse <span className='text-error-500'>*</span>
+                Consecințe posibile <span className='text-error-500'>*</span>
               </label>
               <div className='grid grid-cols-2 gap-2'>
                 <Controller
@@ -315,7 +280,16 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                   control={control}
                   render={({ field }) => (
                     <>
-                      {PERSOANE_EXPUSE.map((p) => (
+                      {[
+                        'Victime / Vătămări corporale',
+                        'Prejudiciu financiar',
+                        'Pierdere bunuri/valori',
+                        'Întrerupere activitate',
+                        'Prejudiciu reputațional',
+                        'Sancțiuni legale',
+                        'Compromitere informații',
+                        'Daune structurale',
+                      ].map((p) => (
                         <label
                           key={p}
                           className='flex cursor-pointer items-center gap-2 text-sm text-navy-700'
@@ -340,18 +314,6 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                 />
               </div>
               {errors.persoaneExpuse && <p className={errorCls}>{errors.persoaneExpuse.message}</p>}
-              <div className='mt-2'>
-                <label className='mb-1 block text-xs font-medium text-navy-600'>
-                  Număr persoane expuse
-                </label>
-                <input
-                  {...register('numarPersoaneExpuse', { valueAsNumber: true })}
-                  type='number'
-                  min={1}
-                  placeholder='Ex: 5'
-                  className='w-32 rounded-md border border-primary-200 px-3 py-1.5 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                />
-              </div>
             </div>
 
             {/* Scoruri inițiale */}
@@ -402,19 +364,37 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                   return (
                     <Stack gap='2'>
                       <MasurGroup
-                        title='1. EIP (Echipament Individual de Protecție)'
-                        items={MASURI_EIP}
+                        title='1. Mecanofizice (Uși, Grilaje, Geamuri)'
+                        items={MASURI_MECANOFIZICE}
                         selected={field.value ?? []}
                         onChange={handleChange}
                       />
                       <MasurGroup
-                        title='2. Măsuri Colective'
-                        items={MASURI_COLECTIVE}
+                        title='2. Control Acces'
+                        items={MASURI_CONTROL_ACCES}
                         selected={field.value ?? []}
                         onChange={handleChange}
                       />
                       <MasurGroup
-                        title='3. Măsuri Organizatorice'
+                        title='3. Alarmare Antiefracție'
+                        items={MASURI_ALARMARE}
+                        selected={field.value ?? []}
+                        onChange={handleChange}
+                      />
+                      <MasurGroup
+                        title='4. Supraveghere Video (CCTV)'
+                        items={MASURI_CCTV}
+                        selected={field.value ?? []}
+                        onChange={handleChange}
+                      />
+                      <MasurGroup
+                        title='5. Pază Umană'
+                        items={PAZA_UMANA}
+                        selected={field.value ?? []}
+                        onChange={handleChange}
+                      />
+                      <MasurGroup
+                        title='6. Organizatorice'
                         items={MASURI_ORGANIZATORICE}
                         selected={field.value ?? []}
                         onChange={handleChange}
@@ -506,7 +486,7 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                 <input
                   {...register('functieResponsabil')}
                   type='text'
-                  placeholder='Ex: Șef șantier'
+                  placeholder='Ex: Conducător obiectiv'
                   className={inputCls}
                 />
               </div>

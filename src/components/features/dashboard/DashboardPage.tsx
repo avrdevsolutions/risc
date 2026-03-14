@@ -156,7 +156,7 @@ export const DashboardPage = () => {
             Nicio evaluare creată încă
           </Typography>
           <Typography variant='body-sm' className='mt-1 text-navy-400'>
-            Creați prima evaluare de risc pentru șantierul dumneavoastră
+            Creați primul raport de evaluare a securității fizice
           </Typography>
           <Button className='mt-6' onClick={handleCreate} loading={createMutation.isPending}>
             <PlusCircle className='size-4' />

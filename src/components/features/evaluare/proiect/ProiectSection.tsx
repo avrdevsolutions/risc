@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form'
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useAutosave } from '@/hooks/useAutosave'
-import { FAZE_LUCRARII } from '@/lib/constants'
+import { TIP_UNITATE } from '@/lib/constants'
 import { ProiectSchema } from '@/lib/schemas'
 import type { ProiectFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
@@ -68,7 +68,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
     <section id='proiect-section' className='scroll-mt-20'>
       <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
         <Typography variant='h3' className='mb-6 text-navy-700'>
-          🏢 Informații Proiect
+          🏢 Date Identificare
         </Typography>
 
         <form noValidate>
@@ -76,12 +76,12 @@ export const ProiectSection = ({ evaluare }: Props) => {
             <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
               <div className='md:col-span-2'>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                  Denumire proiect <span className='text-error-500'>*</span>
+                  Denumire obiectiv <span className='text-error-500'>*</span>
                 </label>
                 <input
                   {...register('denumireProiect')}
                   type='text'
-                  placeholder='Ex: Construire imobil P+4E, str. Exemplu nr. 1'
+                  placeholder='Ex: Magazin XYZ, Depozit ABC'
                   className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
                 />
                 {errors.denumireProiect && (
@@ -89,13 +89,11 @@ export const ProiectSection = ({ evaluare }: Props) => {
                 )}
               </div>
               <div>
-                <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                  Cod proiect
-                </label>
+                <label className='mb-1.5 block text-sm font-medium text-navy-700'>Nr. raport</label>
                 <input
                   {...register('codProiect')}
                   type='text'
-                  placeholder='Ex: PRJ-2024-001'
+                  placeholder='Ex: RSEC-2026-001'
                   className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
                 />
               </div>
@@ -167,12 +165,12 @@ export const ProiectSection = ({ evaluare }: Props) => {
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                  Antreprenor general <span className='text-error-500'>*</span>
+                  Firmă evaluatoare <span className='text-error-500'>*</span>
                 </label>
                 <input
                   {...register('antreprenor')}
                   type='text'
-                  placeholder='Denumire antreprenor'
+                  placeholder='Firmă de securitate / Evaluator autorizat'
                   className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
                 />
                 {errors.antreprenor && (
@@ -181,7 +179,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
               </div>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                  CUI antreprenor
+                  CUI firmă evaluatoare
                 </label>
                 <input
                   {...register('cuiAntreprenor')}
@@ -194,12 +192,12 @@ export const ProiectSection = ({ evaluare }: Props) => {
 
             <div>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                Subantreprenor (opțional)
+                Subcontractant (opțional)
               </label>
               <input
                 {...register('subantreprenor')}
                 type='text'
-                placeholder='Denumire subantreprenor'
+                placeholder='Denumire subcontractant'
                 className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
               />
             </div>
@@ -207,16 +205,16 @@ export const ProiectSection = ({ evaluare }: Props) => {
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                  Faza lucrării <span className='text-error-500'>*</span>
+                  Tip unitate <span className='text-error-500'>*</span>
                 </label>
                 <select
                   {...register('fazaLucrarii')}
                   className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
                 >
-                  <option value=''>Selectați faza...</option>
-                  {FAZE_LUCRARII.map((faza) => (
-                    <option key={faza} value={faza}>
-                      {faza}
+                  <option value=''>Selectați tipul...</option>
+                  {TIP_UNITATE.map((tip) => (
+                    <option key={tip} value={tip}>
+                      {tip}
                     </option>
                   ))}
                 </select>
@@ -224,15 +222,15 @@ export const ProiectSection = ({ evaluare }: Props) => {
                   <p className='mt-1 text-xs text-error-600'>{errors.fazaLucrarii.message}</p>
                 )}
               </div>
-              {fazaLucrarii === 'Altă fază' && (
+              {fazaLucrarii === 'Alt tip de obiectiv' && (
                 <div>
                   <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                    Specificați faza <span className='text-error-500'>*</span>
+                    Specificați tipul <span className='text-error-500'>*</span>
                   </label>
                   <input
                     {...register('fazaLucrariiCustom')}
                     type='text'
-                    placeholder='Descrieți faza lucrării'
+                    placeholder='Descrieți tipul obiectivului'
                     className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
                   />
                   {errors.fazaLucrariiCustom && (
@@ -246,12 +244,12 @@ export const ProiectSection = ({ evaluare }: Props) => {
 
             <div>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                Descriere obiectiv (opțional)
+                Scurtă descriere obiectiv (opțional)
               </label>
               <textarea
                 {...register('descriereObiectiv')}
                 rows={3}
-                placeholder='Descrieți pe scurt obiectivul de construcție...'
+                placeholder='Descrieți pe scurt obiectivul evaluat...'
                 className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
               />
             </div>

@@ -62,7 +62,7 @@ export const AprobareSection = ({ evaluare }: Props) => {
     <section id='aprobare-section' className='scroll-mt-20'>
       <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
         <Typography variant='h3' className='mb-6 text-navy-700'>
-          ✅ Semnături &amp; Aprobare
+          ✅ Semnături &amp; Asumare
         </Typography>
 
         <form noValidate>
@@ -70,7 +70,7 @@ export const AprobareSection = ({ evaluare }: Props) => {
             <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
               <div className='rounded-lg border border-primary-100 p-4'>
                 <Typography variant='body-sm' className='mb-3 font-semibold text-navy-700'>
-                  Șef de șantier
+                  Conducător unitate
                 </Typography>
                 <Stack gap='3'>
                   <div>
@@ -94,7 +94,7 @@ export const AprobareSection = ({ evaluare }: Props) => {
                     <input
                       {...register('functieSefSantier')}
                       type='text'
-                      placeholder='Ex: Șef de șantier'
+                      placeholder='Ex: Administrator, Director'
                       className={inputCls}
                     />
                   </div>
@@ -108,7 +108,7 @@ export const AprobareSection = ({ evaluare }: Props) => {
 
               <div className='rounded-lg border border-primary-100 p-4'>
                 <Typography variant='body-sm' className='mb-3 font-semibold text-navy-700'>
-                  Responsabil SSM
+                  Responsabil securitate fizică
                 </Typography>
                 <Stack gap='3'>
                   <div>
@@ -132,7 +132,7 @@ export const AprobareSection = ({ evaluare }: Props) => {
                     <input
                       {...register('functieResponsabilSSM')}
                       type='text'
-                      placeholder='Ex: Responsabil SSM'
+                      placeholder='Ex: Responsabil securitate fizică'
                       className={inputCls}
                     />
                   </div>

@@ -16,7 +16,7 @@ const RiskLevelBadge = ({ level }: { level: string }) => {
 }
 
 const getRiskCounts = (riscuri: Risc[]) => {
-  const counts = { critic: 0, ridicat: 0, mediu: 0, scazut: 0, total: 0 }
+  const counts = { ridicat: 0, mediu: 0, scazut: 0, total: 0 }
   riscuri.forEach((r) => {
     if (r.probabilitateInitiala && r.severitateInitiala) {
       const level = getRiskLevel(r.probabilitateInitiala, r.severitateInitiala)
@@ -28,7 +28,7 @@ const getRiskCounts = (riscuri: Risc[]) => {
 }
 
 const getRiskCountsResidual = (riscuri: Risc[]) => {
-  const counts = { critic: 0, ridicat: 0, mediu: 0, scazut: 0, total: 0 }
+  const counts = { ridicat: 0, mediu: 0, scazut: 0, total: 0 }
   riscuri.forEach((r) => {
     if (r.probabilitateReziduala && r.severitateReziduala) {
       const level = getRiskLevel(r.probabilitateReziduala, r.severitateReziduala)
@@ -81,28 +81,20 @@ export const SumarSection = ({ evaluare }: Props) => {
             <Typography variant='body-sm' className='mb-3 font-semibold text-navy-700'>
               Distribuție riscuri inițiale
             </Typography>
-            <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+            <div className='grid grid-cols-3 gap-3'>
               <div className='rounded-lg bg-error-50 p-3 text-center'>
                 <Typography variant='h3' className='text-error-600'>
-                  {initial.critic}
+                  {initial.ridicat}
                 </Typography>
                 <Typography variant='caption' className='text-error-700'>
-                  Critice
+                  Ridicate
                 </Typography>
               </div>
               <div className='rounded-lg bg-warning-50 p-3 text-center'>
                 <Typography variant='h3' className='text-warning-600'>
-                  {initial.ridicat}
-                </Typography>
-                <Typography variant='caption' className='text-warning-700'>
-                  Ridicate
-                </Typography>
-              </div>
-              <div className='rounded-lg bg-primary-50 p-3 text-center'>
-                <Typography variant='h3' className='text-primary-600'>
                   {initial.mediu}
                 </Typography>
-                <Typography variant='caption' className='text-primary-700'>
+                <Typography variant='caption' className='text-warning-700'>
                   Medii
                 </Typography>
               </div>
@@ -123,28 +115,20 @@ export const SumarSection = ({ evaluare }: Props) => {
               <Typography variant='body-sm' className='mb-3 font-semibold text-navy-700'>
                 Distribuție riscuri reziduale (după măsuri)
               </Typography>
-              <div className='grid grid-cols-2 gap-3 sm:grid-cols-4'>
+              <div className='grid grid-cols-3 gap-3'>
                 <div className='rounded-lg bg-error-50 p-3 text-center'>
                   <Typography variant='h3' className='text-error-600'>
-                    {residual.critic}
+                    {residual.ridicat}
                   </Typography>
                   <Typography variant='caption' className='text-error-700'>
-                    Critice
+                    Ridicate
                   </Typography>
                 </div>
                 <div className='rounded-lg bg-warning-50 p-3 text-center'>
                   <Typography variant='h3' className='text-warning-600'>
-                    {residual.ridicat}
-                  </Typography>
-                  <Typography variant='caption' className='text-warning-700'>
-                    Ridicate
-                  </Typography>
-                </div>
-                <div className='rounded-lg bg-primary-50 p-3 text-center'>
-                  <Typography variant='h3' className='text-primary-600'>
                     {residual.mediu}
                   </Typography>
-                  <Typography variant='caption' className='text-primary-700'>
+                  <Typography variant='caption' className='text-warning-700'>
                     Medii
                   </Typography>
                 </div>
@@ -171,7 +155,9 @@ export const SumarSection = ({ evaluare }: Props) => {
                   <thead>
                     <tr className='border-b border-primary-100 bg-primary-50'>
                       <th className='px-3 py-2 text-left font-semibold text-navy-700'>#</th>
-                      <th className='px-3 py-2 text-left font-semibold text-navy-700'>Pericol</th>
+                      <th className='px-3 py-2 text-left font-semibold text-navy-700'>
+                        Amenințare
+                      </th>
                       <th className='px-3 py-2 text-left font-semibold text-navy-700'>
                         Nivel inițial
                       </th>
@@ -196,7 +182,7 @@ export const SumarSection = ({ evaluare }: Props) => {
                         <tr key={risc.id} className='border-b border-primary-50 last:border-0'>
                           <td className='px-3 py-2 text-navy-500'>{i + 1}</td>
                           <td className='px-3 py-2 text-navy-700'>
-                            {risc.pericol ?? risc.pericolCustom ?? '—'}
+                            {risc.activitateCustom ?? risc.activitate ?? '—'}
                           </td>
                           <td className='px-3 py-2'>
                             {initialLevel ? (
@@ -239,7 +225,7 @@ export const SumarSection = ({ evaluare }: Props) => {
                     className='rounded-lg border border-primary-100 bg-primary-50 px-4 py-3'
                   >
                     <Typography variant='body-sm' className='font-medium text-navy-700'>
-                      {i + 1}. {risc.pericol ?? risc.pericolCustom ?? 'Risc nedenumit'}
+                      {i + 1}. {risc.activitateCustom ?? risc.activitate ?? 'Risc nedenumit'}
                     </Typography>
                     <Typography variant='caption' className='mt-1 text-navy-600'>
                       {risc.masuriSuplimentare}
