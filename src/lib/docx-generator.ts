@@ -363,13 +363,6 @@ const buildDescriere = (evaluare: DbEvaluare): Paragraph[] => {
       bodyParagraph(evaluare.descriereAmplasare),
     )
   }
-  const vecini = [
-    evaluare.vecinVest && `N: ${evaluare.vecinVest}`,
-    evaluare.vecinNord && `E: ${evaluare.vecinNord}`,
-    evaluare.vecinEst && `S: ${evaluare.vecinEst}`,
-    evaluare.vecinSud && `V: ${evaluare.vecinSud}`,
-  ].filter(Boolean)
-  if (vecini.length > 0) rows.push(infoRow('Vecinătăți', vecini.join(' | ')))
   return rows
 }
 
