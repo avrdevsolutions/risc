@@ -53,6 +53,30 @@ export type Evaluare = {
   cadruBunuriValori: string | null
   cadruSistemeTehnice: string | null
   cadruFactoriVulnerabilitate: string | null
+  // Amplasare & Factori Externi (additional fields)
+  numarPuncteAcces: number | null
+  caiAcces: string | null
+  posibilitateDisimulare: string | null
+  vecinatatiBifate: string | null
+  factoriExterni: string | null
+  istoricIncidente: string | null
+  // Măsuri & Mecanisme de Securitate (Cap. V)
+  masuriMecanofizice: string | null
+  masuriControlAcces: string | null
+  masuriAlarmare: string | null
+  masuriCctv: string | null
+  pazaUmana: string | null
+  numarAgenti: number | null
+  masuriOrganizatorice: string | null
+  masuriAsigurari: string | null
+  observatiiMasuri: string | null
+  // Concluzii (Cap. VI)
+  nivelRiscGlobalAsumat: string | null
+  nivelRiscRezidualGlobal: string | null
+  termenImplementareGlobal: string | null
+  concluziiGenerale: string | null
+  masuriObligatorii: string | null
+  masuriRecomandate: string | null
 }
 
 export type Risc = {

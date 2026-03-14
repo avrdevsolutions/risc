@@ -31,6 +31,7 @@ export const POST = async () => {
       dataEvaluarii: today,
       dataRevizuirii: sixMonths,
       dataAprobarii: today,
+      anexeSelectate: JSON.stringify(['legea_333', 'hg_301', 'instr_9']),
     })
 
     const [created] = await db.select().from(evaluari).where(eq(evaluari.id, id))
