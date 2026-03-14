@@ -1,7 +1,20 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core'
 
+export const users = sqliteTable('users', {
+  id: text('id').primaryKey(),
+  email: text('email').unique().notNull(),
+  name: text('name').notNull(),
+  passwordHash: text('password_hash').notNull(),
+  role: text('role', { enum: ['evaluator', 'admin'] })
+    .notNull()
+    .default('evaluator'),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+})
+
 export const evaluari = sqliteTable('evaluari', {
   id: text('id').primaryKey(),
+  userId: text('user_id').references(() => users.id),
   status: text('status', { enum: ['draft', 'completed'] }).notNull().default('draft'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
@@ -113,6 +126,7 @@ export const riscuri = sqliteTable('riscuri', {
 
 export const templates = sqliteTable('templates', {
   id: text('id').primaryKey(),
+  userId: text('user_id').references(() => users.id),
   nume: text('nume').notNull(),
   descriere: text('descriere'),
   continut: text('continut').notNull(),

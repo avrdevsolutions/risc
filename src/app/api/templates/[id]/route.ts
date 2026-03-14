@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+import { auth } from '@/lib/auth'
+
 import { db } from '../../../../../db'
 import { templates, evaluari } from '../../../../../db/schema'
 
@@ -10,10 +12,17 @@ type Params = { params: Promise<{ id: string }> }
 
 export const GET = async (_req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const [template] = await db.select().from(templates).where(eq(templates.id, id))
     if (!template) {
       return NextResponse.json({ error: 'Template-ul nu a fost găsit' }, { status: 404 })
+    }
+    if (template.userId && template.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
     }
     return NextResponse.json({ data: template })
   } catch (err) {
@@ -24,10 +33,17 @@ export const GET = async (_req: Request, { params }: Params) => {
 
 export const DELETE = async (_req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const [existing] = await db.select().from(templates).where(eq(templates.id, id))
     if (!existing) {
       return NextResponse.json({ error: 'Template-ul nu a fost găsit' }, { status: 404 })
+    }
+    if (existing.userId && existing.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
     }
     await db.delete(templates).where(eq(templates.id, id))
     return NextResponse.json({ data: { id } })
@@ -40,10 +56,17 @@ export const DELETE = async (_req: Request, { params }: Params) => {
 // POST: create a new evaluation from this template
 export const POST = async (_req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const [template] = await db.select().from(templates).where(eq(templates.id, id))
     if (!template) {
       return NextResponse.json({ error: 'Template-ul nu a fost găsit' }, { status: 404 })
+    }
+    if (template.userId && template.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
     }
 
     let continutParsed: Record<string, unknown> = {}
@@ -62,6 +85,7 @@ export const POST = async (_req: Request, { params }: Params) => {
 
     await db.insert(evaluari).values({
       id: newId,
+      userId: session.user.id,
       status: 'draft',
       createdAt: now,
       updatedAt: now,

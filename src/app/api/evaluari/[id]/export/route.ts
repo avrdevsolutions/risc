@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm'
 
+import { auth } from '@/lib/auth'
 import { generateEvaluareDocx } from '@/lib/docx-generator'
 
 import { db } from '../../../../../../db'
@@ -9,12 +10,26 @@ type Params = { params: Promise<{ id: string }> }
 
 export const GET = async (_req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     const { id } = await params
 
     const [evaluare] = await db.select().from(evaluari).where(eq(evaluari.id, id))
     if (!evaluare) {
       return new Response(JSON.stringify({ error: 'Evaluarea nu a fost găsită' }), {
         status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+    if (evaluare.userId && evaluare.userId !== session.user.id) {
+      return new Response(JSON.stringify({ error: 'Acces interzis' }), {
+        status: 403,
         headers: { 'Content-Type': 'application/json' },
       })
     }
@@ -39,3 +54,4 @@ export const GET = async (_req: Request, { params }: Params) => {
     })
   }
 }
+

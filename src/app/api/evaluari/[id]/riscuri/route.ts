@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { eq, asc } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+import { auth } from '@/lib/auth'
 import { serializeArrayField } from '@/lib/utils'
 
 import { db } from '../../../../../../db'
@@ -12,10 +13,17 @@ type Params = { params: Promise<{ id: string }> }
 
 export const GET = async (_req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const [evaluare] = await db.select().from(evaluari).where(eq(evaluari.id, id))
     if (!evaluare) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
+    }
+    if (evaluare.userId && evaluare.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
     }
     const list = await db
       .select()
@@ -31,10 +39,17 @@ export const GET = async (_req: Request, { params }: Params) => {
 
 export const POST = async (req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const [evaluare] = await db.select().from(evaluari).where(eq(evaluari.id, id))
     if (!evaluare) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
+    }
+    if (evaluare.userId && evaluare.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
     }
 
     const body = await req.json()

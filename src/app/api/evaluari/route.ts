@@ -3,12 +3,24 @@ import { NextResponse } from 'next/server'
 import { desc, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+import { auth } from '@/lib/auth'
+
 import { db } from '../../../../db'
 import { evaluari } from '../../../../db/schema'
 
 export const GET = async () => {
   try {
-    const all = await db.select().from(evaluari).orderBy(desc(evaluari.updatedAt))
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const userId = session.user.id
+
+    const all = await db
+      .select()
+      .from(evaluari)
+      .where(eq(evaluari.userId, userId))
+      .orderBy(desc(evaluari.updatedAt))
     return NextResponse.json({ data: all })
   } catch (err) {
     console.error('Error fetching evaluari:', err)
@@ -18,6 +30,12 @@ export const GET = async () => {
 
 export const POST = async () => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const userId = session.user.id
+
     const now = new Date().toISOString()
     const id = nanoid()
     const today = new Date().toISOString().split('T')[0]
@@ -25,6 +43,7 @@ export const POST = async () => {
 
     await db.insert(evaluari).values({
       id,
+      userId,
       status: 'draft',
       createdAt: now,
       updatedAt: now,

@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server'
 
 import { eq } from 'drizzle-orm'
 
+import { auth } from '@/lib/auth'
+
 import { db } from '../../../../../db'
 import { evaluari, riscuri } from '../../../../../db/schema'
 
@@ -9,10 +11,17 @@ type Params = { params: Promise<{ id: string }> }
 
 export const GET = async (_req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const [evaluare] = await db.select().from(evaluari).where(eq(evaluari.id, id))
     if (!evaluare) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
+    }
+    if (evaluare.userId && evaluare.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
     }
     const riscuriList = await db.select().from(riscuri).where(eq(riscuri.evaluareId, id))
     return NextResponse.json({ data: { ...evaluare, riscuri: riscuriList } })
@@ -24,6 +33,10 @@ export const GET = async (_req: Request, { params }: Params) => {
 
 export const PATCH = async (req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const body = await req.json()
     const now = new Date().toISOString()
@@ -31,6 +44,9 @@ export const PATCH = async (req: Request, { params }: Params) => {
     const [existing] = await db.select().from(evaluari).where(eq(evaluari.id, id))
     if (!existing) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
+    }
+    if (existing.userId && existing.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
     }
 
     // Strip non-column keys to prevent invalid updates
@@ -51,10 +67,17 @@ export const PATCH = async (req: Request, { params }: Params) => {
 
 export const DELETE = async (_req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const [existing] = await db.select().from(evaluari).where(eq(evaluari.id, id))
     if (!existing) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
+    }
+    if (existing.userId && existing.userId !== session.user.id) {
+      return NextResponse.json({ error: 'Acces interzis' }, { status: 403 })
     }
     await db.delete(evaluari).where(eq(evaluari.id, id))
     return NextResponse.json({ data: { id } })

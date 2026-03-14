@@ -3,12 +3,24 @@ import { NextResponse } from 'next/server'
 import { desc, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+import { auth } from '@/lib/auth'
+
 import { db } from '../../../../db'
 import { templates } from '../../../../db/schema'
 
 export const GET = async () => {
   try {
-    const all = await db.select().from(templates).orderBy(desc(templates.createdAt))
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const userId = session.user.id
+
+    const all = await db
+      .select()
+      .from(templates)
+      .where(eq(templates.userId, userId))
+      .orderBy(desc(templates.createdAt))
     return NextResponse.json({ data: all })
   } catch (err) {
     console.error('Error fetching templates:', err)
@@ -18,6 +30,12 @@ export const GET = async () => {
 
 export const POST = async (req: Request) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    const userId = session.user.id
+
     const body = await req.json()
     const { nume, descriere, continut } = body
 
@@ -36,6 +54,7 @@ export const POST = async (req: Request) => {
 
     await db.insert(templates).values({
       id,
+      userId,
       nume: nume.trim(),
       descriere: descriere ?? null,
       continut,
