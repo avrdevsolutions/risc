@@ -7,7 +7,9 @@ import Link from 'next/link'
 import { ArrowLeft, CheckCircle, Circle, FileDown } from 'lucide-react'
 
 import { Typography, Stack, Button, Badge } from '@/components/ui'
+import { EvaluareSyncProvider } from '@/context/EvaluareSyncContext'
 import { useEvaluare, useUpdateEvaluare } from '@/hooks/use-evaluari'
+import { SECTIUNI_NAVIGARE } from '@/lib/constants'
 import type { EvaluareWithRiscuri } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -22,6 +24,7 @@ import { ObiectivSection } from '../obiectiv'
 import { ProiectSection } from '../proiect'
 import { RiscuriSection } from '../riscuri'
 import { SumarSection } from '../sumar'
+import { SyncButton } from '../sync'
 
 type Props = { id: string }
 
@@ -213,6 +216,31 @@ const ExportSection = ({ id }: { id: string }) => {
   )
 }
 
+/** Mobile: horizontal pill bar fixed below the header */
+const MobilePillNav = () => {
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  return (
+    <nav
+      className='fixed inset-x-0 top-16 z-40 flex gap-2 overflow-x-auto border-b border-navy-200 bg-white px-4 py-2 md:hidden'
+      aria-label='Navigare rapidă secțiuni'
+    >
+      {SECTIUNI_NAVIGARE.map((s) => (
+        <button
+          key={s.id}
+          onClick={() => scrollTo(s.id)}
+          className='whitespace-nowrap rounded-full border border-navy-200 px-3 py-1.5 text-sm text-navy-600 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700'
+        >
+          <span aria-hidden='true'>{s.emoji}</span> {s.label}
+        </button>
+      ))}
+    </nav>
+  )
+}
+
 const LoadingSkeleton = () => (
   <div className='mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8'>
     <div className='mb-6 h-16 animate-pulse rounded-2xl bg-navy-100' />
@@ -269,31 +297,36 @@ export const EvaluarePage = ({ id }: Props) => {
   }
 
   return (
-    <div className='mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8'>
-      <StatusBar
-        evaluare={evaluare}
-        onMarkComplete={handleToggleStatus}
-        isPending={update.isPending}
-      />
+    <EvaluareSyncProvider>
+      <MobilePillNav />
+      <div className='mx-auto max-w-screen-xl px-4 py-8 pt-24 sm:px-6 md:pt-8 lg:px-8'>
+        <StatusBar
+          evaluare={evaluare}
+          onMarkComplete={handleToggleStatus}
+          isPending={update.isPending}
+        />
 
-      <div className='flex gap-6'>
-        <SectiuniNav />
+        <div className='flex gap-6'>
+          <SectiuniNav />
 
-        <div className='min-w-0 flex-1 space-y-6'>
-          <ProgressBar evaluare={evaluare} />
-          <ProiectSection evaluare={evaluare} />
-          <EvaluatorSection evaluare={evaluare} />
-          <ObiectivSection evaluare={evaluare} />
-          <CadruOrganizationalSection evaluare={evaluare} />
-          <RiscuriSection evaluare={evaluare} />
-          <SumarSection evaluare={evaluare} />
-          <MasuriSection evaluare={evaluare} />
-          <ConcluziiSection evaluare={evaluare} />
-          <AprobareSection evaluare={evaluare} />
-          <DocumenteSection evaluare={evaluare} />
-          <ExportSection id={id} />
+          <div className='min-w-0 flex-1 space-y-6'>
+            <ProgressBar evaluare={evaluare} />
+            <ProiectSection evaluare={evaluare} />
+            <EvaluatorSection evaluare={evaluare} />
+            <ObiectivSection evaluare={evaluare} />
+            <CadruOrganizationalSection evaluare={evaluare} />
+            <RiscuriSection evaluare={evaluare} />
+            <SumarSection evaluare={evaluare} />
+            <MasuriSection evaluare={evaluare} />
+            <ConcluziiSection evaluare={evaluare} />
+            <AprobareSection evaluare={evaluare} />
+            <DocumenteSection evaluare={evaluare} />
+            <ExportSection id={id} />
+          </div>
         </div>
+
+        <SyncButton />
       </div>
-    </div>
+    </EvaluareSyncProvider>
   )
 }

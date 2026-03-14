@@ -106,6 +106,15 @@ const config: Config = {
         'inner-lg': 'inset 0 2px 4px 0 rgb(0 0 0 / 0.1)',
         card: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',
       },
+      keyframes: {
+        'pulse-subtle': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.75' },
+        },
+      },
+      animation: {
+        'pulse-subtle': 'pulse-subtle 2s ease-in-out infinite',
+      },
     },
   },
   plugins: [],

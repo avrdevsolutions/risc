@@ -6,11 +6,9 @@ import { FileCheck } from 'lucide-react'
 
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { useAutosave } from '@/hooks/useAutosave'
+import { useSectionSync } from '@/hooks/useSectionSync'
 import { DOCUMENTE_SUPORT, CADRU_LEGAL } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
-
-import { AutosaveIndicator } from '../AutosaveIndicator'
 
 type Props = { evaluare: Evaluare }
 
@@ -35,7 +33,6 @@ export const DocumenteSection = ({ evaluare }: Props) => {
   const [selectedAnexe, setSelectedAnexe] = useState<string[]>(() => {
     const saved = parseStringArray(evaluare.anexeSelectate)
     if (saved.length > 0) return saved
-    // Pre-select default cadru legal items for new evaluations
     return CADRU_LEGAL.filter((item) => item.checked).map((item) => item.value)
   })
   const [observatii, setObservatii] = useState(evaluare.observatiiDocumente ?? '')
@@ -51,30 +48,27 @@ export const DocumenteSection = ({ evaluare }: Props) => {
     setObservatii(evaluareRef.current.observatiiDocumente ?? '')
   }, [evaluare.id])
 
+  const handleSave = useCallback(async () => {
+    await update.mutateAsync({
+      documenteAplicabile: JSON.stringify(selectedDoc),
+      anexeSelectate: JSON.stringify(selectedAnexe),
+      observatiiDocumente: observatii || null,
+    } as Partial<Evaluare>)
+  }, [update, selectedDoc, selectedAnexe, observatii])
+
+  const { markDirty } = useSectionSync('documente', handleSave)
+
   const toggleDoc = (id: string) => {
     setSelectedDoc((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]))
+    markDirty()
   }
 
   const toggleAnexa = (anexa: string) => {
     setSelectedAnexe((prev) =>
       prev.includes(anexa) ? prev.filter((a) => a !== anexa) : [...prev, anexa],
     )
+    markDirty()
   }
-
-  const autosaveValues = {
-    documenteAplicabile: JSON.stringify(selectedDoc),
-    anexeSelectate: JSON.stringify(selectedAnexe),
-    observatiiDocumente: observatii,
-  }
-
-  const handleSave = useCallback(
-    async (data: Partial<typeof autosaveValues>) => {
-      await update.mutateAsync(data as Partial<Evaluare>)
-    },
-    [update],
-  )
-
-  const status = useAutosave({ values: autosaveValues, onSave: handleSave })
 
   return (
     <section id='documente-section' className='scroll-mt-20'>
@@ -143,14 +137,12 @@ export const DocumenteSection = ({ evaluare }: Props) => {
             </label>
             <textarea
               value={observatii}
-              onChange={(e) => setObservatii(e.target.value)}
+              onChange={(e) => { setObservatii(e.target.value); markDirty() }}
               rows={3}
               placeholder='Observații sau cerințe suplimentare privind documentele și cadrul legal...'
               className='form-input'
             />
           </div>
-
-          <AutosaveIndicator status={status} />
         </Stack>
       </div>
     </section>

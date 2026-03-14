@@ -7,12 +7,10 @@ import { useForm } from 'react-hook-form'
 
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { useAutosave } from '@/hooks/useAutosave'
+import { useSectionSync } from '@/hooks/useSectionSync'
 import { AprobareSchema } from '@/lib/schemas'
 import type { AprobareFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
-
-import { AutosaveIndicator } from '../AutosaveIndicator'
 
 type Props = { evaluare: Evaluare }
 
@@ -32,28 +30,23 @@ export const AprobareSection = ({ evaluare }: Props) => {
 
   const {
     register,
-    watch,
     reset,
+    getValues,
     formState: { errors },
   } = useForm<AprobareFormValues>({
     resolver: zodResolver(AprobareSchema),
     defaultValues: toFormValues(evaluare),
   })
 
-  const values = watch()
-
   useEffect(() => {
     reset(toFormValues(evaluareRef.current))
   }, [evaluare.id, reset])
 
-  const handleSave = useCallback(
-    async (data: Partial<AprobareFormValues>) => {
-      await update.mutateAsync(data as Partial<Evaluare>)
-    },
-    [update],
-  )
+  const handleSave = useCallback(async () => {
+    await update.mutateAsync(getValues() as Partial<Evaluare>)
+  }, [update, getValues])
 
-  const status = useAutosave({ values, onSave: handleSave })
+  const { markDirty } = useSectionSync('aprobare', handleSave)
 
   const inputCls = 'form-input'
 
@@ -64,7 +57,7 @@ export const AprobareSection = ({ evaluare }: Props) => {
           Semnături &amp; Asumare
         </Typography>
 
-        <form noValidate>
+        <form noValidate onChange={markDirty}>
           <Stack gap='6'>
             <div className='grid grid-cols-1 gap-6 md:grid-cols-2'>
               <div className='rounded-xl border border-navy-100 bg-navy-50 p-4'>
@@ -167,8 +160,6 @@ export const AprobareSection = ({ evaluare }: Props) => {
                 className={inputCls}
               />
             </div>
-
-            <AutosaveIndicator status={status} />
           </Stack>
         </form>
       </div>
