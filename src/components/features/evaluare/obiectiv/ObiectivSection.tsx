@@ -92,7 +92,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
       vecinSud: formValues.vecinSud || null,
       vecinVest: formValues.vecinVest || null,
       numarPuncteAcces: (() => {
-        if (!formValues.numarPuncteAcces) return null
+        if (formValues.numarPuncteAcces === '' || formValues.numarPuncteAcces === undefined) return null
         const parsed = parseInt(formValues.numarPuncteAcces, 10)
         return isNaN(parsed) ? null : parsed
       })(),
