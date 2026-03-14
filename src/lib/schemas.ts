@@ -78,8 +78,7 @@ export const RiscSchema = z
   .refine(
     (data) =>
       data.activitate !== 'custom' ||
-      (data.activitateCustom !== undefined &&
-        data.activitateCustom.trim().length >= 3),
+      (data.activitateCustom !== undefined && data.activitateCustom.trim().length >= 3),
     {
       message: 'Specificați amenințarea (min. 3 caractere)',
       path: ['activitateCustom'],
