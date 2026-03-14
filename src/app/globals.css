@@ -45,4 +45,19 @@
     @apply border-error-500;
     box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
   }
+
+  /* Pulsing glow animation for the save button when there are unsaved changes */
+  .animate-pulse-save {
+    animation: pulse-save 2s infinite;
+  }
+}
+
+@keyframes pulse-save {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(99 102 241 / 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgb(99 102 241 / 0);
+  }
 }

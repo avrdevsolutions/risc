@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
-import { Typography, Stack } from '@/components/ui'
+import { Typography, Stack, Select, DatePicker } from '@/components/ui'
 import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useFormLocalPersist } from '@/hooks/useFormLocalPersist'
@@ -47,6 +47,7 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
     watch,
     reset,
     getValues,
+    setValue,
     formState: { errors },
   } = useForm<EvaluatorFormValues>({
     resolver: zodResolver(EvaluatorSchema),
@@ -87,6 +88,10 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
 
   const { markDirty } = useSectionSync('evaluator', handleSave)
   useFormLocalPersist(watch)
+
+  const tipEvaluare = watch('tipEvaluare')
+  const dataEvaluarii = watch('dataEvaluarii')
+  const dataRevizuirii = watch('dataRevizuirii')
 
   const handleCheckboxChange = (
     list: string[],
@@ -170,7 +175,15 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Data evaluării <span className='text-error-500'>*</span>
                 </label>
-                <input {...register('dataEvaluarii')} type='date' className='form-input' />
+                <DatePicker
+                  id='dataEvaluarii'
+                  value={dataEvaluarii}
+                  onChange={(v) => {
+                    setValue('dataEvaluarii', v)
+                    markDirty()
+                  }}
+                  aria-label='Data evaluării'
+                />
                 {errors.dataEvaluarii && (
                   <p className='mt-1 text-xs text-error-600'>{errors.dataEvaluarii.message}</p>
                 )}
@@ -179,7 +192,15 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Data revizuirii <span className='text-error-500'>*</span>
                 </label>
-                <input {...register('dataRevizuirii')} type='date' className='form-input' />
+                <DatePicker
+                  id='dataRevizuirii'
+                  value={dataRevizuirii}
+                  onChange={(v) => {
+                    setValue('dataRevizuirii', v)
+                    markDirty()
+                  }}
+                  aria-label='Data revizuirii'
+                />
                 {errors.dataRevizuirii && (
                   <p className='mt-1 text-xs text-error-600'>{errors.dataRevizuirii.message}</p>
                 )}
@@ -191,14 +212,17 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Tip evaluare
                 </label>
-                <select {...register('tipEvaluare')} className='form-input'>
-                  <option value=''>Selectați...</option>
-                  {TIP_EVALUARE.map((tip) => (
-                    <option key={tip} value={tip}>
-                      {tip}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  id='tipEvaluare'
+                  value={tipEvaluare}
+                  onChange={(v) => {
+                    setValue('tipEvaluare', v)
+                    markDirty()
+                  }}
+                  options={TIP_EVALUARE}
+                  placeholder='Selectați...'
+                  aria-label='Tip evaluare'
+                />
               </div>
             </div>
 

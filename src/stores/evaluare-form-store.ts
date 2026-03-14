@@ -1,7 +1,7 @@
 'use client'
 
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { createJSONStorage, devtools, persist } from 'zustand/middleware'
 
 /**
  * Per-evaluare form data store. Persists all form field values to localStorage
@@ -99,6 +99,33 @@ export const useEvaluareFormStore = create<EvaluareFormState & EvaluareFormActio
       }),
       {
         name: 'evaluare-form-store',
+        storage: createJSONStorage(() => ({
+          getItem: (name) => {
+            try {
+              return localStorage.getItem(name)
+            } catch {
+              return null
+            }
+          },
+          setItem: (name, value) => {
+            try {
+              localStorage.setItem(name, value)
+            } catch (e) {
+              if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+                console.warn(
+                  '[evaluare-form-store] localStorage is full — local data could not be saved.',
+                )
+              }
+            }
+          },
+          removeItem: (name) => {
+            try {
+              localStorage.removeItem(name)
+            } catch {
+              // Ignore removal errors
+            }
+          },
+        })),
         partialize: (state) => ({
           evaluareDataMap: state.evaluareDataMap,
           evaluareRiscuriMap: state.evaluareRiscuriMap,

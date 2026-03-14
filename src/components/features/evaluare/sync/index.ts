@@ -1,1 +1,1 @@
-export { SyncButton } from './SyncButton'
+export { SyncControls } from './SyncControls'

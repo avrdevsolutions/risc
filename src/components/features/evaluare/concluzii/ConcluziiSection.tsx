@@ -4,13 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { AlertTriangle } from 'lucide-react'
 
-import { Typography, Stack } from '@/components/ui'
+import { Typography, Stack, Select, DatePicker } from '@/components/ui'
 import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useSectionSync } from '@/hooks/useSectionSync'
 import { getRiskLevel, AMENINTARI } from '@/lib/constants'
 import type { EvaluareWithRiscuri, Risc } from '@/lib/types'
-import { cn } from '@/lib/utils'
 import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: EvaluareWithRiscuri }
@@ -148,35 +147,26 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                 Nivel de risc global asumat <span className='text-error-500'>*</span>
               </label>
-              <select
+              <Select
                 value={nivelRiscGlobal}
-                onChange={(e) =>
-                  handleChange(setNivelRiscGlobal, 'nivelRiscGlobalAsumat', e.target.value)
-                }
-                className={cn('form-input', !nivelRiscGlobal && 'text-navy-400')}
-              >
-                <option value=''>Selectați...</option>
-                <option value='Scăzut'>Scăzut</option>
-                <option value='Mediu'>Mediu</option>
-                <option value='Ridicat'>Ridicat</option>
-              </select>
+                onChange={(v) => handleChange(setNivelRiscGlobal, 'nivelRiscGlobalAsumat', v)}
+                options={['Scăzut', 'Mediu', 'Ridicat']}
+                placeholder='Selectați...'
+                aria-label='Nivel de risc global asumat'
+              />
             </div>
 
             <div>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                 Risc rezidual estimat (după implementarea măsurilor)
               </label>
-              <select
+              <Select
                 value={nivelRiscRezidual}
-                onChange={(e) =>
-                  handleChange(setNivelRiscRezidual, 'nivelRiscRezidualGlobal', e.target.value)
-                }
-                className={cn('form-input', !nivelRiscRezidual && 'text-navy-400')}
-              >
-                <option value=''>Selectați...</option>
-                <option value='Scăzut'>Scăzut</option>
-                <option value='Mediu'>Mediu</option>
-              </select>
+                onChange={(v) => handleChange(setNivelRiscRezidual, 'nivelRiscRezidualGlobal', v)}
+                options={['Scăzut', 'Mediu']}
+                placeholder='Selectați...'
+                aria-label='Risc rezidual estimat'
+              />
             </div>
           </div>
 
@@ -184,13 +174,10 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
             <label className='mb-1.5 block text-sm font-medium text-navy-700'>
               Termen limită implementare măsuri
             </label>
-            <input
-              type='date'
+            <DatePicker
               value={termenImplementare}
-              onChange={(e) =>
-                handleChange(setTermenImplementare, 'termenImplementareGlobal', e.target.value)
-              }
-              className='form-input'
+              onChange={(v) => handleChange(setTermenImplementare, 'termenImplementareGlobal', v)}
+              aria-label='Termen limită implementare măsuri'
             />
           </div>
 

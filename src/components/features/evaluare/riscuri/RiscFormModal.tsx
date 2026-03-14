@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { ArrowRight, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 
-import { Typography, Stack, Button } from '@/components/ui'
+import { Typography, Stack, Button, Select, DatePicker } from '@/components/ui'
 import {
   AMENINTARI,
   MASURI_MECANOFIZICE,
@@ -166,6 +166,7 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
     watch,
     control,
     reset,
+    setValue,
     formState: { errors },
   } = useForm<RiscFormValues>({
     resolver: zodResolver(RiscSchema),
@@ -204,6 +205,8 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
   const sInit = watch('severitateInitiala')
   const pRez = watch('probabilitateReziduala')
   const sRez = watch('severitateReziduala')
+  const statusRisc = watch('statusRisc')
+  const termenImplementare = watch('termenImplementare')
 
   const inputCls = 'form-input'
   const labelCls = 'mb-1.5 block text-sm font-medium text-navy-700'
@@ -238,14 +241,16 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                 <label className={labelCls}>
                   Amenințare <span className='text-error-500'>*</span>
                 </label>
-                <select {...register('activitate')} className={inputCls}>
-                  <option value=''>Selectați amenințarea...</option>
-                  {AMENINTARI.map((a) => (
-                    <option key={a.value} value={a.value}>
-                      {a.icon} {a.label}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  value={activitate}
+                  onChange={(v) => setValue('activitate', v)}
+                  options={AMENINTARI.map((a) => ({
+                    value: a.value,
+                    label: `${a.icon} ${a.label}`,
+                  }))}
+                  placeholder='Selectați amenințarea...'
+                  aria-label='Amenințare'
+                />
                 {errors.activitate && <p className={errorCls}>{errors.activitate.message}</p>}
               </div>
               {activitate === 'custom' && (
@@ -493,7 +498,11 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                 <label className={labelCls}>
                   Termen implementare <span className='text-error-500'>*</span>
                 </label>
-                <input {...register('termenImplementare')} type='date' className={inputCls} />
+                <DatePicker
+                  value={termenImplementare}
+                  onChange={(v) => setValue('termenImplementare', v)}
+                  aria-label='Termen implementare'
+                />
                 {errors.termenImplementare && (
                   <p className={errorCls}>{errors.termenImplementare.message}</p>
                 )}
@@ -503,11 +512,16 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
             {/* Status */}
             <div className='w-48'>
               <label className={labelCls}>Status risc</label>
-              <select {...register('statusRisc')} className={inputCls}>
-                <option value='deschis'>Deschis</option>
-                <option value='in_lucru'>În lucru</option>
-                <option value='inchis'>Închis</option>
-              </select>
+              <Select
+                value={statusRisc}
+                onChange={(v) => setValue('statusRisc', v as RiscFormValues['statusRisc'])}
+                options={[
+                  { value: 'deschis', label: 'Deschis' },
+                  { value: 'in_lucru', label: 'În lucru' },
+                  { value: 'inchis', label: 'Închis' },
+                ]}
+                aria-label='Status risc'
+              />
             </div>
           </Stack>
 
