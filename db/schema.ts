@@ -12,6 +12,7 @@ export const users = sqliteTable('users', {
 export const evaluari = sqliteTable('evaluari', {
   id: text('id').primaryKey(),
   userId: text('user_id').references(() => users.id),
+  evalType: text('eval_type').notNull().default('securitate_fizica'),
   status: text('status', { enum: ['draft', 'completed'] }).notNull().default('draft'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),

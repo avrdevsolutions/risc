@@ -26,9 +26,19 @@ describe('middleware route protection matcher', () => {
     expect('/').toMatch(protectedRegex)
   })
 
-  it('protects the evaluari page', () => {
+  it('protects the evaluari page (legacy redirect)', () => {
     expect('/evaluari').toMatch(protectedRegex)
     expect('/evaluari/some-id').toMatch(protectedRegex)
+  })
+
+  it('protects the securitate-fizica page', () => {
+    expect('/securitate-fizica').toMatch(protectedRegex)
+    expect('/securitate-fizica/some-id').toMatch(protectedRegex)
+  })
+
+  it('protects the plan-de-paza page', () => {
+    expect('/plan-de-paza').toMatch(protectedRegex)
+    expect('/plan-de-paza/some-id').toMatch(protectedRegex)
   })
 
   it('protects the templates page', () => {
@@ -39,6 +49,10 @@ describe('middleware route protection matcher', () => {
     expect('/api/evaluari').toMatch(protectedRegex)
     expect('/api/templates').toMatch(protectedRegex)
     expect('/api/evaluari/123').toMatch(protectedRegex)
+    expect('/api/securitate-fizica').toMatch(protectedRegex)
+    expect('/api/securitate-fizica/123').toMatch(protectedRegex)
+    expect('/api/plan-de-paza').toMatch(protectedRegex)
+    expect('/api/plan-de-paza/123').toMatch(protectedRegex)
   })
 
   it('excludes /auth/* routes from protection', () => {

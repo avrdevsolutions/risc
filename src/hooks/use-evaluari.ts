@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { queryKeys } from '@/lib/query-keys'
 import type { Evaluare, EvaluareWithRiscuri, ApiResponse } from '@/lib/types'
 
-const BASE = '/api/evaluari'
+const BASE = '/api/securitate-fizica'
 
 const fetchEvaluari = async (): Promise<Evaluare[]> => {
   const res = await fetch(BASE)
