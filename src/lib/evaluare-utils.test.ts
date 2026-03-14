@@ -329,4 +329,87 @@ describe('computeProgress', () => {
     })
     expect(computeProgress(full)).toBeLessThanOrEqual(100)
   })
+
+  // ─── Individual required field contribution ───────────────────────────────
+  //
+  // Each of the 9 required fields should contribute exactly 10% in isolation.
+  // This verifies that no field is double-counted or silently excluded.
+
+  it('denumireProiect alone contributes exactly 10%', () => {
+    expect(computeProgress(withFields({ denumireProiect: 'Test' }))).toBe(10)
+  })
+
+  it('adresaLocatie alone contributes exactly 10%', () => {
+    expect(computeProgress(withFields({ adresaLocatie: 'Str. Test 1' }))).toBe(10)
+  })
+
+  it('beneficiar alone contributes exactly 10%', () => {
+    expect(computeProgress(withFields({ beneficiar: 'Beneficiar SA' }))).toBe(10)
+  })
+
+  it('antreprenor alone contributes exactly 10%', () => {
+    expect(computeProgress(withFields({ antreprenor: 'Constructor SRL' }))).toBe(10)
+  })
+
+  it('fazaLucrarii alone contributes exactly 10%', () => {
+    expect(computeProgress(withFields({ fazaLucrarii: 'Fundații' }))).toBe(10)
+  })
+
+  it('numeEvaluator alone contributes exactly 10%', () => {
+    expect(computeProgress(withFields({ numeEvaluator: 'Ion Ionescu' }))).toBe(10)
+  })
+
+  it('functieEvaluator alone contributes exactly 10%', () => {
+    expect(computeProgress(withFields({ functieEvaluator: 'Inspector SSM' }))).toBe(10)
+  })
+
+  it('sefSantier alone contributes exactly 10%', () => {
+    expect(computeProgress(withFields({ sefSantier: 'Gheorghe Popescu' }))).toBe(10)
+  })
+
+  it('responsabilSSM alone contributes exactly 10%', () => {
+    expect(computeProgress(withFields({ responsabilSSM: 'Maria Marinescu' }))).toBe(10)
+  })
+
+  // ─── Fields excluded from required list ───────────────────────────────────
+
+  it('fazaLucrariiCustom alone does NOT contribute to progress', () => {
+    // fazaLucrariiCustom is not in the required fields list
+    expect(computeProgress(withFields({ fazaLucrariiCustom: 'Custom obiectiv' }))).toBe(0)
+  })
+
+  it('codProiect alone does NOT contribute to progress', () => {
+    expect(computeProgress(withFields({ codProiect: 'PRJ-001' }))).toBe(0)
+  })
+
+  it('beneficiar + antreprenor + fazaLucrarii + numeEvaluator contribute 4 × 10% = 40%', () => {
+    const evaluare = withFields({
+      beneficiar: 'Ben SA',
+      antreprenor: 'Con SRL',
+      fazaLucrarii: 'Structură',
+      numeEvaluator: 'Evaluator',
+    })
+    expect(computeProgress(evaluare)).toBe(40)
+  })
+
+  // ─── Monotonicity ─────────────────────────────────────────────────────────
+
+  it('progress increases monotonically as required fields are added one by one', () => {
+    const fields = [
+      'denumireProiect',
+      'adresaLocatie',
+      'beneficiar',
+      'antreprenor',
+      'fazaLucrarii',
+    ] as const
+
+    let prev = 0
+    let overrides: Partial<EvaluareWithRiscuri> = {}
+    for (const field of fields) {
+      overrides = { ...overrides, [field]: 'filled' }
+      const current = computeProgress(withFields(overrides))
+      expect(current).toBeGreaterThan(prev)
+      prev = current
+    }
+  })
 })

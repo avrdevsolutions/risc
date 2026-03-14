@@ -225,4 +225,114 @@ describe('DatePicker', () => {
     await user.click(screen.getByRole('button', { name: /luna următoare/i }))
     expect(screen.getByText('Ianuarie 2027')).toBeInTheDocument()
   })
+
+  // ─── aria-expanded reflects open state ────────────────────────────────────
+
+  it('trigger has aria-expanded="false" when the calendar is closed', () => {
+    render(<DatePicker />)
+    expect(screen.getByRole('button', { name: /selectați data/i })).toHaveAttribute(
+      'aria-expanded',
+      'false',
+    )
+  })
+
+  it('trigger has aria-expanded="true" when the calendar is open', async () => {
+    const user = userEvent.setup()
+    render(<DatePicker />)
+    await user.click(screen.getByRole('button', { name: /selectați data/i }))
+    expect(screen.getByRole('button', { name: /selectați data/i })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+  })
+
+  // ─── onChange not called on open/close without selection ──────────────────
+
+  it('does not call onChange when opening then closing without selecting a date', async () => {
+    const user = userEvent.setup()
+    const handleChange = vi.fn()
+    render(<DatePicker onChange={handleChange} />)
+
+    await user.click(screen.getByRole('button', { name: /selectați data/i }))
+    await user.keyboard('{Escape}')
+
+    expect(handleChange).not.toHaveBeenCalled()
+  })
+
+  // ─── Specific day click ────────────────────────────────────────────────────
+
+  it('calls onChange with the correct ISO string when a specific day is clicked', async () => {
+    const user = userEvent.setup()
+    const handleChange = vi.fn()
+    render(<DatePicker value='2026-03-14' onChange={handleChange} />)
+
+    await user.click(screen.getByRole('button', { name: /selectați data/i }))
+    // Click the 20th of March 2026 (aria-label = "20 martie 2026")
+    await user.click(screen.getByRole('button', { name: /20 martie 2026/i }))
+
+    expect(handleChange).toHaveBeenCalledWith('2026-03-20')
+  })
+
+  it('closes the calendar after clicking a specific day', async () => {
+    const user = userEvent.setup()
+    render(<DatePicker value='2026-03-14' onChange={vi.fn()} />)
+
+    await user.click(screen.getByRole('button', { name: /selectați data/i }))
+    await user.click(screen.getByRole('button', { name: /20 martie 2026/i }))
+
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+
+  it('marks the currently selected date with aria-pressed="true"', async () => {
+    const user = userEvent.setup()
+    render(<DatePicker value='2026-03-14' />)
+    await user.click(screen.getByRole('button', { name: /selectați data/i }))
+
+    const selectedDayBtn = screen.getByRole('button', { name: /14 martie 2026/i })
+    expect(selectedDayBtn).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  // ─── Invalid ISO value ────────────────────────────────────────────────────
+
+  it('shows the placeholder for an invalid ISO date string (no crash)', () => {
+    render(<DatePicker value='not-a-date' placeholder='Selectați data...' />)
+    expect(screen.getByText('Selectați data...')).toBeInTheDocument()
+  })
+
+  it('shows the placeholder for an incomplete ISO string (missing day)', () => {
+    render(<DatePicker value='2026-03' placeholder='Alegeți data' />)
+    expect(screen.getByText('Alegeți data')).toBeInTheDocument()
+  })
+
+  // ─── id prop ──────────────────────────────────────────────────────────────
+
+  it('forwards the id prop to the trigger button', () => {
+    render(<DatePicker id='start-date' />)
+    expect(screen.getByRole('button', { name: /selectați data/i })).toHaveAttribute(
+      'id',
+      'start-date',
+    )
+  })
+
+  // ─── Leap / non-leap February ─────────────────────────────────────────────
+
+  it('shows 29 days for February in a leap year (2024)', async () => {
+    const user = userEvent.setup()
+    render(<DatePicker value='2024-02-15' />)
+    await user.click(screen.getByRole('button', { name: /selectați data/i }))
+
+    // Day 29 must exist in leap year
+    expect(screen.getByRole('button', { name: /29 februarie 2024/i })).toBeInTheDocument()
+  })
+
+  it('shows only 28 days for February in a non-leap year (2025)', async () => {
+    const user = userEvent.setup()
+    render(<DatePicker value='2025-02-15' />)
+    await user.click(screen.getByRole('button', { name: /selectați data/i }))
+
+    // Day 29 must NOT exist in non-leap year
+    expect(screen.queryByRole('button', { name: /29 februarie 2025/i })).not.toBeInTheDocument()
+    // Day 28 must exist
+    expect(screen.getByRole('button', { name: /28 februarie 2025/i })).toBeInTheDocument()
+  })
 })
