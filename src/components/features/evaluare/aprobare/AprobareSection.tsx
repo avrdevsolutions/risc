@@ -7,39 +7,50 @@ import { useForm } from 'react-hook-form'
 
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
+import { useFormLocalPersist } from '@/hooks/useFormLocalPersist'
 import { useSectionSync } from '@/hooks/useSectionSync'
 import { AprobareSchema } from '@/lib/schemas'
 import type { AprobareFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: Evaluare }
 
-const toFormValues = (evaluare: Evaluare): AprobareFormValues => ({
-  sefSantier: evaluare.sefSantier ?? '',
-  functieSefSantier: evaluare.functieSefSantier ?? '',
-  responsabilSSM: evaluare.responsabilSSM ?? '',
-  functieResponsabilSSM: evaluare.functieResponsabilSSM ?? '',
-  dataAprobarii: evaluare.dataAprobarii ?? '',
-  observatiiGenerale: evaluare.observatiiGenerale ?? '',
+const toFormValues = (
+  evaluare: Evaluare,
+  localData: Record<string, unknown>,
+): AprobareFormValues => ({
+  sefSantier: (localData.sefSantier as string | undefined) ?? evaluare.sefSantier ?? '',
+  functieSefSantier:
+    (localData.functieSefSantier as string | undefined) ?? evaluare.functieSefSantier ?? '',
+  responsabilSSM: (localData.responsabilSSM as string | undefined) ?? evaluare.responsabilSSM ?? '',
+  functieResponsabilSSM:
+    (localData.functieResponsabilSSM as string | undefined) ?? evaluare.functieResponsabilSSM ?? '',
+  dataAprobarii: (localData.dataAprobarii as string | undefined) ?? evaluare.dataAprobarii ?? '',
+  observatiiGenerale:
+    (localData.observatiiGenerale as string | undefined) ?? evaluare.observatiiGenerale ?? '',
 })
 
 export const AprobareSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const {
     register,
+    watch,
     reset,
     getValues,
     formState: { errors },
   } = useForm<AprobareFormValues>({
     resolver: zodResolver(AprobareSchema),
-    defaultValues: toFormValues(evaluare),
+    defaultValues: toFormValues(evaluare, localInit),
   })
 
   useEffect(() => {
-    reset(toFormValues(evaluareRef.current))
+    const localData = useEvaluareFormStore.getState().getFormData(evaluare.id)
+    reset(toFormValues(evaluareRef.current, localData))
   }, [evaluare.id, reset])
 
   const handleSave = useCallback(async () => {
@@ -47,14 +58,15 @@ export const AprobareSection = ({ evaluare }: Props) => {
   }, [update, getValues])
 
   const { markDirty } = useSectionSync('aprobare', handleSave)
+  useFormLocalPersist(watch)
 
   const inputCls = 'form-input'
 
   return (
-    <section id='aprobare-section' className='scroll-mt-20'>
+    <section id='aprobare-section' className='scroll-mt-32'>
       <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
         <Typography variant='h3' className='mb-6 text-navy-900'>
-          Semnături &amp; Asumare
+          9. Semnături &amp; Asumare
         </Typography>
 
         <form noValidate onChange={markDirty}>

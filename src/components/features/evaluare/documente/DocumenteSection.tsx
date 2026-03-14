@@ -5,14 +5,16 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { FileCheck } from 'lucide-react'
 
 import { Typography, Stack } from '@/components/ui'
+import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useSectionSync } from '@/hooks/useSectionSync'
 import { DOCUMENTE_SUPORT, CADRU_LEGAL } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: Evaluare }
 
-const parseStringArray = (val: string | null): string[] => {
+const parseStringArray = (val: string | null | undefined): string[] => {
   if (!val) return []
   try {
     const parsed = JSON.parse(val)
@@ -26,16 +28,24 @@ export const DocumenteSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
+  const { setField } = useEvaluareSyncContext()
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const [selectedDoc, setSelectedDoc] = useState<string[]>(
-    parseStringArray(evaluare.documenteAplicabile),
+    parseStringArray(
+      (localInit.documenteAplicabile as string | undefined) ?? evaluare.documenteAplicabile,
+    ),
   )
   const [selectedAnexe, setSelectedAnexe] = useState<string[]>(() => {
-    const saved = parseStringArray(evaluare.anexeSelectate)
+    const saved = parseStringArray(
+      (localInit.anexeSelectate as string | undefined) ?? evaluare.anexeSelectate,
+    )
     if (saved.length > 0) return saved
     return CADRU_LEGAL.filter((item) => item.checked).map((item) => item.value)
   })
-  const [observatii, setObservatii] = useState(evaluare.observatiiDocumente ?? '')
+  const [observatii, setObservatii] = useState(
+    (localInit.observatiiDocumente as string | undefined) ?? evaluare.observatiiDocumente ?? '',
+  )
 
   useEffect(() => {
     setSelectedDoc(parseStringArray(evaluareRef.current.documenteAplicabile))
@@ -59,22 +69,28 @@ export const DocumenteSection = ({ evaluare }: Props) => {
   const { markDirty } = useSectionSync('documente', handleSave)
 
   const toggleDoc = (id: string) => {
-    setSelectedDoc((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]))
+    const updated = selectedDoc.includes(id)
+      ? selectedDoc.filter((d) => d !== id)
+      : [...selectedDoc, id]
+    setSelectedDoc(updated)
+    setField('documenteAplicabile', JSON.stringify(updated))
     markDirty()
   }
 
   const toggleAnexa = (anexa: string) => {
-    setSelectedAnexe((prev) =>
-      prev.includes(anexa) ? prev.filter((a) => a !== anexa) : [...prev, anexa],
-    )
+    const updated = selectedAnexe.includes(anexa)
+      ? selectedAnexe.filter((a) => a !== anexa)
+      : [...selectedAnexe, anexa]
+    setSelectedAnexe(updated)
+    setField('anexeSelectate', JSON.stringify(updated))
     markDirty()
   }
 
   return (
-    <section id='documente-section' className='scroll-mt-20'>
+    <section id='documente-section' className='scroll-mt-32'>
       <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
         <Typography variant='h3' className='mb-6 text-navy-900'>
-          Documente suport
+          10. Documente Suport
         </Typography>
 
         <Stack gap='6'>
@@ -137,7 +153,11 @@ export const DocumenteSection = ({ evaluare }: Props) => {
             </label>
             <textarea
               value={observatii}
-              onChange={(e) => { setObservatii(e.target.value); markDirty() }}
+              onChange={(e) => {
+                setObservatii(e.target.value)
+                setField('observatiiDocumente', e.target.value)
+                markDirty()
+              }}
               rows={3}
               placeholder='Observații sau cerințe suplimentare privind documentele și cadrul legal...'
               className='form-input'

@@ -7,34 +7,43 @@ import { useForm } from 'react-hook-form'
 
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
+import { useFormLocalPersist } from '@/hooks/useFormLocalPersist'
 import { useSectionSync } from '@/hooks/useSectionSync'
 import { TIP_UNITATE } from '@/lib/constants'
 import { ProiectSchema } from '@/lib/schemas'
 import type { ProiectFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: Evaluare }
 
-const toFormValues = (evaluare: Evaluare): ProiectFormValues => ({
-  denumireProiect: evaluare.denumireProiect ?? '',
-  codProiect: evaluare.codProiect ?? '',
-  adresaLocatie: evaluare.adresaLocatie ?? '',
-  localitate: evaluare.localitate ?? '',
-  judet: evaluare.judet ?? '',
-  beneficiar: evaluare.beneficiar ?? '',
-  cuiBeneficiar: evaluare.cuiBeneficiar ?? '',
-  antreprenor: evaluare.antreprenor ?? '',
-  cuiAntreprenor: evaluare.cuiAntreprenor ?? '',
-  subantreprenor: evaluare.subantreprenor ?? '',
-  fazaLucrarii: evaluare.fazaLucrarii ?? '',
-  fazaLucrariiCustom: evaluare.fazaLucrariiCustom ?? '',
-  descriereObiectiv: evaluare.descriereObiectiv ?? '',
+const toFormValues = (
+  evaluare: Evaluare,
+  localData: Record<string, unknown>,
+): ProiectFormValues => ({
+  denumireProiect:
+    (localData.denumireProiect as string | undefined) ?? evaluare.denumireProiect ?? '',
+  codProiect: (localData.codProiect as string | undefined) ?? evaluare.codProiect ?? '',
+  adresaLocatie: (localData.adresaLocatie as string | undefined) ?? evaluare.adresaLocatie ?? '',
+  localitate: (localData.localitate as string | undefined) ?? evaluare.localitate ?? '',
+  judet: (localData.judet as string | undefined) ?? evaluare.judet ?? '',
+  beneficiar: (localData.beneficiar as string | undefined) ?? evaluare.beneficiar ?? '',
+  cuiBeneficiar: (localData.cuiBeneficiar as string | undefined) ?? evaluare.cuiBeneficiar ?? '',
+  antreprenor: (localData.antreprenor as string | undefined) ?? evaluare.antreprenor ?? '',
+  cuiAntreprenor: (localData.cuiAntreprenor as string | undefined) ?? evaluare.cuiAntreprenor ?? '',
+  subantreprenor: (localData.subantreprenor as string | undefined) ?? evaluare.subantreprenor ?? '',
+  fazaLucrarii: (localData.fazaLucrarii as string | undefined) ?? evaluare.fazaLucrarii ?? '',
+  fazaLucrariiCustom:
+    (localData.fazaLucrariiCustom as string | undefined) ?? evaluare.fazaLucrariiCustom ?? '',
+  descriereObiectiv:
+    (localData.descriereObiectiv as string | undefined) ?? evaluare.descriereObiectiv ?? '',
 })
 
 export const ProiectSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
+  const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
   const {
     register,
@@ -44,13 +53,14 @@ export const ProiectSection = ({ evaluare }: Props) => {
     formState: { errors },
   } = useForm<ProiectFormValues>({
     resolver: zodResolver(ProiectSchema),
-    defaultValues: toFormValues(evaluare),
+    defaultValues: toFormValues(evaluare, localInit),
   })
 
   const fazaLucrarii = watch('fazaLucrarii')
 
   useEffect(() => {
-    reset(toFormValues(evaluareRef.current))
+    const localData = useEvaluareFormStore.getState().getFormData(evaluare.id)
+    reset(toFormValues(evaluareRef.current, localData))
   }, [evaluare.id, reset])
 
   const handleSave = useCallback(async () => {
@@ -58,12 +68,13 @@ export const ProiectSection = ({ evaluare }: Props) => {
   }, [update, getValues])
 
   const { markDirty } = useSectionSync('proiect', handleSave)
+  useFormLocalPersist(watch)
 
   return (
-    <section id='proiect-section' className='scroll-mt-20'>
+    <section id='proiect-section' className='scroll-mt-32'>
       <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
         <Typography variant='h3' className='mb-6 text-navy-900'>
-          Date de identificare
+          1. Date de identificare
         </Typography>
 
         <form noValidate onChange={markDirty}>

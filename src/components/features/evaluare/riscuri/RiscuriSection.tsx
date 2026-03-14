@@ -108,11 +108,11 @@ export const RiscuriSection = ({ evaluare }: Props) => {
   }
 
   return (
-    <section id='riscuri-section' className='scroll-mt-20'>
+    <section id='riscuri-section' className='scroll-mt-32'>
       <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
         <Stack direction='row' justify='between' align='center' gap='4' className='mb-6'>
           <Typography variant='h3' className='text-navy-900'>
-            Surse de risc identificate
+            5. Surse de Risc
           </Typography>
         </Stack>
 

@@ -1,0 +1,13 @@
+{
+  "name": "DatePicker",
+  "pattern": "controlled",
+  "forwardRef": false,
+  "polymorphic": false,
+  "variantAxes": {},
+  "props": ["value", "onChange", "placeholder", "disabled"],
+  "defaults": {
+    "placeholder": "Selectați data..."
+  },
+  "exports": ["DatePicker"],
+  "notes": "Romanian locale (months/days), ISO 8601 value format (YYYY-MM-DD), Monday-first week, calendar dialog with Escape/focus handling."
+}

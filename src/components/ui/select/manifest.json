@@ -1,0 +1,14 @@
+{
+  "name": "Select",
+  "pattern": "controlled",
+  "forwardRef": true,
+  "polymorphic": false,
+  "variantAxes": {},
+  "props": ["options", "value", "onChange", "placeholder", "disabled", "searchable"],
+  "defaults": {
+    "placeholder": "Selectați...",
+    "searchable": "auto (true when > 5 options)"
+  },
+  "exports": ["Select"],
+  "notes": "Custom dropdown with search (auto for >5 items), keyboard navigation (ArrowUp/Down/Enter/Escape), forwardRef to trigger button, aria-haspopup=listbox + aria-controls."
+}
