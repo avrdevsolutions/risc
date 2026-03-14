@@ -10,15 +10,6 @@ import { useAutoSync } from '@/hooks/useAutoSync'
 import { cn } from '@/lib/utils'
 import { useEvaluareSyncStore } from '@/stores/evaluare-sync-store'
 
-const formatLastSync = (isoString: string | null): string => {
-  if (!isoString) return ''
-  const diff = Math.floor((Date.now() - new Date(isoString).getTime()) / 1000)
-  if (diff < 60) return 'acum câteva secunde'
-  if (diff < 3600) return `acum ${Math.floor(diff / 60)} min`
-  if (diff < 86400) return `acum ${Math.floor(diff / 3600)} ore`
-  return `acum ${Math.floor(diff / 86400)} zile`
-}
-
 const formatCountdown = (seconds: number): string => {
   const m = Math.floor(seconds / 60)
   const s = seconds % 60
@@ -37,65 +28,30 @@ export const SyncButton = () => {
     [],
   )
 
-  const {
-    isDirty,
-    isSyncing,
-    syncError,
-    lastSyncedAt,
-    startSync,
-    finishSync,
-    setSyncError,
-    setConflictDetected,
-  } = useEvaluareSyncStore(
-    useShallow((s) => ({
-      isDirty: s.isDirty,
-      isSyncing: s.isSyncing,
-      syncError: s.syncError,
-      lastSyncedAt: s.lastSyncedAt,
-      startSync: s.startSync,
-      finishSync: s.finishSync,
-      setSyncError: s.setSyncError,
-      setConflictDetected: s.setConflictDetected,
-    })),
-  )
+  const { isDirty, isSyncing, syncError, startSync, finishSync, setSyncError } =
+    useEvaluareSyncStore(
+      useShallow((s) => ({
+        isDirty: s.isDirty,
+        isSyncing: s.isSyncing,
+        syncError: s.syncError,
+        startSync: s.startSync,
+        finishSync: s.finishSync,
+        setSyncError: s.setSyncError,
+      })),
+    )
 
   const { syncAll, evaluareId } = useEvaluareSyncContext()
 
   /**
-   * Performs a sync with conflict detection (fail-closed).
-   * Uses the lightweight /meta endpoint for the conflict check to avoid
-   * fetching the full evaluare payload just to compare timestamps.
-   * If the conflict check itself fails, sync is blocked and an error is shown.
+   * Saves all local changes to the DB — last write wins, no conflict check.
    */
   const handleSync = async () => {
     if (isSyncing) return
 
-    // Conflict check: only needed if we have synced before
-    if (lastSyncedAt) {
-      try {
-        const checkRes = await fetch(`/api/evaluari/${evaluareId}/meta`)
-        if (!checkRes.ok) {
-          setSyncError('Nu s-a putut verifica versiunea din baza de date. Reîncercați.')
-          return
-        }
-        const { updatedAt: dbUpdatedAt } = (await checkRes.json()) as { updatedAt?: string }
-        if (dbUpdatedAt && new Date(dbUpdatedAt) > new Date(lastSyncedAt)) {
-          setConflictDetected(dbUpdatedAt)
-          return // Conflict dialog will handle resolution
-        }
-      } catch {
-        // Network error — fail closed: block sync and surface an error
-        setSyncError('Eroare de rețea la verificarea conflictelor. Reîncercați.')
-        return
-      }
-    }
-
-    // No conflict — proceed with sync
     startSync()
     try {
       await syncAll()
-      const timestamp = new Date().toISOString()
-      finishSync(timestamp)
+      finishSync()
 
       // Show transient "Salvat!" state, cancelling any pending timer first
       if (recentlySavedTimerRef.current) clearTimeout(recentlySavedTimerRef.current)
@@ -184,12 +140,7 @@ export const SyncButton = () => {
       title={tooltip}
     >
       <CheckCircle className='size-4 shrink-0 text-success-600' />
-      <div className='flex flex-col items-start'>
-        <span className='text-xs font-semibold text-success-700'>Progres salvat</span>
-        {lastSyncedAt && (
-          <span className='text-xs text-success-600'>{formatLastSync(lastSyncedAt)}</span>
-        )}
-      </div>
+      <span className='text-xs font-semibold text-success-700'>Progres salvat</span>
     </div>
   )
 }

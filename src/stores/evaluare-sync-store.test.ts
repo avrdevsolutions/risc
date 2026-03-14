@@ -27,18 +27,6 @@ describe('useEvaluareSyncStore', () => {
     expect(useEvaluareSyncStore.getState().syncError).toBeNull()
   })
 
-  it('starts with lastSyncedAt=null', () => {
-    expect(useEvaluareSyncStore.getState().lastSyncedAt).toBeNull()
-  })
-
-  it('starts with conflictDbUpdatedAt=null', () => {
-    expect(useEvaluareSyncStore.getState().conflictDbUpdatedAt).toBeNull()
-  })
-
-  it('starts with showConflictDialog=false', () => {
-    expect(useEvaluareSyncStore.getState().showConflictDialog).toBe(false)
-  })
-
   // ─── markDirty ─────────────────────────────────────────────────────────────
 
   it('markDirty sets isDirty=true', () => {
@@ -96,25 +84,19 @@ describe('useEvaluareSyncStore', () => {
   it('finishSync sets isDirty=false', () => {
     useEvaluareSyncStore.getState().markDirty()
     useEvaluareSyncStore.getState().startSync()
-    useEvaluareSyncStore.getState().finishSync('2026-03-14T12:00:00.000Z')
+    useEvaluareSyncStore.getState().finishSync()
     expect(useEvaluareSyncStore.getState().isDirty).toBe(false)
   })
 
   it('finishSync sets isSyncing=false', () => {
     useEvaluareSyncStore.getState().startSync()
-    useEvaluareSyncStore.getState().finishSync('2026-03-14T12:00:00.000Z')
+    useEvaluareSyncStore.getState().finishSync()
     expect(useEvaluareSyncStore.getState().isSyncing).toBe(false)
-  })
-
-  it('finishSync stores the timestamp in lastSyncedAt', () => {
-    const ts = '2026-03-14T12:34:56.000Z'
-    useEvaluareSyncStore.getState().finishSync(ts)
-    expect(useEvaluareSyncStore.getState().lastSyncedAt).toBe(ts)
   })
 
   it('finishSync clears syncError', () => {
     useEvaluareSyncStore.getState().setSyncError('Error')
-    useEvaluareSyncStore.getState().finishSync('2026-03-14T12:00:00.000Z')
+    useEvaluareSyncStore.getState().finishSync()
     expect(useEvaluareSyncStore.getState().syncError).toBeNull()
   })
 
@@ -142,8 +124,7 @@ describe('useEvaluareSyncStore', () => {
   it('reset returns all fields to initial state', () => {
     useEvaluareSyncStore.getState().markDirty()
     useEvaluareSyncStore.getState().startSync()
-    useEvaluareSyncStore.getState().finishSync('2026-03-14T12:00:00.000Z')
-    useEvaluareSyncStore.getState().setConflictDetected('2026-03-14T13:00:00.000Z')
+    useEvaluareSyncStore.getState().finishSync()
 
     useEvaluareSyncStore.getState().reset()
 
@@ -151,9 +132,6 @@ describe('useEvaluareSyncStore', () => {
     expect(s.isDirty).toBe(false)
     expect(s.isSyncing).toBe(false)
     expect(s.syncError).toBeNull()
-    expect(s.lastSyncedAt).toBeNull()
-    expect(s.conflictDbUpdatedAt).toBeNull()
-    expect(s.showConflictDialog).toBe(false)
   })
 
   it('reset called on a clean store keeps everything at initial values', () => {
@@ -162,7 +140,6 @@ describe('useEvaluareSyncStore', () => {
     expect(s.isDirty).toBe(false)
     expect(s.isSyncing).toBe(false)
     expect(s.syncError).toBeNull()
-    expect(s.lastSyncedAt).toBeNull()
   })
 
   // ─── Sync store state bleed (regression for navigation between evaluations) ─
@@ -179,49 +156,6 @@ describe('useEvaluareSyncStore', () => {
     expect(useEvaluareSyncStore.getState().isDirty).toBe(false)
   })
 
-  it('reset removes lastSyncedAt from a previous evaluation so conflict detection is fresh', () => {
-    useEvaluareSyncStore.getState().finishSync('2026-03-14T10:00:00.000Z')
-    expect(useEvaluareSyncStore.getState().lastSyncedAt).toBe('2026-03-14T10:00:00.000Z')
-
-    useEvaluareSyncStore.getState().reset()
-
-    // Conflict detection on new evaluation compares against null, not the old timestamp
-    expect(useEvaluareSyncStore.getState().lastSyncedAt).toBeNull()
-  })
-
-  // ─── setConflictDetected ───────────────────────────────────────────────────
-
-  it('setConflictDetected stores the DB timestamp', () => {
-    const dbTs = '2026-03-14T15:00:00.000Z'
-    useEvaluareSyncStore.getState().setConflictDetected(dbTs)
-    expect(useEvaluareSyncStore.getState().conflictDbUpdatedAt).toBe(dbTs)
-  })
-
-  it('setConflictDetected opens the conflict dialog', () => {
-    useEvaluareSyncStore.getState().setConflictDetected('2026-03-14T15:00:00.000Z')
-    expect(useEvaluareSyncStore.getState().showConflictDialog).toBe(true)
-  })
-
-  it('setConflictDetected sets isSyncing=false', () => {
-    useEvaluareSyncStore.getState().startSync()
-    useEvaluareSyncStore.getState().setConflictDetected('2026-03-14T15:00:00.000Z')
-    expect(useEvaluareSyncStore.getState().isSyncing).toBe(false)
-  })
-
-  // ─── clearConflict ─────────────────────────────────────────────────────────
-
-  it('clearConflict closes the conflict dialog', () => {
-    useEvaluareSyncStore.getState().setConflictDetected('2026-03-14T15:00:00.000Z')
-    useEvaluareSyncStore.getState().clearConflict()
-    expect(useEvaluareSyncStore.getState().showConflictDialog).toBe(false)
-  })
-
-  it('clearConflict clears conflictDbUpdatedAt', () => {
-    useEvaluareSyncStore.getState().setConflictDetected('2026-03-14T15:00:00.000Z')
-    useEvaluareSyncStore.getState().clearConflict()
-    expect(useEvaluareSyncStore.getState().conflictDbUpdatedAt).toBeNull()
-  })
-
   // ─── Typical full sync lifecycle ──────────────────────────────────────────
 
   it('progresses correctly through markDirty → startSync → finishSync lifecycle', () => {
@@ -234,10 +168,9 @@ describe('useEvaluareSyncStore', () => {
     s.startSync()
     expect(useEvaluareSyncStore.getState().isSyncing).toBe(true)
 
-    s.finishSync('2026-03-14T12:00:00.000Z')
+    s.finishSync()
     expect(useEvaluareSyncStore.getState().isDirty).toBe(false)
     expect(useEvaluareSyncStore.getState().isSyncing).toBe(false)
-    expect(useEvaluareSyncStore.getState().lastSyncedAt).toBe('2026-03-14T12:00:00.000Z')
   })
 
   it('progresses correctly through markDirty → startSync → setSyncError lifecycle', () => {
@@ -250,8 +183,6 @@ describe('useEvaluareSyncStore', () => {
     expect(useEvaluareSyncStore.getState().isDirty).toBe(true)
     expect(useEvaluareSyncStore.getState().isSyncing).toBe(false)
     expect(useEvaluareSyncStore.getState().syncError).toBe('Network error')
-    // lastSyncedAt should not have been updated on error
-    expect(useEvaluareSyncStore.getState().lastSyncedAt).toBeNull()
   })
 
   // ─── Edge cases and non-happy paths ───────────────────────────────────────
@@ -267,22 +198,15 @@ describe('useEvaluareSyncStore', () => {
   it('finishSync without prior startSync still updates state correctly', () => {
     // No startSync called — finishSync should still work
     useEvaluareSyncStore.getState().markDirty()
-    useEvaluareSyncStore.getState().finishSync('2026-03-14T10:00:00.000Z')
+    useEvaluareSyncStore.getState().finishSync()
     const s = useEvaluareSyncStore.getState()
     expect(s.isDirty).toBe(false)
     expect(s.isSyncing).toBe(false)
-    expect(s.lastSyncedAt).toBe('2026-03-14T10:00:00.000Z')
-  })
-
-  it('finishSync updates lastSyncedAt when called a second time (overwrites old timestamp)', () => {
-    useEvaluareSyncStore.getState().finishSync('2026-03-14T10:00:00.000Z')
-    useEvaluareSyncStore.getState().finishSync('2026-03-14T12:00:00.000Z')
-    expect(useEvaluareSyncStore.getState().lastSyncedAt).toBe('2026-03-14T12:00:00.000Z')
   })
 
   it('markDirty after finishSync re-marks the store as dirty', () => {
     useEvaluareSyncStore.getState().markDirty()
-    useEvaluareSyncStore.getState().finishSync('2026-03-14T12:00:00.000Z')
+    useEvaluareSyncStore.getState().finishSync()
     expect(useEvaluareSyncStore.getState().isDirty).toBe(false)
 
     useEvaluareSyncStore.getState().markDirty()
@@ -298,20 +222,6 @@ describe('useEvaluareSyncStore', () => {
     // isSyncing is already false; setSyncError should keep it false
     useEvaluareSyncStore.getState().setSyncError('Unexpected error')
     expect(useEvaluareSyncStore.getState().isSyncing).toBe(false)
-  })
-
-  it('setConflictDetected while already in conflict updates conflictDbUpdatedAt', () => {
-    useEvaluareSyncStore.getState().setConflictDetected('2026-03-14T10:00:00.000Z')
-    useEvaluareSyncStore.getState().setConflictDetected('2026-03-14T11:00:00.000Z')
-    expect(useEvaluareSyncStore.getState().conflictDbUpdatedAt).toBe('2026-03-14T11:00:00.000Z')
-    expect(useEvaluareSyncStore.getState().showConflictDialog).toBe(true)
-  })
-
-  it('clearConflict when no conflict was set is safe (no-op)', () => {
-    expect(() => useEvaluareSyncStore.getState().clearConflict()).not.toThrow()
-    const s = useEvaluareSyncStore.getState()
-    expect(s.conflictDbUpdatedAt).toBeNull()
-    expect(s.showConflictDialog).toBe(false)
   })
 
   it('reset during active sync returns isSyncing to false', () => {
@@ -336,12 +246,11 @@ describe('useEvaluareSyncStore', () => {
     expect(useEvaluareSyncStore.getState().syncError).toBeNull()
 
     s.startSync()
-    s.finishSync('2026-03-14T14:00:00.000Z')
+    s.finishSync()
 
     const final = useEvaluareSyncStore.getState()
     expect(final.isDirty).toBe(false)
     expect(final.isSyncing).toBe(false)
     expect(final.syncError).toBeNull()
-    expect(final.lastSyncedAt).toBe('2026-03-14T14:00:00.000Z')
   })
 })
