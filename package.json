@@ -35,6 +35,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@storybook/addon-essentials": "^8.6.0",
     "@storybook/blocks": "^8.6.0",
     "@storybook/react": "^8.6.0",
@@ -60,6 +61,7 @@
     "happy-dom": "^20.8.3",
     "husky": "^9.1.7",
     "lint-staged": "^15.3.0",
+    "msw": "^2.12.10",
     "postcss": "^8.5.3",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
