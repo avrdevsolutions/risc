@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import Link from 'next/link'
 
@@ -14,6 +14,7 @@ import { computeProgress } from '@/lib/evaluare-utils'
 import type { EvaluareWithRiscuri } from '@/lib/types'
 import { cn } from '@/lib/utils'
 import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
+import { useEvaluareSyncStore } from '@/stores/evaluare-sync-store'
 
 import { AprobareSection } from '../aprobare'
 import { CadruOrganizationalSection } from '../cadruOrganizational'
@@ -270,6 +271,17 @@ export const EvaluarePage = ({ id }: Props) => {
   const localProjectName = useEvaluareFormStore(
     (s) => s.evaluareDataMap[id]?.denumireProiect as string | undefined,
   )
+
+  // Reset the sync store whenever the evaluare ID changes so that isDirty and
+  // lastSyncedAt from a previous evaluation do not bleed into the new one.
+  // Use a ref to skip the reset on the very first mount (no "previous" ID).
+  const previousEvaluareIdRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (previousEvaluareIdRef.current !== null && previousEvaluareIdRef.current !== id) {
+      useEvaluareSyncStore.getState().reset()
+    }
+    previousEvaluareIdRef.current = id
+  }, [id])
 
   // Disable browser scroll restoration and force scroll to top on mount so the
   // page always starts at section 1 — not at the position the browser remembered
