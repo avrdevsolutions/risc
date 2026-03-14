@@ -33,3 +33,20 @@ export const parseJsonArray = (val: string | null | undefined): string[] => {
  */
 export const serializeArrayField = (val: unknown): unknown =>
   Array.isArray(val) ? JSON.stringify(val) : val
+
+/**
+ * Resolves a raw enum value to its human-readable label from a constants list.
+ * Falls back to the raw value if no match is found.
+ *
+ * @example
+ * getLabel('cadere_acelasi_nivel', PERICOLE)
+ * // => 'Cădere la același nivel (alunecare/împiedicare)'
+ */
+export const getLabel = (
+  value: string | null | undefined,
+  list: ReadonlyArray<{ value: string; label: string } | { value: string; label: string; icon?: string }>,
+): string => {
+  if (!value) return '—'
+  const match = list.find((item) => item.value === value)
+  return match ? match.label : value
+}

@@ -9,6 +9,7 @@ import { ArrowLeft, CheckCircle, Circle, FileDown } from 'lucide-react'
 import { Typography, Stack, Button, Badge } from '@/components/ui'
 import { useEvaluare, useUpdateEvaluare } from '@/hooks/use-evaluari'
 import type { EvaluareWithRiscuri } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 import { AprobareSection } from '../aprobare'
 import { DocumenteSection } from '../documente'
@@ -20,6 +21,58 @@ import { RiscuriSection } from '../riscuri'
 import { SumarSection } from '../sumar'
 
 type Props = { id: string }
+
+const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
+  const requiredFields: (string | null | undefined)[] = [
+    evaluare.denumireProiect,
+    evaluare.adresaLocatie,
+    evaluare.beneficiar,
+    evaluare.antreprenor,
+    evaluare.fazaLucrarii,
+    evaluare.numeEvaluator,
+    evaluare.functieEvaluator,
+    evaluare.dataEvaluarii,
+    evaluare.dataRevizuirii,
+    evaluare.sefSantier,
+    evaluare.responsabilSSM,
+    evaluare.dataAprobarii,
+  ]
+  const filledFields = requiredFields.filter((v) => v !== null && v !== undefined && v !== '').length
+
+  // Count riscuri as a single required item (1 or more risks needed)
+  const hasRiscuri = evaluare.riscuri.length > 0
+  const totalItems = requiredFields.length + 1
+  const filledItems = filledFields + (hasRiscuri ? 1 : 0)
+
+  return Math.round((filledItems / totalItems) * 100)
+}
+
+const ProgressBar = ({ evaluare }: { evaluare: EvaluareWithRiscuri }) => {
+  const progress = computeProgress(evaluare)
+  const colorClass =
+    progress >= 80
+      ? 'text-success-600'
+      : progress >= 40
+        ? 'text-warning-600'
+        : 'text-error-600'
+
+  return (
+    <div className='mb-6 rounded-xl bg-navy-800 px-5 py-4 shadow-card'>
+      <div className='mb-2 flex items-center justify-between'>
+        <Typography variant='body-sm' className='font-medium text-white'>
+          Progres completare documentație
+        </Typography>
+        <span className={cn('text-sm font-bold', colorClass)}>{progress}% completat</span>
+      </div>
+      <div className='h-2.5 overflow-hidden rounded-full bg-navy-700'>
+        <div
+          className='h-full rounded-full bg-gradient-to-r from-primary-500 to-success-500 transition-all duration-700'
+          style={{ width: `${progress}%` }}
+        />
+      </div>
+    </div>
+  )
+}
 
 const StatusBar = ({
   evaluare,
@@ -198,6 +251,7 @@ export const EvaluarePage = ({ id }: Props) => {
         <SectiuniNav />
 
         <div className='min-w-0 flex-1 space-y-6'>
+          <ProgressBar evaluare={evaluare} />
           <ProiectSection evaluare={evaluare} />
           <EvaluatorSection evaluare={evaluare} />
           <ObiectivSection evaluare={evaluare} />

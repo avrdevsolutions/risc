@@ -2,23 +2,32 @@
 
 import { useState } from 'react'
 
-import { ChevronDown, ChevronUp, Trash2, Edit2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Trash2 } from 'lucide-react'
 
 import { Typography, Stack, Button, Badge } from '@/components/ui'
 import {
   getRiskLevel,
   getRiskColor,
+  ACTIVITATI,
+  PERICOLE,
   PROBABILITATE_LABELS,
   SEVERITATE_LABELS,
 } from '@/lib/constants'
 import type { Risc } from '@/lib/types'
-import { parseJsonArray } from '@/lib/utils'
+import { getLabel, parseJsonArray } from '@/lib/utils'
 
 type Props = {
   risc: Risc
   index: number
   onEdit: () => void
   onDelete: () => void
+}
+
+const RISK_BORDER_COLOR: Record<string, string> = {
+  scazut: 'border-l-success-500',
+  mediu: 'border-l-warning-500',
+  ridicat: 'border-l-warning-600',
+  critic: 'border-l-error-500',
 }
 
 const RiskBadge = ({
@@ -49,13 +58,17 @@ const RiskBadge = ({
 export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
   const [expanded, setExpanded] = useState(false)
 
-  const activitate = risc.activitateCustom || risc.activitate || '—'
-  const pericol = risc.pericolCustom || risc.pericol || '—'
+  const activitateLabel = risc.activitateCustom || getLabel(risc.activitate, ACTIVITATI)
+  const pericolLabel = risc.pericolCustom || getLabel(risc.pericol, PERICOLE)
   const persoaneExpuse = parseJsonArray(risc.persoaneExpuse)
   const masuriExistente = parseJsonArray(risc.masuriExistente)
 
   const hasScoreInitial = risc.probabilitateInitiala && risc.severitateInitiala
   const hasScoreRezidual = risc.probabilitateReziduala && risc.severitateReziduala
+
+  const riskLevel = hasScoreInitial
+    ? getRiskLevel(risc.probabilitateInitiala!, risc.severitateInitiala!)
+    : 'scazut'
 
   const statusLabel: Record<string, string> = {
     deschis: 'Deschis',
@@ -69,7 +82,9 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
   }
 
   return (
-    <div className='rounded-lg border border-primary-100 bg-surface shadow-card'>
+    <div
+      className={`rounded-lg border border-l-4 border-primary-100 bg-surface shadow-card ${RISK_BORDER_COLOR[riskLevel]}`}
+    >
       <div className='flex items-start gap-3 p-4'>
         <span className='flex size-7 shrink-0 items-center justify-center rounded-full bg-navy-700 text-xs font-bold text-white'>
           {index}
@@ -79,10 +94,10 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
           <Stack direction='row' justify='between' align='start' gap='2'>
             <div className='min-w-0'>
               <Typography variant='body-sm' className='font-semibold text-navy-700'>
-                {pericol}
+                {pericolLabel}
               </Typography>
               <Typography variant='caption' className='text-navy-500'>
-                {activitate}
+                {activitateLabel}
               </Typography>
             </div>
             <Stack direction='row' gap='1' className='shrink-0'>
@@ -105,9 +120,6 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
             aria-label={expanded ? 'Restrânge' : 'Extinde'}
           >
             {expanded ? <ChevronUp className='size-4' /> : <ChevronDown className='size-4' />}
-          </Button>
-          <Button variant='ghost' size='icon' onClick={onEdit} aria-label='Editează riscul'>
-            <Edit2 className='size-4' />
           </Button>
           <Button
             variant='ghost'
@@ -174,14 +186,12 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
                   P={risc.probabilitateReziduala} × S={risc.severitateReziduala}={' '}
                   <strong>{risc.probabilitateReziduala! * risc.severitateReziduala!}</strong>
                 </span>
-                {hasScoreRezidual && (
-                  <span className='ml-2'>
-                    <RiskBadge
-                      probabilitate={risc.probabilitateReziduala!}
-                      severitate={risc.severitateReziduala!}
-                    />
-                  </span>
-                )}
+                <span className='ml-2'>
+                  <RiskBadge
+                    probabilitate={risc.probabilitateReziduala!}
+                    severitate={risc.severitateReziduala!}
+                  />
+                </span>
               </div>
             )}
 
@@ -201,6 +211,12 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
                 <span className='text-navy-700'>{risc.termenImplementare}</span>
               </div>
             )}
+          </div>
+
+          <div className='mt-4 flex justify-end'>
+            <Button variant='outline' size='sm' onClick={onEdit}>
+              Editează risc
+            </Button>
           </div>
         </div>
       )}
