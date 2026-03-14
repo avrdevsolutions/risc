@@ -1,10 +1,18 @@
 import { Typography, Stack, Badge } from '@/components/ui'
-import { getRiskLevel, getRiskColor } from '@/lib/constants'
+import { getRiskLevel, getRiskColor, getLabel, AMENINTARI } from '@/lib/constants'
 import type { EvaluareWithRiscuri, Risc } from '@/lib/types'
 
 type Props = { evaluare: EvaluareWithRiscuri }
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1)
+
+const getActivitateLabel = (risc: Risc) => {
+  if (risc.activitate === 'custom') {
+    return risc.activitateCustom || '—'
+  }
+
+  return risc.activitate ? getLabel(risc.activitate, AMENINTARI) : '—'
+}
 
 const RiskLevelBadge = ({ level }: { level: string }) => {
   const colors = getRiskColor(level)
@@ -182,7 +190,7 @@ export const SumarSection = ({ evaluare }: Props) => {
                         <tr key={risc.id} className='border-b border-primary-50 last:border-0'>
                           <td className='px-3 py-2 text-navy-500'>{i + 1}</td>
                           <td className='px-3 py-2 text-navy-700'>
-                            {risc.activitateCustom ?? risc.activitate ?? '—'}
+                            {getActivitateLabel(risc)}
                           </td>
                           <td className='px-3 py-2'>
                             {initialLevel ? (
