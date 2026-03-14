@@ -72,6 +72,16 @@ export const RiscSchema = z
       path: ['probabilitateReziduala'],
     },
   )
+  .refine(
+    (data) =>
+      data.activitate !== 'custom' ||
+      (data.activitateCustom !== undefined &&
+        data.activitateCustom.trim().length >= 3),
+    {
+      message: 'Specificați amenințarea (min. 3 caractere)',
+      path: ['activitateCustom'],
+    },
+  )
 
 export const AprobareSchema = z.object({
   sefSantier: z.string().min(3, 'Numele conducătorului unității este obligatoriu'),
