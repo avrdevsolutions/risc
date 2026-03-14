@@ -44,7 +44,9 @@ export const serializeArrayField = (val: unknown): unknown =>
  */
 export const getLabel = (
   value: string | null | undefined,
-  list: ReadonlyArray<{ value: string; label: string } | { value: string; label: string; icon?: string }>,
+  list: ReadonlyArray<
+    { value: string; label: string } | { value: string; label: string; icon?: string }
+  >,
 ): string => {
   if (!value) return '—'
   const match = list.find((item) => item.value === value)

@@ -2,6 +2,8 @@
 
 import { useEffect } from 'react'
 
+import { isDevelopment } from '@/lib/env'
+
 type ErrorProps = {
   error: Error & { digest?: string }
   reset: () => void
@@ -25,7 +27,7 @@ export default function Error({ error, reset }: ErrorProps) {
       <div className='max-w-md space-y-6 text-center'>
         <h1 className='text-2xl font-bold'>Something went wrong</h1>
         <p className='text-foreground/60'>An unexpected error occurred. Please try again.</p>
-        {process.env.NODE_ENV === 'development' && (
+        {isDevelopment() && (
           <details className='text-left text-sm'>
             <summary className='cursor-pointer font-medium'>Error details</summary>
             <pre className='mt-2 overflow-auto rounded-md bg-foreground/5 p-4 text-xs'>

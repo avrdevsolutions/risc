@@ -85,8 +85,7 @@ export const PUT = async (req: Request, { params }: Params) => {
             r.statusRisc === 'deschis' || r.statusRisc === 'in_lucru' || r.statusRisc === 'inchis'
               ? (r.statusRisc as 'deschis' | 'in_lucru' | 'inchis')
               : 'deschis',
-          createdAt:
-            typeof r.createdAt === 'string' && r.createdAt ? r.createdAt : now,
+          createdAt: typeof r.createdAt === 'string' && r.createdAt ? r.createdAt : now,
           updatedAt: now,
         }))
 
