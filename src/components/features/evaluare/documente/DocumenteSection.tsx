@@ -86,9 +86,6 @@ export const DocumenteSection = ({ evaluare }: Props) => {
         <Stack gap='6'>
           {/* Documente aplicabile */}
           <div>
-            <Typography variant='h4' className='mb-4 text-navy-700'>
-              Documente suport
-            </Typography>
             <Stack gap='3'>
               {DOCUMENTE_SUPORT.map((doc) => (
                 <label

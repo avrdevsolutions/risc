@@ -13,8 +13,10 @@ import { cn } from '@/lib/utils'
 
 import { AprobareSection } from '../aprobare'
 import { CadruOrganizationalSection } from '../cadruOrganizational'
+import { ConcluziiSection } from '../concluzii'
 import { DocumenteSection } from '../documente'
 import { EvaluatorSection } from '../evaluator'
+import { MasuriSection } from '../masuri'
 import { SectiuniNav } from '../nav'
 import { ObiectivSection } from '../obiectiv'
 import { ProiectSection } from '../proiect'
@@ -155,32 +157,6 @@ const StatusBar = ({
   </div>
 )
 
-const MasuriSection = () => (
-  <section id='masuri-section' className='scroll-mt-20'>
-    <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
-      <Typography variant='h3' className='mb-2 text-navy-900'>
-        Măsuri &amp; Mecanisme de Securitate
-      </Typography>
-      <Typography variant='body-sm' className='text-navy-400'>
-        Această secțiune va fi completată într-o versiune viitoare.
-      </Typography>
-    </div>
-  </section>
-)
-
-const ConcluziiSection = () => (
-  <section id='concluzii-section' className='scroll-mt-20'>
-    <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
-      <Typography variant='h3' className='mb-2 text-navy-900'>
-        Concluzii
-      </Typography>
-      <Typography variant='body-sm' className='text-navy-400'>
-        Această secțiune va fi completată într-o versiune viitoare.
-      </Typography>
-    </div>
-  </section>
-)
-
 const ExportSection = ({ id }: { id: string }) => {
   const [isExporting, setIsExporting] = useState(false)
   const [exportError, setExportError] = useState<string | null>(null)
@@ -311,8 +287,8 @@ export const EvaluarePage = ({ id }: Props) => {
           <CadruOrganizationalSection evaluare={evaluare} />
           <RiscuriSection evaluare={evaluare} />
           <SumarSection evaluare={evaluare} />
-          <MasuriSection />
-          <ConcluziiSection />
+          <MasuriSection evaluare={evaluare} />
+          <ConcluziiSection evaluare={evaluare} />
           <AprobareSection evaluare={evaluare} />
           <DocumenteSection evaluare={evaluare} />
           <ExportSection id={id} />

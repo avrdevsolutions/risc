@@ -52,6 +52,30 @@ export const evaluari = sqliteTable('evaluari', {
   cadruBunuriValori: text('cadru_bunuri_valori'),
   cadruSistemeTehnice: text('cadru_sisteme_tehnice'),
   cadruFactoriVulnerabilitate: text('cadru_factori_vulnerabilitate'),
+  // Amplasare & Factori Externi (additional fields)
+  numarPuncteAcces: integer('numar_puncte_acces'),
+  caiAcces: text('cai_acces'),
+  posibilitateDisimulare: text('posibilitate_disimulare'),
+  vecinatatiBifate: text('vecinatati_bifate'),
+  factoriExterni: text('factori_externi'),
+  istoricIncidente: text('istoric_incidente'),
+  // Măsuri & Mecanisme de Securitate (Cap. V)
+  masuriMecanofizice: text('masuri_mecanofizice'),
+  masuriControlAcces: text('masuri_control_acces'),
+  masuriAlarmare: text('masuri_alarmare'),
+  masuriCctv: text('masuri_cctv'),
+  pazaUmana: text('paza_umana'),
+  numarAgenti: integer('numar_agenti'),
+  masuriOrganizatorice: text('masuri_organizatorice'),
+  masuriAsigurari: text('masuri_asigurari'),
+  observatiiMasuri: text('observatii_masuri'),
+  // Concluzii (Cap. VI)
+  nivelRiscGlobalAsumat: text('nivel_risc_global_asumat'),
+  nivelRiscRezidualGlobal: text('nivel_risc_rezidual_global'),
+  termenImplementareGlobal: text('termen_implementare_global'),
+  concluziiGenerale: text('concluzii_generale'),
+  masuriObligatorii: text('masuri_obligatorii'),
+  masuriRecomandate: text('masuri_recomandate'),
 })
 
 export const riscuri = sqliteTable('riscuri', {

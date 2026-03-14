@@ -1,0 +1,1 @@
+export { ConcluziiSection } from './ConcluziiSection'
