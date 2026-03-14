@@ -52,19 +52,28 @@ const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
 const ProgressBar = ({ evaluare }: { evaluare: EvaluareWithRiscuri }) => {
   const progress = computeProgress(evaluare)
   const colorClass =
-    progress >= 80 ? 'text-success-600' : progress >= 40 ? 'text-warning-600' : 'text-error-600'
+    progress >= 80 ? 'text-success-500' : progress >= 40 ? 'text-accent-500' : 'text-error-500'
+  const barColor =
+    progress >= 80
+      ? 'from-success-500 to-success-600'
+      : progress >= 40
+        ? 'from-accent-500 to-accent-600'
+        : 'from-primary-500 to-primary-600'
 
   return (
-    <div className='mb-6 rounded-xl bg-navy-800 px-5 py-4 shadow-card'>
-      <div className='mb-2 flex items-center justify-between'>
+    <div className='mb-6 rounded-2xl bg-navy-900 px-5 py-4 shadow-sm'>
+      <div className='mb-2.5 flex items-center justify-between'>
         <Typography variant='body-sm' className='font-medium text-white'>
           Progres completare documentație
         </Typography>
         <span className={cn('text-sm font-bold', colorClass)}>{progress}% completat</span>
       </div>
-      <div className='h-2.5 overflow-hidden rounded-full bg-navy-700'>
+      <div className='h-2 overflow-hidden rounded-full bg-navy-700'>
         <div
-          className='h-full rounded-full bg-gradient-to-r from-primary-500 to-success-500 transition-all duration-700'
+          className={cn(
+            'h-full rounded-full bg-gradient-to-r transition-all duration-300',
+            barColor,
+          )}
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -81,18 +90,18 @@ const StatusBar = ({
   onMarkComplete: () => void
   isPending: boolean
 }) => (
-  <div className='mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary-100 bg-surface p-4 shadow-card'>
+  <div className='mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-navy-200 bg-white p-4 shadow-sm'>
     <Stack direction='row' align='center' gap='3'>
       <Link
         href='/evaluari'
-        className='flex items-center gap-1.5 text-sm text-navy-500 hover:text-navy-700'
+        className='flex items-center gap-1.5 text-sm font-medium text-navy-500 transition-colors hover:text-navy-800'
       >
         <ArrowLeft className='size-4' />
         Înapoi
       </Link>
-      <span className='text-navy-300'>|</span>
+      <span className='text-navy-200'>|</span>
       <div>
-        <Typography variant='h4' className='text-navy-700'>
+        <Typography variant='h4' className='text-navy-900'>
           {evaluare.denumireProiect ?? 'Evaluare nouă'}
         </Typography>
         {evaluare.adresaLocatie && (
@@ -169,27 +178,46 @@ const ExportSection = ({ id }: { id: string }) => {
 
   return (
     <section id='export-section' className='scroll-mt-20'>
-      <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
-        <Typography variant='h3' className='mb-4 text-navy-700'>
-          📄 Export
+      <div className='rounded-2xl border border-navy-100 bg-white p-6 text-center shadow-sm'>
+        <div className='mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary-50'>
+          <FileDown className='size-7 text-primary-500' />
+        </div>
+        <Typography variant='h3' className='mb-2 text-navy-900'>
+          Documentul este gata de export
         </Typography>
-        <Typography variant='body-sm' className='mb-4 text-navy-500'>
-          Exportați raportul de evaluare a securității fizice în format Microsoft Word (.docx) —
-          Conform Instrucțiunilor M.A.I. nr. 9/2013.
+        <Typography variant='body-sm' className='mb-6 text-navy-500'>
+          Exportați raportul de evaluare în format Microsoft Word (.docx) — Conform Instrucțiunilor
+          M.A.I. nr. 9/2013.
         </Typography>
         {exportError && (
           <Typography variant='body-sm' className='mb-4 text-error-600'>
             {exportError}
           </Typography>
         )}
-        <Button variant='outline' onClick={handleExport} loading={isExporting}>
-          <FileDown className='size-4' />
-          Export Word (.docx)
+        <Button size='lg' onClick={handleExport} loading={isExporting}>
+          <FileDown className='size-5' />
+          Descarcă Word (.docx)
         </Button>
       </div>
     </section>
   )
 }
+
+const LoadingSkeleton = () => (
+  <div className='mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8'>
+    <div className='mb-6 h-16 animate-pulse rounded-2xl bg-navy-100' />
+    <div className='flex gap-6'>
+      <div className='hidden w-56 shrink-0 lg:block'>
+        <div className='h-96 animate-pulse rounded-2xl bg-navy-100' />
+      </div>
+      <div className='min-w-0 flex-1 space-y-4'>
+        {[1, 2, 3].map((i) => (
+          <div key={i} className='h-48 animate-pulse rounded-2xl bg-navy-100' />
+        ))}
+      </div>
+    </div>
+  </div>
+)
 
 export const EvaluarePage = ({ id }: Props) => {
   const { data: evaluare, isLoading, isError } = useEvaluare(id)
@@ -206,21 +234,13 @@ export const EvaluarePage = ({ id }: Props) => {
   }
 
   if (isLoading) {
-    return (
-      <div className='mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8'>
-        <div className='space-y-4'>
-          {[1, 2, 3].map((i) => (
-            <div key={i} className='h-48 animate-pulse rounded-xl bg-primary-50' />
-          ))}
-        </div>
-      </div>
-    )
+    return <LoadingSkeleton />
   }
 
   if (isError || !evaluare) {
     return (
       <div className='mx-auto max-w-screen-xl px-4 py-8 sm:px-6 lg:px-8'>
-        <div className='rounded-xl bg-error-50 p-6 text-center'>
+        <div className='rounded-2xl border border-error-100 bg-error-50 p-6 text-center'>
           <Typography variant='h4' className='text-error-700'>
             Evaluarea nu a putut fi încărcată
           </Typography>

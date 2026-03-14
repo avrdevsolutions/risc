@@ -79,17 +79,17 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
 
   return (
     <div
-      className={`rounded-lg border border-l-4 border-primary-100 bg-surface shadow-card ${RISK_BORDER_COLOR[riskLevel]}`}
+      className={`rounded-xl border border-l-4 border-navy-100 bg-white shadow-sm ${RISK_BORDER_COLOR[riskLevel]}`}
     >
       <div className='flex items-start gap-3 p-4'>
-        <span className='flex size-7 shrink-0 items-center justify-center rounded-full bg-navy-700 text-xs font-bold text-white'>
+        <span className='flex size-7 shrink-0 items-center justify-center rounded-full bg-navy-800 text-xs font-bold text-white'>
           {index}
         </span>
 
         <div className='min-w-0 flex-1'>
           <Stack direction='row' justify='between' align='start' gap='2'>
             <div className='min-w-0'>
-              <Typography variant='body-sm' className='font-semibold text-navy-700'>
+              <Typography variant='body-sm' className='font-semibold text-navy-900'>
                 {amenintareLabel}
               </Typography>
               {risc.descrierePericol && (
@@ -116,6 +116,7 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
             size='icon'
             onClick={() => setExpanded((e) => !e)}
             aria-label={expanded ? 'Restrânge' : 'Extinde'}
+            className='size-8'
           >
             {expanded ? <ChevronUp className='size-4' /> : <ChevronDown className='size-4' />}
           </Button>
@@ -124,7 +125,7 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
             size='icon'
             onClick={onDelete}
             aria-label='Șterge riscul'
-            className='text-error-600 hover:bg-error-50'
+            className='size-8 text-error-600 hover:bg-error-50'
           >
             <Trash2 className='size-4' />
           </Button>
@@ -132,7 +133,7 @@ export const RiscCard = ({ risc, index, onEdit, onDelete }: Props) => {
       </div>
 
       {expanded && (
-        <div className='border-t border-primary-100 p-4'>
+        <div className='border-t border-navy-100 p-4'>
           <div className='grid grid-cols-1 gap-4 text-sm md:grid-cols-2'>
             {risc.descrierePericol && (
               <div className='md:col-span-2'>

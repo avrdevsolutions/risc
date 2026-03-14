@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation'
 
-import { PlusCircle, Copy, Trash2, FileText, AlertCircle } from 'lucide-react'
+import { PlusCircle, Copy, Trash2, ClipboardList, AlertCircle, ArrowRight } from 'lucide-react'
 
-import { Typography, Button, Badge, Stack } from '@/components/ui'
+import { Typography, Button, Stack } from '@/components/ui'
 import {
   useEvaluari,
   useCreateEvaluare,
@@ -12,15 +12,11 @@ import {
   useDuplicateEvaluare,
 } from '@/hooks/use-evaluari'
 import type { Evaluare } from '@/lib/types'
+import { cn } from '@/lib/utils'
 
 const statusLabel: Record<Evaluare['status'], string> = {
   draft: 'Ciornă',
   completed: 'Finalizat',
-}
-
-const statusVariant: Record<Evaluare['status'], 'warning' | 'success'> = {
-  draft: 'warning',
-  completed: 'success',
 }
 
 const formatDate = (iso: string) =>
@@ -41,38 +37,55 @@ const EvaluareCard = ({
   onDuplicate: () => void
   onDelete: () => void
 }) => (
-  <div className='rounded-lg border border-primary-100 bg-surface p-5 shadow-card transition-shadow hover:shadow-md'>
-    <Stack direction='row' justify='between' align='start' gap='3'>
+  <div
+    className='group cursor-pointer rounded-2xl border border-navy-200 bg-white p-5 shadow-sm transition-all hover:border-navy-300 hover:shadow-md'
+    onClick={onOpen}
+    role='button'
+    tabIndex={0}
+    onKeyDown={(e) => e.key === 'Enter' && onOpen()}
+    aria-label={`Deschide evaluarea: ${evaluare.denumireProiect ?? 'Evaluare nouă'}`}
+  >
+    <div className='flex items-start gap-3'>
       <div className='min-w-0 flex-1'>
-        <Stack direction='row' align='center' gap='2' className='mb-1'>
-          <Badge variant={statusVariant[evaluare.status]}>{statusLabel[evaluare.status]}</Badge>
+        {/* Status dot + status text */}
+        <div className='mb-2 flex items-center gap-2'>
+          <span
+            className={cn(
+              'size-2 shrink-0 rounded-full',
+              evaluare.status === 'completed' ? 'bg-success-500' : 'bg-accent-500',
+            )}
+          />
+          <span className='text-xs font-medium text-navy-500'>{statusLabel[evaluare.status]}</span>
           {evaluare.fazaLucrarii && (
-            <Typography variant='caption' className='text-navy-500'>
-              {evaluare.fazaLucrarii}
-            </Typography>
+            <span className='text-xs text-navy-400'>· {evaluare.fazaLucrarii}</span>
           )}
-        </Stack>
-        <Typography variant='h4' className='truncate text-navy-700'>
+        </div>
+
+        {/* Title */}
+        <Typography variant='h4' className='truncate text-navy-900'>
           {evaluare.denumireProiect ?? 'Evaluare nouă'}
         </Typography>
-        {evaluare.adresaLocatie && (
-          <Typography variant='body-sm' className='mt-0.5 truncate text-navy-500'>
-            {evaluare.adresaLocatie}
-          </Typography>
-        )}
-        <Typography variant='caption' className='mt-2 text-navy-400'>
-          Modificat: {formatDate(evaluare.updatedAt)}
-        </Typography>
+
+        {/* Meta info */}
+        <div className='mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1'>
+          {evaluare.adresaLocatie && (
+            <span className='text-xs text-navy-500'>📍 {evaluare.adresaLocatie}</span>
+          )}
+          <span className='text-xs text-navy-400'>Modificat: {formatDate(evaluare.updatedAt)}</span>
+        </div>
       </div>
-      <Stack direction='row' gap='1' className='shrink-0'>
+
+      {/* Action buttons — stop card click propagation */}
+      <div className='flex shrink-0 items-center gap-1' onClick={(e) => e.stopPropagation()}>
         <Button
           variant='ghost'
           size='icon'
           onClick={onDuplicate}
           aria-label='Duplică evaluarea'
           title='Duplică'
+          className='size-8 opacity-0 transition-opacity group-hover:opacity-100'
         >
-          <Copy className='size-4' />
+          <Copy className='size-3.5' />
         </Button>
         <Button
           variant='ghost'
@@ -80,15 +93,25 @@ const EvaluareCard = ({
           onClick={onDelete}
           aria-label='Șterge evaluarea'
           title='Șterge'
-          className='text-error-600 hover:bg-error-50'
+          className='size-8 text-error-600 opacity-0 transition-opacity hover:bg-error-50 group-hover:opacity-100'
         >
-          <Trash2 className='size-4' />
+          <Trash2 className='size-3.5' />
         </Button>
-        <Button size='sm' onClick={onOpen}>
-          Deschide
-        </Button>
-      </Stack>
-    </Stack>
+      </div>
+
+      <ArrowRight className='size-5 shrink-0 self-center text-navy-300 transition-transform group-hover:translate-x-0.5' />
+    </div>
+  </div>
+)
+
+const SkeletonCard = () => (
+  <div className='rounded-2xl border border-navy-200 bg-white p-5'>
+    <div className='mb-2 flex items-center gap-2'>
+      <div className='size-2 animate-pulse rounded-full bg-navy-200' />
+      <div className='h-3 w-16 animate-pulse rounded bg-navy-200' />
+    </div>
+    <div className='mb-2 h-5 w-2/3 animate-pulse rounded-lg bg-navy-200' />
+    <div className='h-3 w-1/2 animate-pulse rounded bg-navy-100' />
   </div>
 )
 
@@ -119,11 +142,11 @@ export const DashboardPage = () => {
     <div className='mx-auto max-w-screen-lg px-4 py-8 sm:px-6 lg:px-8'>
       <Stack direction='row' justify='between' align='center' gap='4' className='mb-8'>
         <div>
-          <Typography variant='h2' className='text-navy-700'>
-            Evaluări de risc
+          <Typography variant='h2' className='text-navy-900'>
+            Evaluările mele
           </Typography>
           <Typography variant='body-sm' className='mt-1 text-navy-500'>
-            Gestionați evaluările de securitate și sănătate în muncă
+            Gestionează evaluările de securitate și sănătate
           </Typography>
         </div>
         <Button onClick={handleCreate} loading={createMutation.isPending} className='shrink-0'>
@@ -135,13 +158,13 @@ export const DashboardPage = () => {
       {isLoading && (
         <Stack gap='3'>
           {[1, 2, 3].map((i) => (
-            <div key={i} className='h-28 animate-pulse rounded-lg bg-primary-50' />
+            <SkeletonCard key={i} />
           ))}
         </Stack>
       )}
 
       {isError && (
-        <div className='flex items-center gap-3 rounded-lg bg-error-50 p-4 text-error-700'>
+        <div className='flex items-center gap-3 rounded-xl border border-error-100 bg-error-50 p-4 text-error-700'>
           <AlertCircle className='size-5 shrink-0' />
           <Typography variant='body-sm'>
             Eroare la încărcarea evaluărilor. Verificați conexiunea la baza de date.
@@ -150,13 +173,15 @@ export const DashboardPage = () => {
       )}
 
       {!isLoading && !isError && evaluari?.length === 0 && (
-        <div className='flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary-200 py-16 text-center'>
-          <FileText className='mb-4 size-12 text-primary-300' />
-          <Typography variant='h4' className='text-navy-600'>
+        <div className='flex flex-col items-center justify-center rounded-2xl border-2 border-dashed border-navy-200 py-20 text-center'>
+          <div className='mb-4 flex size-16 items-center justify-center rounded-2xl bg-primary-50'>
+            <ClipboardList className='size-8 text-primary-500' />
+          </div>
+          <Typography variant='h4' className='text-navy-700'>
             Nicio evaluare creată încă
           </Typography>
-          <Typography variant='body-sm' className='mt-1 text-navy-400'>
-            Creați primul raport de evaluare a securității fizice
+          <Typography variant='body-sm' className='mt-1 max-w-xs text-navy-400'>
+            Creați primul raport de evaluare a securității fizice pentru a începe
           </Typography>
           <Button className='mt-6' onClick={handleCreate} loading={createMutation.isPending}>
             <PlusCircle className='size-4' />

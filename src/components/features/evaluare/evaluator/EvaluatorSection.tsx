@@ -57,9 +57,9 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
 
   return (
     <section id='evaluator-section' className='scroll-mt-20'>
-      <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
-        <Typography variant='h3' className='mb-6 text-navy-700'>
-          👤 Evaluator &amp; Date Document
+      <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
+        <Typography variant='h3' className='mb-6 text-navy-900'>
+          Evaluator &amp; Date Document
         </Typography>
 
         <form noValidate>
@@ -73,7 +73,7 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
                   {...register('numeEvaluator')}
                   type='text'
                   placeholder='Nume și prenume'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
                 {errors.numeEvaluator && (
                   <p className='mt-1 text-xs text-error-600'>{errors.numeEvaluator.message}</p>
@@ -87,7 +87,7 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
                   {...register('functieEvaluator')}
                   type='text'
                   placeholder='Ex: Consultant securitate, Expert evaluator'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
                 {errors.functieEvaluator && (
                   <p className='mt-1 text-xs text-error-600'>{errors.functieEvaluator.message}</p>
@@ -104,7 +104,7 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
                   {...register('firmaEvaluator')}
                   type='text'
                   placeholder='Denumire firmă'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
               </div>
               <div>
@@ -115,7 +115,7 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
                   {...register('nrDocument')}
                   type='text'
                   placeholder='Ex: ER-2024-001'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
               </div>
             </div>
@@ -125,11 +125,7 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Data evaluării <span className='text-error-500'>*</span>
                 </label>
-                <input
-                  {...register('dataEvaluarii')}
-                  type='date'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                />
+                <input {...register('dataEvaluarii')} type='date' className='form-input' />
                 {errors.dataEvaluarii && (
                   <p className='mt-1 text-xs text-error-600'>{errors.dataEvaluarii.message}</p>
                 )}
@@ -138,11 +134,7 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Data revizuirii <span className='text-error-500'>*</span>
                 </label>
-                <input
-                  {...register('dataRevizuirii')}
-                  type='date'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                />
+                <input {...register('dataRevizuirii')} type='date' className='form-input' />
                 {errors.dataRevizuirii && (
                   <p className='mt-1 text-xs text-error-600'>{errors.dataRevizuirii.message}</p>
                 )}

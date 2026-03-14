@@ -4,18 +4,42 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    /* Inter is the preferred font — falls back to system-ui if not installed */
-    --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --background: 60 6% 98%;
+    --foreground: 20 7% 11%;
+    --font-inter: 'Inter';
   }
 
-  .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#fafaf9] font-sans text-[#1c1917] antialiased;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* Reusable form input class — consistent across all form sections */
+  .form-input {
+    @apply w-full rounded-xl border border-navy-200 bg-white px-4 py-3 text-base text-navy-900 transition-all duration-150 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none;
+    box-shadow: none;
+  }
+  .form-input:focus {
+    box-shadow: 0 0 0 3px rgb(99 102 241 / 0.1);
+  }
+  .form-input.is-error {
+    @apply border-error-500;
+    box-shadow: 0 0 0 3px rgb(239 68 68 / 0.1);
   }
 }

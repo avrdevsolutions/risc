@@ -67,9 +67,9 @@ export const ObiectivSection = ({ evaluare }: Props) => {
 
   return (
     <section id='obiectiv-section' className='scroll-mt-20'>
-      <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
-        <Typography variant='h3' className='mb-6 text-navy-700'>
-          📍 Amplasare &amp; Factori Externi
+      <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
+        <Typography variant='h3' className='mb-6 text-navy-900'>
+          Amplasare &amp; Factori Externi
         </Typography>
 
         <form noValidate>
@@ -83,17 +83,14 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                   {...register('suprafataTotala')}
                   type='text'
                   placeholder='Ex: 1200'
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                  className='form-input'
                 />
               </div>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Zonă amplasare
                 </label>
-                <select
-                  {...register('tipImprejmuire')}
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                >
+                <select {...register('tipImprejmuire')} className='form-input'>
                   <option value=''>Selectați...</option>
                   {ZONA_AMPLASARE.map((zona) => (
                     <option key={zona} value={zona}>
@@ -106,10 +103,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Accesibilitate
                 </label>
-                <select
-                  {...register('tipAcces')}
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                >
+                <select {...register('tipAcces')} className='form-input'>
                   <option value=''>Selectați...</option>
                   {ACCESIBILITATE.map((acc) => (
                     <option key={acc} value={acc}>
@@ -125,10 +119,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Nivel amenințări zonă
                 </label>
-                <select
-                  {...register('tipImprejmuire')}
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                >
+                <select {...register('tipImprejmuire')} className='form-input'>
                   <option value=''>Selectați...</option>
                   {NIVEL_AMENINTARI.map((nivel) => (
                     <option key={nivel} value={nivel}>
@@ -141,10 +132,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Regim activitate
                 </label>
-                <select
-                  {...register('tipAcces')}
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                >
+                <select {...register('tipAcces')} className='form-input'>
                   <option value=''>Selectați...</option>
                   {REGIM_ACTIVITATE.map((regim) => (
                     <option key={regim} value={regim}>
@@ -163,7 +151,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                 {...register('descriereAmplasare')}
                 rows={3}
                 placeholder='Descrieți amplasamentul obiectivului, vecinătățile și factorii externi de risc...'
-                className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                className='form-input'
               />
             </div>
 
@@ -188,7 +176,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                       {...register(field)}
                       type='text'
                       placeholder={`Vecinătate ${label.toLowerCase()}`}
-                      className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
+                      className='form-input'
                     />
                   </div>
                 ))}

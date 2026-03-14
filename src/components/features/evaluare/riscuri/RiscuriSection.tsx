@@ -26,27 +26,36 @@ const SumarRiscuri = ({ riscuri }: { riscuri: Risc[] }) => {
 
   return (
     <div className='grid grid-cols-3 gap-2'>
-      <div className='rounded-lg bg-error-50 p-3 text-center'>
+      <div className='rounded-xl border border-error-100 bg-error-50 p-3 text-center'>
         <Typography variant='h3' className='text-error-600'>
           {counts.ridicat}
         </Typography>
-        <Typography variant='caption' className='text-error-700'>
+        <Typography
+          variant='caption'
+          className='font-medium uppercase tracking-wide text-error-700'
+        >
           Ridicate
         </Typography>
       </div>
-      <div className='rounded-lg bg-warning-50 p-3 text-center'>
+      <div className='rounded-xl border border-warning-100 bg-warning-50 p-3 text-center'>
         <Typography variant='h3' className='text-warning-600'>
           {counts.mediu}
         </Typography>
-        <Typography variant='caption' className='text-warning-700'>
+        <Typography
+          variant='caption'
+          className='font-medium uppercase tracking-wide text-warning-700'
+        >
           Medii
         </Typography>
       </div>
-      <div className='rounded-lg bg-success-50 p-3 text-center'>
+      <div className='rounded-xl border border-success-100 bg-success-50 p-3 text-center'>
         <Typography variant='h3' className='text-success-600'>
           {counts.scazut}
         </Typography>
-        <Typography variant='caption' className='text-success-700'>
+        <Typography
+          variant='caption'
+          className='font-medium uppercase tracking-wide text-success-700'
+        >
           Scăzute
         </Typography>
       </div>
@@ -100,10 +109,10 @@ export const RiscuriSection = ({ evaluare }: Props) => {
 
   return (
     <section id='riscuri-section' className='scroll-mt-20'>
-      <div className='rounded-xl border border-primary-100 bg-surface p-6 shadow-card'>
+      <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
         <Stack direction='row' justify='between' align='center' gap='4' className='mb-6'>
-          <Typography variant='h3' className='text-navy-700'>
-            ⚠️ Surse de Risc
+          <Typography variant='h3' className='text-navy-900'>
+            Surse de risc identificate
           </Typography>
         </Stack>
 
@@ -133,7 +142,7 @@ export const RiscuriSection = ({ evaluare }: Props) => {
         <button
           type='button'
           onClick={() => setAddOpen(true)}
-          className='flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary-300 px-4 py-3 text-sm font-medium text-primary-600 transition-colors hover:border-primary-400 hover:bg-primary-50'
+          className='flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-navy-200 px-4 py-3 text-sm font-medium text-navy-500 transition-colors hover:border-primary-300 hover:bg-primary-50 hover:text-primary-600'
         >
           <Plus className='size-4' />
           Adaugă amenințare
