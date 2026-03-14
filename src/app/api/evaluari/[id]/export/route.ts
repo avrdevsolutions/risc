@@ -1,5 +1,7 @@
 import { eq } from 'drizzle-orm'
 
+import { checkOwnership } from '@/lib/api-utils'
+import { auth } from '@/lib/auth'
 import { generateEvaluareDocx } from '@/lib/docx-generator'
 
 import { db } from '../../../../../../db'
@@ -9,6 +11,14 @@ type Params = { params: Promise<{ id: string }> }
 
 export const GET = async (_req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     const { id } = await params
 
     const [evaluare] = await db.select().from(evaluari).where(eq(evaluari.id, id))
@@ -18,6 +28,8 @@ export const GET = async (_req: Request, { params }: Params) => {
         headers: { 'Content-Type': 'application/json' },
       })
     }
+    const ownershipError = checkOwnership(evaluare.userId, session.user.id)
+    if (ownershipError) return ownershipError
 
     const riscuriList = await db.select().from(riscuri).where(eq(riscuri.evaluareId, id))
 
@@ -39,3 +51,4 @@ export const GET = async (_req: Request, { params }: Params) => {
     })
   }
 }
+

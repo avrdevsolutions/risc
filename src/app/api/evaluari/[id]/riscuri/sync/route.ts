@@ -3,6 +3,9 @@ import { NextResponse } from 'next/server'
 import { asc, eq } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+import { checkOwnership } from '@/lib/api-utils'
+import { auth } from '@/lib/auth'
+
 import { db } from '../../../../../../../db'
 import { evaluari, riscuri } from '../../../../../../../db/schema'
 
@@ -23,12 +26,18 @@ const toNullableString = (val: unknown): string | null => {
  */
 export const PUT = async (req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
 
     const [evaluare] = await db.select().from(evaluari).where(eq(evaluari.id, id))
     if (!evaluare) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
+    const ownershipError = checkOwnership(evaluare.userId, session.user.id)
+    if (ownershipError) return ownershipError
 
     const body = await req.json()
 

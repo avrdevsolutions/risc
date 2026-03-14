@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import { eq, asc } from 'drizzle-orm'
 import { nanoid } from 'nanoid'
 
+import { checkOwnership } from '@/lib/api-utils'
+import { auth } from '@/lib/auth'
 import { serializeArrayField } from '@/lib/utils'
 
 import { db } from '../../../../../../db'
@@ -12,11 +14,17 @@ type Params = { params: Promise<{ id: string }> }
 
 export const GET = async (_req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const [evaluare] = await db.select().from(evaluari).where(eq(evaluari.id, id))
     if (!evaluare) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
+    const ownershipError = checkOwnership(evaluare.userId, session.user.id)
+    if (ownershipError) return ownershipError
     const list = await db
       .select()
       .from(riscuri)
@@ -31,11 +39,17 @@ export const GET = async (_req: Request, { params }: Params) => {
 
 export const POST = async (req: Request, { params }: Params) => {
   try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     const { id } = await params
     const [evaluare] = await db.select().from(evaluari).where(eq(evaluari.id, id))
     if (!evaluare) {
       return NextResponse.json({ error: 'Evaluarea nu a fost găsită' }, { status: 404 })
     }
+    const ownershipError = checkOwnership(evaluare.userId, session.user.id)
+    if (ownershipError) return ownershipError
 
     const body = await req.json()
     const now = new Date().toISOString()
