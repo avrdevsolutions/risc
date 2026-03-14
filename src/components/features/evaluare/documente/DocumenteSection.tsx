@@ -32,14 +32,22 @@ export const DocumenteSection = ({ evaluare }: Props) => {
   const [selectedDoc, setSelectedDoc] = useState<string[]>(
     parseStringArray(evaluare.documenteAplicabile),
   )
-  const [selectedAnexe, setSelectedAnexe] = useState<string[]>(
-    parseStringArray(evaluare.anexeSelectate),
-  )
+  const [selectedAnexe, setSelectedAnexe] = useState<string[]>(() => {
+    const saved = parseStringArray(evaluare.anexeSelectate)
+    if (saved.length > 0) return saved
+    // Pre-select default cadru legal items for new evaluations
+    return CADRU_LEGAL.filter((item) => item.checked).map((item) => item.value)
+  })
   const [observatii, setObservatii] = useState(evaluare.observatiiDocumente ?? '')
 
   useEffect(() => {
     setSelectedDoc(parseStringArray(evaluareRef.current.documenteAplicabile))
-    setSelectedAnexe(parseStringArray(evaluareRef.current.anexeSelectate))
+    const savedAnexe = parseStringArray(evaluareRef.current.anexeSelectate)
+    setSelectedAnexe(
+      savedAnexe.length > 0
+        ? savedAnexe
+        : CADRU_LEGAL.filter((item) => item.checked).map((item) => item.value),
+    )
     setObservatii(evaluareRef.current.observatiiDocumente ?? '')
   }, [evaluare.id])
 
@@ -119,7 +127,6 @@ export const DocumenteSection = ({ evaluare }: Props) => {
                     checked={selectedAnexe.includes(item.value)}
                     onChange={() => toggleAnexa(item.value)}
                     className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
-                    defaultChecked={item.checked}
                   />
                   <Stack direction='row' align='center' gap='2'>
                     <FileCheck className='size-4 shrink-0 text-primary-500' />

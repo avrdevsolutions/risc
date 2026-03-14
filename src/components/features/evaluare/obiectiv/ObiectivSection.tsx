@@ -9,13 +9,7 @@ import { z } from 'zod'
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useAutosave } from '@/hooks/useAutosave'
-import {
-  ZONA_AMPLASARE,
-  ACCESIBILITATE,
-  NIVEL_AMENINTARI,
-  REGIM_ACTIVITATE,
-  FLUX_PERSOANE,
-} from '@/lib/constants'
+import { ZONA_AMPLASARE, ACCESIBILITATE, NIVEL_AMENINTARI, REGIM_ACTIVITATE } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
 
 import { AutosaveIndicator } from '../AutosaveIndicator'
@@ -132,7 +126,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                   Nivel amenințări zonă
                 </label>
                 <select
-                  {...register('vecinNord')}
+                  {...register('tipImprejmuire')}
                   className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
                 >
                   <option value=''>Selectați...</option>
@@ -148,29 +142,13 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                   Regim activitate
                 </label>
                 <select
-                  {...register('vecinEst')}
+                  {...register('tipAcces')}
                   className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
                 >
                   <option value=''>Selectați...</option>
                   {REGIM_ACTIVITATE.map((regim) => (
                     <option key={regim} value={regim}>
                       {regim}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                  Flux persoane
-                </label>
-                <select
-                  {...register('vecinSud')}
-                  className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
-                >
-                  <option value=''>Selectați...</option>
-                  {FLUX_PERSOANE.map((flux) => (
-                    <option key={flux} value={flux}>
-                      {flux}
                     </option>
                   ))}
                 </select>
@@ -196,10 +174,10 @@ export const ObiectivSection = ({ evaluare }: Props) => {
               <div className='grid grid-cols-2 gap-4'>
                 {(
                   [
-                    { field: 'vecinVest', label: 'Nord' },
-                    { field: 'vecinNord', label: 'Est' },
-                    { field: 'vecinEst', label: 'Sud' },
-                    { field: 'vecinSud', label: 'Vest' },
+                    { field: 'vecinNord', label: 'Nord' },
+                    { field: 'vecinEst', label: 'Est' },
+                    { field: 'vecinSud', label: 'Sud' },
+                    { field: 'vecinVest', label: 'Vest' },
                   ] as const
                 ).map(({ field, label }) => (
                   <div key={field}>
