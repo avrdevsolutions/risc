@@ -272,8 +272,8 @@ export const EvaluarePage = ({ id }: Props) => {
     (s) => s.evaluareDataMap[id]?.denumireProiect as string | undefined,
   )
 
-  // Reset the sync store whenever the evaluare ID changes so that isDirty and
-  // lastSyncedAt from a previous evaluation do not bleed into the new one.
+  // Reset the sync store whenever the evaluare ID changes so that isDirty
+  // from a previous evaluation does not bleed into the new one.
   // Use a ref to skip the reset on the very first mount (no "previous" ID).
   const previousEvaluareIdRef = useRef<string | null>(null)
   useEffect(() => {
@@ -394,8 +394,6 @@ export const EvaluarePage = ({ id }: Props) => {
         onClose={() => setMobileNavOpen(false)}
         progress={progress}
       />
-
-      {/* Conflict resolution dialog */}
     </EvaluareSyncProvider>
   )
 }

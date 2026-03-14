@@ -1,15 +1,8 @@
 'use client'
 
-import { ConflictDialog } from './ConflictDialog'
 import { SyncButton } from './SyncButton'
 
 /**
- * Composes the floating SyncButton and the ConflictDialog into a single
- * component so the sync section barrel exports a single public surface.
+ * Floating save button — wraps SyncButton for a single sync barrel export.
  */
-export const SyncControls = () => (
-  <>
-    <SyncButton />
-    <ConflictDialog />
-  </>
-)
+export const SyncControls = () => <SyncButton />
