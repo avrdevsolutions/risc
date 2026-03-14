@@ -20,6 +20,10 @@ import { AutosaveIndicator } from '../AutosaveIndicator'
 
 type Props = { evaluare: Evaluare }
 
+const toggleItem = (list: string[], setList: (val: string[]) => void, item: string) => {
+  setList(list.includes(item) ? list.filter((v) => v !== item) : [...list, item])
+}
+
 export const CadruOrganizationalSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
@@ -58,20 +62,12 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
     setFactoriVulnerabilitate(ev.cadruFactoriVulnerabilitate ?? '')
   }, [evaluare.id])
 
-  const toggleItem = (
-    list: string[],
-    setList: (val: string[]) => void,
-    item: string,
-  ) => {
-    setList(list.includes(item) ? list.filter((v) => v !== item) : [...list, item])
-  }
-
   const autosaveValues = {
     cadruRegimActivitate: regimActivitate,
     cadruProgramLucru: programLucru,
     cadruFluxPersoane: fluxPersoane,
     cadruFluxBunuri: fluxBunuri,
-    cadruNumarAngajati: numarAngajati !== '' ? Number(numarAngajati) : null,
+    cadruNumarAngajati: numarAngajati !== '' ? (parseInt(numarAngajati, 10) || null) : null,
     cadruZoneFunctionale: JSON.stringify(zoneFunctionale),
     cadruBunuriValori: JSON.stringify(bunuriValori),
     cadruSistemeTehnice: JSON.stringify(sistemeTehnice),
