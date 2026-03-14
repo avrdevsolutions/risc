@@ -122,16 +122,22 @@ export const DatePicker = ({
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
 
+  // Track whether the dialog has ever been opened so we don't steal focus
+  // from other elements when the component first mounts (open === false).
+  const hasOpenedRef = useRef(false)
+
   // Auto-focus first focusable element in dialog when opened;
-  // return focus to trigger when closed.
+  // return focus to trigger only when transitioning from open → closed
+  // (not on initial mount when open is already false).
   useEffect(() => {
     if (open) {
+      hasOpenedRef.current = true
       // Focus the selected or today button, falling back to the first day cell
       const firstDay = dialogRef.current?.querySelector<HTMLElement>(
         'button[aria-pressed="true"], button[aria-label]',
       )
       firstDay?.focus()
-    } else {
+    } else if (hasOpenedRef.current) {
       triggerRef.current?.focus()
     }
   }, [open])
