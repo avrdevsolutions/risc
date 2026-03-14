@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { X } from 'lucide-react'
+import { ArrowRight, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { useForm, Controller } from 'react-hook-form'
 
 import { Typography, Stack, Button } from '@/components/ui'
@@ -14,15 +14,15 @@ import {
   MASURI_COLECTIVE,
   MASURI_ORGANIZATORICE,
   MASURI_EIP,
-  PROBABILITATE_LABELS,
-  SEVERITATE_LABELS,
   getRiskLevel,
   getRiskColor,
 } from '@/lib/constants'
 import type { RiscFormValues } from '@/lib/schemas'
 import { RiscSchema } from '@/lib/schemas'
 import type { Risc } from '@/lib/types'
-import { parseJsonArray } from '@/lib/utils'
+import { cn, parseJsonArray } from '@/lib/utils'
+
+import { RiscMatrix } from './RiscMatrix'
 
 type Props = {
   onClose: () => void
@@ -31,25 +31,137 @@ type Props = {
   isPending?: boolean
 }
 
-const ALL_MASURI = [...MASURI_COLECTIVE, ...MASURI_ORGANIZATORICE, ...MASURI_EIP]
+const RISK_LABELS: Record<string, string> = {
+  critic: 'Critic',
+  ridicat: 'Ridicat',
+  mediu: 'Mediu',
+  scazut: 'Scăzut',
+}
 
 const ScoreDisplay = ({ p, s }: { p: number; s: number }) => {
   if (!p || !s) return null
   const level = getRiskLevel(p, s)
   const colors = getRiskColor(level)
   const score = p * s
-  const labels: Record<string, string> = {
-    critic: 'Critic',
-    ridicat: 'Ridicat',
-    mediu: 'Mediu',
-    scazut: 'Scăzut',
-  }
   return (
     <span
       className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold ${colors.bg} ${colors.text}`}
     >
-      Scor: {score} — {labels[level]}
+      Scor: {score} — {RISK_LABELS[level]}
     </span>
+  )
+}
+
+type MasurGroupProps = {
+  title: string
+  items: ReadonlyArray<{ value: string; label: string }>
+  selected: string[]
+  onChange: (value: string, checked: boolean) => void
+}
+
+const MasurGroup = ({ title, items, selected, onChange }: MasurGroupProps) => {
+  const [open, setOpen] = useState(true)
+  const selectedCount = items.filter((i) => selected.includes(i.value)).length
+
+  return (
+    <div className='rounded-lg border border-primary-100'>
+      <button
+        type='button'
+        onClick={() => setOpen((v) => !v)}
+        className='flex w-full items-center justify-between px-3 py-2 text-left text-sm font-semibold text-navy-700 hover:bg-primary-50'
+      >
+        <span>
+          {title}
+          {selectedCount > 0 && (
+            <span className='ml-2 rounded-full bg-primary-100 px-1.5 py-0.5 text-xs text-primary-700'>
+              {selectedCount}
+            </span>
+          )}
+        </span>
+        {open ? (
+          <ChevronDown className='size-4 text-navy-400' />
+        ) : (
+          <ChevronRight className='size-4 text-navy-400' />
+        )}
+      </button>
+      {open && (
+        <div className='grid grid-cols-2 gap-1.5 border-t border-primary-100 px-3 py-2'>
+          {items.map((m) => (
+            <label
+              key={m.value}
+              className='flex cursor-pointer items-center gap-2 text-sm text-navy-700'
+            >
+              <input
+                type='checkbox'
+                value={m.value}
+                checked={selected.includes(m.value)}
+                onChange={(e) => onChange(m.value, e.target.checked)}
+                className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
+              />
+              {m.label}
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+const RiskComparisonWidget = ({
+  pInit,
+  sInit,
+  pRez,
+  sRez,
+}: {
+  pInit: number
+  sInit: number
+  pRez: number
+  sRez: number
+}) => {
+  const initScore = pInit * sInit
+  const rezScore = pRez * sRez
+  const initLevel = getRiskLevel(pInit, sInit)
+  const rezLevel = getRiskLevel(pRez, sRez)
+  const initColors = getRiskColor(initLevel)
+  const rezColors = getRiskColor(rezLevel)
+  const reduction = initScore > 0 ? Math.round(((initScore - rezScore) / initScore) * 100) : 0
+  const isValid = rezScore <= initScore
+
+  return (
+    <div className='rounded-lg border border-primary-100 bg-primary-50 p-3'>
+      <div className='flex items-center justify-center gap-3'>
+        <span
+          className={cn(
+            'rounded-lg px-3 py-1.5 text-sm font-bold',
+            initColors.bg,
+            initColors.text,
+          )}
+        >
+          {initScore} {RISK_LABELS[initLevel].toUpperCase()}
+        </span>
+        <ArrowRight className='size-5 text-navy-400' />
+        <span
+          className={cn(
+            'rounded-lg px-3 py-1.5 text-sm font-bold',
+            rezColors.bg,
+            rezColors.text,
+          )}
+        >
+          {rezScore} {RISK_LABELS[rezLevel].toUpperCase()}
+        </span>
+      </div>
+      <div className='mt-2 text-center text-xs'>
+        {isValid ? (
+          <span className='font-semibold text-success-600'>
+            ↓ {reduction}% reducere risc
+          </span>
+        ) : (
+          <span className='font-semibold text-error-600'>
+            ⚠️ Riscul rezidual nu poate depăși riscul inițial
+          </span>
+        )}
+      </div>
+    </div>
   )
 }
 
@@ -248,75 +360,67 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                 </Typography>
                 <ScoreDisplay p={pInit} s={sInit} />
               </Stack>
-              <div className='grid grid-cols-2 gap-4'>
-                <div>
-                  <label className={labelCls}>
-                    Probabilitate (1-5) <span className='text-error-500'>*</span>
-                  </label>
-                  <select
-                    {...register('probabilitateInitiala', { valueAsNumber: true })}
-                    className={inputCls}
-                  >
-                    {PROBABILITATE_LABELS.map((label, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1} — {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className={labelCls}>
-                    Severitate (1-5) <span className='text-error-500'>*</span>
-                  </label>
-                  <select
-                    {...register('severitateInitiala', { valueAsNumber: true })}
-                    className={inputCls}
-                  >
-                    {SEVERITATE_LABELS.map((label, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1} — {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <Controller
+                name='probabilitateInitiala'
+                control={control}
+                render={({ field: pField }) => (
+                  <Controller
+                    name='severitateInitiala'
+                    control={control}
+                    render={({ field: sField }) => (
+                      <RiscMatrix
+                        probabilitate={pField.value}
+                        severitate={sField.value}
+                        onChange={(p, s) => {
+                          pField.onChange(p)
+                          sField.onChange(s)
+                        }}
+                      />
+                    )}
+                  />
+                )}
+              />
             </div>
 
-            {/* Măsuri existente */}
+            {/* Măsuri existente — grouped */}
             <div>
               <label className={labelCls}>
                 Măsuri de protecție existente <span className='text-error-500'>*</span>
               </label>
-              <div className='grid grid-cols-2 gap-2'>
-                <Controller
-                  name='masuriExistente'
-                  control={control}
-                  render={({ field }) => (
-                    <>
-                      {ALL_MASURI.map((m) => (
-                        <label
-                          key={m.value}
-                          className='flex cursor-pointer items-center gap-2 text-sm text-navy-700'
-                        >
-                          <input
-                            type='checkbox'
-                            value={m.value}
-                            checked={field.value?.includes(m.value)}
-                            onChange={(e) => {
-                              const next = e.target.checked
-                                ? [...(field.value ?? []), m.value]
-                                : (field.value ?? []).filter((v) => v !== m.value)
-                              field.onChange(next)
-                            }}
-                            className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
-                          />
-                          {m.label}
-                        </label>
-                      ))}
-                    </>
-                  )}
-                />
-              </div>
+              <Controller
+                name='masuriExistente'
+                control={control}
+                render={({ field }) => {
+                  const handleChange = (value: string, checked: boolean) => {
+                    const next = checked
+                      ? [...(field.value ?? []), value]
+                      : (field.value ?? []).filter((v) => v !== value)
+                    field.onChange(next)
+                  }
+                  return (
+                    <Stack gap='2'>
+                      <MasurGroup
+                        title='1. EIP (Echipament Individual de Protecție)'
+                        items={MASURI_EIP}
+                        selected={field.value ?? []}
+                        onChange={handleChange}
+                      />
+                      <MasurGroup
+                        title='2. Măsuri Colective'
+                        items={MASURI_COLECTIVE}
+                        selected={field.value ?? []}
+                        onChange={handleChange}
+                      />
+                      <MasurGroup
+                        title='3. Măsuri Organizatorice'
+                        items={MASURI_ORGANIZATORICE}
+                        selected={field.value ?? []}
+                        onChange={handleChange}
+                      />
+                    </Stack>
+                  )
+                }}
+              />
               {errors.masuriExistente && (
                 <p className={errorCls}>{errors.masuriExistente.message}</p>
               )}
@@ -351,42 +455,33 @@ export const RiscFormModal = ({ onClose, onSubmit, initialData, isPending }: Pro
                 </Typography>
                 <ScoreDisplay p={pRez} s={sRez} />
               </Stack>
-              <div className='grid grid-cols-2 gap-4'>
-                <div>
-                  <label className={labelCls}>
-                    Probabilitate reziduală <span className='text-error-500'>*</span>
-                  </label>
-                  <select
-                    {...register('probabilitateReziduala', { valueAsNumber: true })}
-                    className={inputCls}
-                  >
-                    {PROBABILITATE_LABELS.map((label, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1} — {label}
-                      </option>
-                    ))}
-                  </select>
-                  {errors.probabilitateReziduala && (
-                    <p className={errorCls}>{errors.probabilitateReziduala.message}</p>
-                  )}
-                </div>
-                <div>
-                  <label className={labelCls}>
-                    Severitate reziduală <span className='text-error-500'>*</span>
-                  </label>
-                  <select
-                    {...register('severitateReziduala', { valueAsNumber: true })}
-                    className={inputCls}
-                  >
-                    {SEVERITATE_LABELS.map((label, i) => (
-                      <option key={i + 1} value={i + 1}>
-                        {i + 1} — {label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <Controller
+                name='probabilitateReziduala'
+                control={control}
+                render={({ field: pField }) => (
+                  <Controller
+                    name='severitateReziduala'
+                    control={control}
+                    render={({ field: sField }) => (
+                      <RiscMatrix
+                        probabilitate={pField.value}
+                        severitate={sField.value}
+                        onChange={(p, s) => {
+                          pField.onChange(p)
+                          sField.onChange(s)
+                        }}
+                      />
+                    )}
+                  />
+                )}
+              />
+              {errors.probabilitateReziduala && (
+                <p className={errorCls}>{errors.probabilitateReziduala.message}</p>
+              )}
             </div>
+
+            {/* Before → After comparison */}
+            <RiskComparisonWidget pInit={pInit} sInit={sInit} pRez={pRez} sRez={sRez} />
 
             {/* Responsabil */}
             <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>

@@ -1,15 +1,18 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Typography, Stack, Button } from '@/components/ui'
+import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
+import { useAutosave } from '@/hooks/useAutosave'
 import { TIP_IMPREJMUIRE, TIP_ACCES } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
+
+import { AutosaveIndicator } from '../AutosaveIndicator'
 
 const ObiectivSchema = z.object({
   suprafataTotala: z.string().optional(),
@@ -44,21 +47,27 @@ export const ObiectivSection = ({ evaluare }: Props) => {
 
   const {
     register,
-    handleSubmit,
+    watch,
     reset,
-    formState: { isDirty },
   } = useForm<ObiectivFormValues>({
     resolver: zodResolver(ObiectivSchema),
     defaultValues: toFormValues(evaluare),
   })
 
+  const values = watch()
+
   useEffect(() => {
     reset(toFormValues(evaluareRef.current))
   }, [evaluare.id, reset])
 
-  const onSubmit = (data: ObiectivFormValues) => {
-    update.mutate(data)
-  }
+  const handleSave = useCallback(
+    async (data: Partial<ObiectivFormValues>) => {
+      await update.mutateAsync(data as Partial<Evaluare>)
+    },
+    [update],
+  )
+
+  const status = useAutosave({ values, onSave: handleSave })
 
   return (
     <section id='obiectiv-section' className='scroll-mt-20'>
@@ -67,7 +76,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
           🏗️ Descriere Amplasament
         </Typography>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form noValidate>
           <Stack gap='6'>
             <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
               <div>
@@ -153,11 +162,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
               </div>
             </div>
 
-            <div className='flex justify-end'>
-              <Button type='submit' loading={update.isPending} disabled={!isDirty}>
-                Salvează amplasament
-              </Button>
-            </div>
+            <AutosaveIndicator status={status} />
           </Stack>
         </form>
       </div>

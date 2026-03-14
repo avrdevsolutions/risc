@@ -2,9 +2,9 @@
 
 import { useState } from 'react'
 
-import { PlusCircle, AlertTriangle } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
-import { Typography, Stack, Button } from '@/components/ui'
+import { Typography, Stack } from '@/components/ui'
 import { useAddRisc, useUpdateRisc, useDeleteRisc } from '@/hooks/use-riscuri'
 import { getRiskLevel } from '@/lib/constants'
 import type { RiscFormValues } from '@/lib/schemas'
@@ -113,10 +113,6 @@ export const RiscuriSection = ({ evaluare }: Props) => {
           <Typography variant='h3' className='text-navy-700'>
             ⚠️ Identificare Riscuri
           </Typography>
-          <Button onClick={() => setAddOpen(true)}>
-            <PlusCircle className='size-4' />
-            Adaugă risc
-          </Button>
         </Stack>
 
         {evaluare.riscuri.length > 0 && (
@@ -126,21 +122,11 @@ export const RiscuriSection = ({ evaluare }: Props) => {
         )}
 
         {evaluare.riscuri.length === 0 ? (
-          <div className='flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-primary-200 py-12 text-center'>
-            <AlertTriangle className='mb-3 size-10 text-warning-500' />
-            <Typography variant='h4' className='text-navy-600'>
-              Niciun risc identificat
-            </Typography>
-            <Typography variant='body-sm' className='mt-1 text-navy-400'>
-              Adăugați riscurile identificate pe șantier
-            </Typography>
-            <Button className='mt-4' onClick={() => setAddOpen(true)}>
-              <PlusCircle className='size-4' />
-              Adaugă primul risc
-            </Button>
-          </div>
+          <p className='mb-4 text-center text-sm italic text-navy-400'>
+            Niciun risc adăugat încă.
+          </p>
         ) : (
-          <Stack gap='3'>
+          <Stack gap='3' className='mb-4'>
             {evaluare.riscuri.map((risc, i) => (
               <RiscCard
                 key={risc.id}
@@ -152,6 +138,16 @@ export const RiscuriSection = ({ evaluare }: Props) => {
             ))}
           </Stack>
         )}
+
+        {/* Full-width dashed add button at bottom */}
+        <button
+          type='button'
+          onClick={() => setAddOpen(true)}
+          className='flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary-300 px-4 py-3 text-sm font-medium text-primary-600 transition-colors hover:border-primary-400 hover:bg-primary-50'
+        >
+          <Plus className='size-4' />
+          Adaugă risc
+        </button>
       </div>
 
       {addOpen && <AddModalWrapper evaluareId={evaluare.id} onClose={() => setAddOpen(false)} />}

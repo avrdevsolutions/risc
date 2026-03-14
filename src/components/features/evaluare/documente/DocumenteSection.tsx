@@ -1,13 +1,16 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { FileCheck } from 'lucide-react'
 
-import { Typography, Stack, Button } from '@/components/ui'
+import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
+import { useAutosave } from '@/hooks/useAutosave'
 import { DOCUMENTE_SSM, ANEXE_EVALUARE } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
+
+import { AutosaveIndicator } from '../AutosaveIndicator'
 
 type Props = { evaluare: Evaluare }
 
@@ -23,6 +26,8 @@ const parseStringArray = (val: string | null): string[] => {
 
 export const DocumenteSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
+  const evaluareRef = useRef(evaluare)
+  evaluareRef.current = evaluare
 
   const [selectedDoc, setSelectedDoc] = useState<string[]>(
     parseStringArray(evaluare.documenteAplicabile),
@@ -31,28 +36,37 @@ export const DocumenteSection = ({ evaluare }: Props) => {
     parseStringArray(evaluare.anexeSelectate),
   )
   const [observatii, setObservatii] = useState(evaluare.observatiiDocumente ?? '')
-  const [isDirty, setIsDirty] = useState(false)
+
+  useEffect(() => {
+    setSelectedDoc(parseStringArray(evaluareRef.current.documenteAplicabile))
+    setSelectedAnexe(parseStringArray(evaluareRef.current.anexeSelectate))
+    setObservatii(evaluareRef.current.observatiiDocumente ?? '')
+  }, [evaluare.id])
 
   const toggleDoc = (id: string) => {
     setSelectedDoc((prev) => (prev.includes(id) ? prev.filter((d) => d !== id) : [...prev, id]))
-    setIsDirty(true)
   }
 
   const toggleAnexa = (anexa: string) => {
     setSelectedAnexe((prev) =>
       prev.includes(anexa) ? prev.filter((a) => a !== anexa) : [...prev, anexa],
     )
-    setIsDirty(true)
   }
 
-  const handleSave = () => {
-    update.mutate({
-      documenteAplicabile: JSON.stringify(selectedDoc),
-      anexeSelectate: JSON.stringify(selectedAnexe),
-      observatiiDocumente: observatii,
-    })
-    setIsDirty(false)
+  const autosaveValues = {
+    documenteAplicabile: JSON.stringify(selectedDoc),
+    anexeSelectate: JSON.stringify(selectedAnexe),
+    observatiiDocumente: observatii,
   }
+
+  const handleSave = useCallback(
+    async (data: Partial<typeof autosaveValues>) => {
+      await update.mutateAsync(data as Partial<Evaluare>)
+    },
+    [update],
+  )
+
+  const status = useAutosave({ values: autosaveValues, onSave: handleSave })
 
   return (
     <section id='documente-section' className='scroll-mt-20'>
@@ -127,21 +141,14 @@ export const DocumenteSection = ({ evaluare }: Props) => {
             </label>
             <textarea
               value={observatii}
-              onChange={(e) => {
-                setObservatii(e.target.value)
-                setIsDirty(true)
-              }}
+              onChange={(e) => setObservatii(e.target.value)}
               rows={3}
               placeholder='Observații sau cerințe suplimentare privind documentele...'
               className='w-full rounded-md border border-primary-200 px-3 py-2 text-sm text-navy-800 placeholder:text-navy-300 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500'
             />
           </div>
 
-          <div className='flex justify-end'>
-            <Button onClick={handleSave} loading={update.isPending} disabled={!isDirty}>
-              Salvează documente
-            </Button>
-          </div>
+          <AutosaveIndicator status={status} />
         </Stack>
       </div>
     </section>

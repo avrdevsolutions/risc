@@ -1,16 +1,19 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
-import { Typography, Stack, Button } from '@/components/ui'
+import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
+import { useAutosave } from '@/hooks/useAutosave'
 import { FAZE_LUCRARII } from '@/lib/constants'
 import { ProiectSchema } from '@/lib/schemas'
 import type { ProiectFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
+
+import { AutosaveIndicator } from '../AutosaveIndicator'
 
 type Props = { evaluare: Evaluare }
 
@@ -37,24 +40,29 @@ export const ProiectSection = ({ evaluare }: Props) => {
 
   const {
     register,
-    handleSubmit,
     watch,
     reset,
-    formState: { errors, isDirty },
+    formState: { errors },
   } = useForm<ProiectFormValues>({
     resolver: zodResolver(ProiectSchema),
     defaultValues: toFormValues(evaluare),
   })
 
   const fazaLucrarii = watch('fazaLucrarii')
+  const values = watch()
 
   useEffect(() => {
     reset(toFormValues(evaluareRef.current))
   }, [evaluare.id, reset])
 
-  const onSubmit = (data: ProiectFormValues) => {
-    update.mutate(data)
-  }
+  const handleSave = useCallback(
+    async (data: Partial<ProiectFormValues>) => {
+      await update.mutateAsync(data as Partial<Evaluare>)
+    },
+    [update],
+  )
+
+  const status = useAutosave({ values, onSave: handleSave })
 
   return (
     <section id='proiect-section' className='scroll-mt-20'>
@@ -63,7 +71,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
           🏢 Informații Proiect
         </Typography>
 
-        <form onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form noValidate>
           <Stack gap='6'>
             <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
               <div className='md:col-span-2'>
@@ -248,11 +256,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
               />
             </div>
 
-            <div className='flex justify-end'>
-              <Button type='submit' loading={update.isPending} disabled={!isDirty}>
-                Salvează informații proiect
-              </Button>
-            </div>
+            <AutosaveIndicator status={status} />
           </Stack>
         </form>
       </div>
