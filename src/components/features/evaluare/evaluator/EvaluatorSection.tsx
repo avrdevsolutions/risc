@@ -1,20 +1,24 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { useAutosave } from '@/hooks/useAutosave'
+import { useSectionSync } from '@/hooks/useSectionSync'
+import { TIP_EVALUARE, OBIECTIVE_EVALUARE, METODE_INSTRUMENTE } from '@/lib/constants'
 import { EvaluatorSchema } from '@/lib/schemas'
 import type { EvaluatorFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
-
-import { AutosaveIndicator } from '../AutosaveIndicator'
+import { parseJsonArray } from '@/lib/utils'
 
 type Props = { evaluare: Evaluare }
+
+const toggleItem = (list: string[], setList: (val: string[]) => void, item: string) => {
+  setList(list.includes(item) ? list.filter((v) => v !== item) : [...list, item])
+}
 
 const toFormValues = (evaluare: Evaluare): EvaluatorFormValues => ({
   numeEvaluator: evaluare.numeEvaluator ?? '',
@@ -23,6 +27,9 @@ const toFormValues = (evaluare: Evaluare): EvaluatorFormValues => ({
   nrDocument: evaluare.nrDocument ?? '',
   dataEvaluarii: evaluare.dataEvaluarii ?? '',
   dataRevizuirii: evaluare.dataRevizuirii ?? '',
+  tipEvaluare: evaluare.tipEvaluare ?? '',
+  obiectiveEvaluare: parseJsonArray(evaluare.obiectiveEvaluare),
+  metodeInstrumente: parseJsonArray(evaluare.metodeInstrumente),
 })
 
 export const EvaluatorSection = ({ evaluare }: Props) => {
@@ -32,28 +39,43 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
 
   const {
     register,
-    watch,
     reset,
+    getValues,
     formState: { errors },
   } = useForm<EvaluatorFormValues>({
     resolver: zodResolver(EvaluatorSchema),
     defaultValues: toFormValues(evaluare),
   })
 
-  const values = watch()
+  const [obiective, setObiective] = useState<string[]>(parseJsonArray(evaluare.obiectiveEvaluare))
+  const [metode, setMetode] = useState<string[]>(parseJsonArray(evaluare.metodeInstrumente))
 
   useEffect(() => {
-    reset(toFormValues(evaluareRef.current))
+    const ev = evaluareRef.current
+    reset(toFormValues(ev))
+    setObiective(parseJsonArray(ev.obiectiveEvaluare))
+    setMetode(parseJsonArray(ev.metodeInstrumente))
   }, [evaluare.id, reset])
 
-  const handleSave = useCallback(
-    async (data: Partial<EvaluatorFormValues>) => {
-      await update.mutateAsync(data as Partial<Evaluare>)
-    },
-    [update],
-  )
+  const handleSave = useCallback(async () => {
+    const values = getValues()
+    await update.mutateAsync({
+      ...(values as Partial<Evaluare>),
+      obiectiveEvaluare: JSON.stringify(obiective),
+      metodeInstrumente: JSON.stringify(metode),
+    })
+  }, [update, getValues, obiective, metode])
 
-  const status = useAutosave({ values, onSave: handleSave })
+  const { markDirty } = useSectionSync('evaluator', handleSave)
+
+  const handleCheckboxChange = (
+    list: string[],
+    setList: (v: string[]) => void,
+    item: string,
+  ) => {
+    toggleItem(list, setList, item)
+    markDirty()
+  }
 
   return (
     <section id='evaluator-section' className='scroll-mt-20'>
@@ -62,7 +84,7 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
           Evaluator &amp; Date Document
         </Typography>
 
-        <form noValidate>
+        <form noValidate onChange={markDirty}>
           <Stack gap='6'>
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div>
@@ -141,7 +163,69 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
               </div>
             </div>
 
-            <AutosaveIndicator status={status} />
+            <div className='border-t border-navy-100 pt-5'>
+              <div>
+                <label className='mb-1.5 block text-sm font-medium text-navy-700'>
+                  Tip evaluare <span className='text-error-500'>*</span>
+                </label>
+                <select {...register('tipEvaluare')} className='form-input'>
+                  <option value=''>Selectați...</option>
+                  {TIP_EVALUARE.map((tip) => (
+                    <option key={tip} value={tip}>
+                      {tip}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <Typography variant='body-sm' className='mb-3 font-medium text-navy-700'>
+                Obiectivele evaluării
+              </Typography>
+              <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
+                {OBIECTIVE_EVALUARE.map((obiectiv) => (
+                  <label
+                    key={obiectiv}
+                    className='flex cursor-pointer items-center gap-3 rounded-lg border border-primary-100 p-3 hover:bg-primary-50'
+                  >
+                    <input
+                      type='checkbox'
+                      checked={obiective.includes(obiectiv)}
+                      onChange={() => handleCheckboxChange(obiective, setObiective, obiectiv)}
+                      className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
+                    />
+                    <Typography variant='body-sm' className='text-navy-700'>
+                      {obiectiv}
+                    </Typography>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <Typography variant='body-sm' className='mb-3 font-medium text-navy-700'>
+                Metode și instrumente utilizate
+              </Typography>
+              <div className='grid grid-cols-1 gap-2 sm:grid-cols-2'>
+                {METODE_INSTRUMENTE.map((metoda) => (
+                  <label
+                    key={metoda}
+                    className='flex cursor-pointer items-center gap-3 rounded-lg border border-primary-100 p-3 hover:bg-primary-50'
+                  >
+                    <input
+                      type='checkbox'
+                      checked={metode.includes(metoda)}
+                      onChange={() => handleCheckboxChange(metode, setMetode, metoda)}
+                      className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
+                    />
+                    <Typography variant='body-sm' className='text-navy-700'>
+                      {metoda}
+                    </Typography>
+                  </label>
+                ))}
+              </div>
+            </div>
           </Stack>
         </form>
       </div>

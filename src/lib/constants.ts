@@ -94,6 +94,11 @@ export const ACCESIBILITATE = [
 export const CAI_ACCES = ['Auto', 'Pietonal', 'Feroviar', 'Fluvial / Maritim'] as const
 
 // ============================================
+// POSIBILITATE DISIMULARE / FUGĂ
+// ============================================
+export const POSIBILITATE_DISIMULARE = ['Scăzută', 'Medie', 'Ridicată'] as const
+
+// ============================================
 // NIVEL AMENINȚĂRI
 // ============================================
 export const NIVEL_AMENINTARI = ['Scăzut', 'Mediu', 'Ridicat', 'Foarte ridicat'] as const

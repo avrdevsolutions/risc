@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { useAutosave } from '@/hooks/useAutosave'
+import { useSectionSync } from '@/hooks/useSectionSync'
 import {
   MASURI_MECANOFIZICE,
   MASURI_CONTROL_ACCES,
@@ -16,8 +16,6 @@ import {
 } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
 import { parseJsonArray } from '@/lib/utils'
-
-import { AutosaveIndicator } from '../AutosaveIndicator'
 
 type Props = { evaluare: Evaluare }
 
@@ -99,30 +97,36 @@ export const MasuriSection = ({ evaluare }: Props) => {
     setObservatii(ev.observatiiMasuri ?? '')
   }, [evaluare.id])
 
-  const autosaveValues = {
-    masuriMecanofizice: JSON.stringify(mecanofizice),
-    masuriControlAcces: JSON.stringify(controlAcces),
-    masuriAlarmare: JSON.stringify(alarmare),
-    masuriCctv: JSON.stringify(cctv),
-    pazaUmana: JSON.stringify(pazaUmana),
-    numarAgenti: (() => {
-      if (numarAgenti === '') return null
-      const parsed = parseInt(numarAgenti, 10)
-      return isNaN(parsed) ? null : parsed
-    })(),
-    masuriOrganizatorice: JSON.stringify(organizatorice),
-    masuriAsigurari: JSON.stringify(asigurari),
-    observatiiMasuri: observatii,
-  }
+  const handleSave = useCallback(async () => {
+    await update.mutateAsync({
+      masuriMecanofizice: JSON.stringify(mecanofizice),
+      masuriControlAcces: JSON.stringify(controlAcces),
+      masuriAlarmare: JSON.stringify(alarmare),
+      masuriCctv: JSON.stringify(cctv),
+      pazaUmana: JSON.stringify(pazaUmana),
+      numarAgenti: (() => {
+        if (numarAgenti === '') return null
+        const parsed = parseInt(numarAgenti, 10)
+        return isNaN(parsed) ? null : parsed
+      })(),
+      masuriOrganizatorice: JSON.stringify(organizatorice),
+      masuriAsigurari: JSON.stringify(asigurari),
+      observatiiMasuri: observatii || null,
+    } as Partial<Evaluare>)
+  }, [
+    update,
+    mecanofizice,
+    controlAcces,
+    alarmare,
+    cctv,
+    pazaUmana,
+    numarAgenti,
+    organizatorice,
+    asigurari,
+    observatii,
+  ])
 
-  const handleSave = useCallback(
-    async (data: Partial<typeof autosaveValues>) => {
-      await update.mutateAsync(data as Partial<Evaluare>)
-    },
-    [update],
-  )
-
-  const status = useAutosave({ values: autosaveValues, onSave: handleSave })
+  const { markDirty } = useSectionSync('masuri', handleSave)
 
   return (
     <section id='masuri-section' className='scroll-mt-20'>
@@ -137,7 +141,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_MECANOFIZICE}
               selected={mecanofizice}
-              onToggle={(v) => toggleItem(mecanofizice, setMecanofizice, v)}
+              onToggle={(v) => { toggleItem(mecanofizice, setMecanofizice, v); markDirty() }}
             />
           </SubSection>
 
@@ -146,7 +150,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_CONTROL_ACCES}
               selected={controlAcces}
-              onToggle={(v) => toggleItem(controlAcces, setControlAcces, v)}
+              onToggle={(v) => { toggleItem(controlAcces, setControlAcces, v); markDirty() }}
             />
           </SubSection>
 
@@ -155,7 +159,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_ALARMARE}
               selected={alarmare}
-              onToggle={(v) => toggleItem(alarmare, setAlarmare, v)}
+              onToggle={(v) => { toggleItem(alarmare, setAlarmare, v); markDirty() }}
             />
           </SubSection>
 
@@ -164,7 +168,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_CCTV}
               selected={cctv}
-              onToggle={(v) => toggleItem(cctv, setCctv, v)}
+              onToggle={(v) => { toggleItem(cctv, setCctv, v); markDirty() }}
             />
           </SubSection>
 
@@ -173,7 +177,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={PAZA_UMANA}
               selected={pazaUmana}
-              onToggle={(v) => toggleItem(pazaUmana, setPazaUmana, v)}
+              onToggle={(v) => { toggleItem(pazaUmana, setPazaUmana, v); markDirty() }}
             />
             <div className='mt-4'>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
@@ -183,7 +187,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
                 type='number'
                 min={0}
                 value={numarAgenti}
-                onChange={(e) => setNumarAgenti(e.target.value)}
+                onChange={(e) => { setNumarAgenti(e.target.value); markDirty() }}
                 placeholder='Ex: 2'
                 className='form-input w-48'
               />
@@ -195,7 +199,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_ORGANIZATORICE}
               selected={organizatorice}
-              onToggle={(v) => toggleItem(organizatorice, setOrganizatorice, v)}
+              onToggle={(v) => { toggleItem(organizatorice, setOrganizatorice, v); markDirty() }}
             />
           </SubSection>
 
@@ -204,7 +208,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_ASIGURARI}
               selected={asigurari}
-              onToggle={(v) => toggleItem(asigurari, setAsigurari, v)}
+              onToggle={(v) => { toggleItem(asigurari, setAsigurari, v); markDirty() }}
             />
           </SubSection>
 
@@ -215,14 +219,12 @@ export const MasuriSection = ({ evaluare }: Props) => {
             </label>
             <textarea
               value={observatii}
-              onChange={(e) => setObservatii(e.target.value)}
+              onChange={(e) => { setObservatii(e.target.value); markDirty() }}
               rows={3}
               placeholder='Descrieți orice măsuri suplimentare care nu se regăsesc în listele de mai sus...'
               className='form-input'
             />
           </div>
-
-          <AutosaveIndicator status={status} />
         </Stack>
       </div>
     </section>

@@ -7,13 +7,11 @@ import { useForm } from 'react-hook-form'
 
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { useAutosave } from '@/hooks/useAutosave'
+import { useSectionSync } from '@/hooks/useSectionSync'
 import { TIP_UNITATE } from '@/lib/constants'
 import { ProiectSchema } from '@/lib/schemas'
 import type { ProiectFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
-
-import { AutosaveIndicator } from '../AutosaveIndicator'
 
 type Props = { evaluare: Evaluare }
 
@@ -42,6 +40,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
     register,
     watch,
     reset,
+    getValues,
     formState: { errors },
   } = useForm<ProiectFormValues>({
     resolver: zodResolver(ProiectSchema),
@@ -49,20 +48,16 @@ export const ProiectSection = ({ evaluare }: Props) => {
   })
 
   const fazaLucrarii = watch('fazaLucrarii')
-  const values = watch()
 
   useEffect(() => {
     reset(toFormValues(evaluareRef.current))
   }, [evaluare.id, reset])
 
-  const handleSave = useCallback(
-    async (data: Partial<ProiectFormValues>) => {
-      await update.mutateAsync(data as Partial<Evaluare>)
-    },
-    [update],
-  )
+  const handleSave = useCallback(async () => {
+    await update.mutateAsync(getValues() as Partial<Evaluare>)
+  }, [update, getValues])
 
-  const status = useAutosave({ values, onSave: handleSave })
+  const { markDirty } = useSectionSync('proiect', handleSave)
 
   return (
     <section id='proiect-section' className='scroll-mt-20'>
@@ -71,7 +66,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
           Date de identificare
         </Typography>
 
-        <form noValidate>
+        <form noValidate onChange={markDirty}>
           <Stack gap='6'>
             <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
               <div className='md:col-span-2'>
@@ -250,8 +245,6 @@ export const ProiectSection = ({ evaluare }: Props) => {
                 className='form-input'
               />
             </div>
-
-            <AutosaveIndicator status={status} />
           </Stack>
         </form>
       </div>

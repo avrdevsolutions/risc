@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { useAutosave } from '@/hooks/useAutosave'
+import { useSectionSync } from '@/hooks/useSectionSync'
 import {
   REGIM_ACTIVITATE,
   FLUX_PERSOANE,
@@ -15,8 +15,6 @@ import {
 } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
 import { parseJsonArray } from '@/lib/utils'
-
-import { AutosaveIndicator } from '../AutosaveIndicator'
 
 type Props = { evaluare: Evaluare }
 
@@ -62,26 +60,32 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
     setFactoriVulnerabilitate(ev.cadruFactoriVulnerabilitate ?? '')
   }, [evaluare.id])
 
-  const autosaveValues = {
-    cadruRegimActivitate: regimActivitate,
-    cadruProgramLucru: programLucru,
-    cadruFluxPersoane: fluxPersoane,
-    cadruFluxBunuri: fluxBunuri,
-    cadruNumarAngajati: numarAngajati !== '' ? (parseInt(numarAngajati, 10) || null) : null,
-    cadruZoneFunctionale: JSON.stringify(zoneFunctionale),
-    cadruBunuriValori: JSON.stringify(bunuriValori),
-    cadruSistemeTehnice: JSON.stringify(sistemeTehnice),
-    cadruFactoriVulnerabilitate: factoriVulnerabilitate,
-  }
+  const handleSave = useCallback(async () => {
+    await update.mutateAsync({
+      cadruRegimActivitate: regimActivitate || null,
+      cadruProgramLucru: programLucru || null,
+      cadruFluxPersoane: fluxPersoane || null,
+      cadruFluxBunuri: fluxBunuri || null,
+      cadruNumarAngajati: numarAngajati !== '' ? (parseInt(numarAngajati, 10) || null) : null,
+      cadruZoneFunctionale: JSON.stringify(zoneFunctionale),
+      cadruBunuriValori: JSON.stringify(bunuriValori),
+      cadruSistemeTehnice: JSON.stringify(sistemeTehnice),
+      cadruFactoriVulnerabilitate: factoriVulnerabilitate || null,
+    } as Partial<Evaluare>)
+  }, [
+    update,
+    regimActivitate,
+    programLucru,
+    fluxPersoane,
+    fluxBunuri,
+    numarAngajati,
+    zoneFunctionale,
+    bunuriValori,
+    sistemeTehnice,
+    factoriVulnerabilitate,
+  ])
 
-  const handleSave = useCallback(
-    async (data: Partial<typeof autosaveValues>) => {
-      await update.mutateAsync(data as Partial<Evaluare>)
-    },
-    [update],
-  )
-
-  const status = useAutosave({ values: autosaveValues, onSave: handleSave })
+  const { markDirty } = useSectionSync('cadru-organizational', handleSave)
 
   return (
     <section id='cadru-organizational-section' className='scroll-mt-20'>
@@ -99,7 +103,7 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
               </label>
               <select
                 value={regimActivitate}
-                onChange={(e) => setRegimActivitate(e.target.value)}
+                onChange={(e) => { setRegimActivitate(e.target.value); markDirty() }}
                 className='form-input'
               >
                 <option value=''>Selectați...</option>
@@ -117,7 +121,7 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
               <input
                 type='text'
                 value={programLucru}
-                onChange={(e) => setProgramLucru(e.target.value)}
+                onChange={(e) => { setProgramLucru(e.target.value); markDirty() }}
                 placeholder='Ex: Luni-Vineri 08:00-20:00'
                 className='form-input'
               />
@@ -130,7 +134,7 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>Flux persoane</label>
               <select
                 value={fluxPersoane}
-                onChange={(e) => setFluxPersoane(e.target.value)}
+                onChange={(e) => { setFluxPersoane(e.target.value); markDirty() }}
                 className='form-input'
               >
                 <option value=''>Selectați...</option>
@@ -147,7 +151,7 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
               </label>
               <select
                 value={fluxBunuri}
-                onChange={(e) => setFluxBunuri(e.target.value)}
+                onChange={(e) => { setFluxBunuri(e.target.value); markDirty() }}
                 className='form-input'
               >
                 <option value=''>Selectați...</option>
@@ -166,7 +170,7 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
                 type='number'
                 min={0}
                 value={numarAngajati}
-                onChange={(e) => setNumarAngajati(e.target.value)}
+                onChange={(e) => { setNumarAngajati(e.target.value); markDirty() }}
                 placeholder='Ex: 25'
                 className='form-input'
               />
@@ -187,7 +191,7 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
                   <input
                     type='checkbox'
                     checked={zoneFunctionale.includes(zona)}
-                    onChange={() => toggleItem(zoneFunctionale, setZoneFunctionale, zona)}
+                    onChange={() => { toggleItem(zoneFunctionale, setZoneFunctionale, zona); markDirty() }}
                     className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                   />
                   <Typography variant='body-sm' className='text-navy-700'>
@@ -212,7 +216,7 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
                   <input
                     type='checkbox'
                     checked={bunuriValori.includes(bun)}
-                    onChange={() => toggleItem(bunuriValori, setBunuriValori, bun)}
+                    onChange={() => { toggleItem(bunuriValori, setBunuriValori, bun); markDirty() }}
                     className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                   />
                   <Typography variant='body-sm' className='text-navy-700'>
@@ -237,7 +241,7 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
                   <input
                     type='checkbox'
                     checked={sistemeTehnice.includes(sistem)}
-                    onChange={() => toggleItem(sistemeTehnice, setSistemeTehnice, sistem)}
+                    onChange={() => { toggleItem(sistemeTehnice, setSistemeTehnice, sistem); markDirty() }}
                     className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                   />
                   <Typography variant='body-sm' className='text-navy-700'>
@@ -255,14 +259,12 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
             </label>
             <textarea
               value={factoriVulnerabilitate}
-              onChange={(e) => setFactoriVulnerabilitate(e.target.value)}
+              onChange={(e) => { setFactoriVulnerabilitate(e.target.value); markDirty() }}
               rows={3}
               placeholder='Descrieți factorii interni care pot genera sau amplifica vulnerabilități (ex: rotație frecventă personal, lipsă proceduri, acces necontrolat)...'
               className='form-input'
             />
           </div>
-
-          <AutosaveIndicator status={status} />
         </Stack>
       </div>
     </section>

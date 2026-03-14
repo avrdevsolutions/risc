@@ -26,6 +26,9 @@ export type Evaluare = {
   nrDocument: string | null
   dataEvaluarii: string | null
   dataRevizuirii: string | null
+  tipEvaluare: string | null
+  obiectiveEvaluare: string | null
+  metodeInstrumente: string | null
   suprafataTotala: string | null
   descriereAmplasare: string | null
   tipImprejmuire: string | null

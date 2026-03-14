@@ -8,12 +8,16 @@ import { z } from 'zod'
 
 import { Typography, Stack } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
-import { useAutosave } from '@/hooks/useAutosave'
-import { ZONA_AMPLASARE, ACCESIBILITATE, NIVEL_AMENINTARI, VECINATATI, CAI_ACCES } from '@/lib/constants'
+import { useSectionSync } from '@/hooks/useSectionSync'
+import {
+  ZONA_AMPLASARE,
+  ACCESIBILITATE,
+  POSIBILITATE_DISIMULARE,
+  VECINATATI,
+  CAI_ACCES,
+} from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
 import { parseJsonArray } from '@/lib/utils'
-
-import { AutosaveIndicator } from '../AutosaveIndicator'
 
 const ObiectivSchema = z.object({
   suprafataTotala: z.string().optional(),
@@ -59,7 +63,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
 
-  const { register, watch, reset } = useForm<ObiectivFormValues>({
+  const { register, reset, getValues } = useForm<ObiectivFormValues>({
     resolver: zodResolver(ObiectivSchema),
     defaultValues: toFormValues(evaluare),
   })
@@ -69,34 +73,47 @@ export const ObiectivSection = ({ evaluare }: Props) => {
     parseJsonArray(evaluare.vecinatatiBifate),
   )
 
-  const formValues = watch()
-
   useEffect(() => {
-    reset(toFormValues(evaluareRef.current))
-    setCaiAcces(parseJsonArray(evaluareRef.current.caiAcces))
-    setVecinatatiBifate(parseJsonArray(evaluareRef.current.vecinatatiBifate))
+    const ev = evaluareRef.current
+    reset(toFormValues(ev))
+    setCaiAcces(parseJsonArray(ev.caiAcces))
+    setVecinatatiBifate(parseJsonArray(ev.vecinatatiBifate))
   }, [evaluare.id, reset])
 
-  const autosaveValues = {
-    ...formValues,
-    numarPuncteAcces: (() => {
-      if (formValues.numarPuncteAcces === '' || formValues.numarPuncteAcces === undefined)
-        return null
-      const parsed = parseInt(formValues.numarPuncteAcces, 10)
-      return isNaN(parsed) ? null : parsed
-    })(),
-    caiAcces: JSON.stringify(caiAcces),
-    vecinatatiBifate: JSON.stringify(vecinatatiBifate),
+  const handleSave = useCallback(async () => {
+    const formValues = getValues()
+    await update.mutateAsync({
+      suprafataTotala: formValues.suprafataTotala || null,
+      descriereAmplasare: formValues.descriereAmplasare || null,
+      tipImprejmuire: formValues.tipImprejmuire || null,
+      tipAcces: formValues.tipAcces || null,
+      vecinNord: formValues.vecinNord || null,
+      vecinEst: formValues.vecinEst || null,
+      vecinSud: formValues.vecinSud || null,
+      vecinVest: formValues.vecinVest || null,
+      numarPuncteAcces: (() => {
+        if (!formValues.numarPuncteAcces) return null
+        const parsed = parseInt(formValues.numarPuncteAcces, 10)
+        return isNaN(parsed) ? null : parsed
+      })(),
+      posibilitateDisimulare: formValues.posibilitateDisimulare || null,
+      factoriExterni: formValues.factoriExterni || null,
+      istoricIncidente: formValues.istoricIncidente || null,
+      caiAcces: JSON.stringify(caiAcces),
+      vecinatatiBifate: JSON.stringify(vecinatatiBifate),
+    } as Partial<Evaluare>)
+  }, [update, getValues, caiAcces, vecinatatiBifate])
+
+  const { markDirty } = useSectionSync('obiectiv', handleSave)
+
+  const handleCheckboxChange = (
+    list: string[],
+    setList: (v: string[]) => void,
+    item: string,
+  ) => {
+    toggleItem(list, setList, item)
+    markDirty()
   }
-
-  const handleSave = useCallback(
-    async (data: Partial<typeof autosaveValues>) => {
-      await update.mutateAsync(data as Partial<Evaluare>)
-    },
-    [update],
-  )
-
-  const status = useAutosave({ values: autosaveValues, onSave: handleSave })
 
   return (
     <section id='obiectiv-section' className='scroll-mt-20'>
@@ -105,7 +122,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
           Amplasare &amp; Factori Externi
         </Typography>
 
-        <form noValidate>
+        <form noValidate onChange={markDirty}>
           <Stack gap='6'>
             <div className='grid grid-cols-1 gap-4 md:grid-cols-3'>
               <div>
@@ -150,19 +167,6 @@ export const ObiectivSection = ({ evaluare }: Props) => {
             <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                  Nivel amenințări zonă
-                </label>
-                <select {...register('posibilitateDisimulare')} className='form-input'>
-                  <option value=''>Selectați...</option>
-                  {NIVEL_AMENINTARI.map((nivel) => (
-                    <option key={nivel} value={nivel}>
-                      {nivel}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Număr puncte de acces
                 </label>
                 <input
@@ -189,7 +193,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                     <input
                       type='checkbox'
                       checked={caiAcces.includes(cale)}
-                      onChange={() => toggleItem(caiAcces, setCaiAcces, cale)}
+                      onChange={() => handleCheckboxChange(caiAcces, setCaiAcces, cale)}
                       className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                     />
                     <Typography variant='body-sm' className='text-navy-700'>
@@ -198,6 +202,21 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                   </label>
                 ))}
               </div>
+            </div>
+
+            {/* Posibilitate disimulare / fugă — after Căi de acces */}
+            <div>
+              <label className='mb-1.5 block text-sm font-medium text-navy-700'>
+                Posibilitate disimulare / fugă
+              </label>
+              <select {...register('posibilitateDisimulare')} className='form-input'>
+                <option value=''>Selectați...</option>
+                {POSIBILITATE_DISIMULARE.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -255,7 +274,9 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                     <input
                       type='checkbox'
                       checked={vecinatatiBifate.includes(vecin)}
-                      onChange={() => toggleItem(vecinatatiBifate, setVecinatatiBifate, vecin)}
+                      onChange={() =>
+                        handleCheckboxChange(vecinatatiBifate, setVecinatatiBifate, vecin)
+                      }
                       className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                     />
                     <Typography variant='body-sm' className='text-navy-700'>
@@ -291,11 +312,10 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                 className='form-input'
               />
             </div>
-
-            <AutosaveIndicator status={status} />
           </Stack>
         </form>
       </div>
     </section>
   )
 }
+

@@ -33,6 +33,9 @@ export const EvaluatorSchema = z
     nrDocument: z.string().optional(),
     dataEvaluarii: z.string().min(1, 'Data evaluării este obligatorie'),
     dataRevizuirii: z.string().min(1, 'Data revizuirii este obligatorie'),
+    tipEvaluare: z.string().optional(),
+    obiectiveEvaluare: z.array(z.string()).optional(),
+    metodeInstrumente: z.array(z.string()).optional(),
   })
   .refine(
     (data) =>
