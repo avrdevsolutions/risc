@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 
-import { Typography, Stack } from '@/components/ui'
+import { Typography, Stack, Select } from '@/components/ui'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useFormLocalPersist } from '@/hooks/useFormLocalPersist'
 import { useSectionSync } from '@/hooks/useSectionSync'
@@ -50,6 +50,7 @@ export const ProiectSection = ({ evaluare }: Props) => {
     watch,
     reset,
     getValues,
+    setValue,
     formState: { errors },
   } = useForm<ProiectFormValues>({
     resolver: zodResolver(ProiectSchema),
@@ -213,14 +214,17 @@ export const ProiectSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Tip unitate <span className='text-error-500'>*</span>
                 </label>
-                <select {...register('fazaLucrarii')} className='form-input'>
-                  <option value=''>Selectați tipul...</option>
-                  {TIP_UNITATE.map((tip) => (
-                    <option key={tip} value={tip}>
-                      {tip}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  id='fazaLucrarii'
+                  value={fazaLucrarii}
+                  onChange={(v) => {
+                    setValue('fazaLucrarii', v)
+                    markDirty()
+                  }}
+                  options={TIP_UNITATE}
+                  placeholder='Selectați tipul...'
+                  aria-label='Tip unitate'
+                />
                 {errors.fazaLucrarii && (
                   <p className='mt-1 text-xs text-error-600'>{errors.fazaLucrarii.message}</p>
                 )}

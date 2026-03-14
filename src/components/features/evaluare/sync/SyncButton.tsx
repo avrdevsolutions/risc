@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { AlertCircle, CheckCircle, Loader2, Save } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
@@ -27,6 +27,15 @@ const formatCountdown = (seconds: number): string => {
 
 export const SyncButton = () => {
   const [recentlySaved, setRecentlySaved] = useState(false)
+  const recentlySavedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // Clean up recentlySaved timer on unmount
+  useEffect(
+    () => () => {
+      if (recentlySavedTimerRef.current) clearTimeout(recentlySavedTimerRef.current)
+    },
+    [],
+  )
 
   const {
     isDirty,
@@ -53,8 +62,10 @@ export const SyncButton = () => {
   const { syncAll, evaluareId } = useEvaluareSyncContext()
 
   /**
-   * Performs a sync with conflict detection.
-   * If DB was updated more recently than our last sync, shows the conflict dialog.
+   * Performs a sync with conflict detection (fail-closed).
+   * Uses the lightweight /meta endpoint for the conflict check to avoid
+   * fetching the full evaluare payload just to compare timestamps.
+   * If the conflict check itself fails, sync is blocked and an error is shown.
    */
   const handleSync = async () => {
     if (isSyncing) return
@@ -62,18 +73,20 @@ export const SyncButton = () => {
     // Conflict check: only needed if we have synced before
     if (lastSyncedAt) {
       try {
-        const checkRes = await fetch(`/api/evaluari/${evaluareId}`)
-        if (checkRes.ok) {
-          const { data: dbData } = (await checkRes.json()) as {
-            data?: { updatedAt?: string }
-          }
-          if (dbData?.updatedAt && new Date(dbData.updatedAt) > new Date(lastSyncedAt)) {
-            setConflictDetected(dbData.updatedAt)
-            return // Conflict dialog will handle resolution
-          }
+        const checkRes = await fetch(`/api/evaluari/${evaluareId}/meta`)
+        if (!checkRes.ok) {
+          setSyncError('Nu s-a putut verifica versiunea din baza de date. Reîncercați.')
+          return
+        }
+        const { updatedAt: dbUpdatedAt } = (await checkRes.json()) as { updatedAt?: string }
+        if (dbUpdatedAt && new Date(dbUpdatedAt) > new Date(lastSyncedAt)) {
+          setConflictDetected(dbUpdatedAt)
+          return // Conflict dialog will handle resolution
         }
       } catch {
-        // Network error during conflict check — proceed with save anyway
+        // Network error — fail closed: block sync and surface an error
+        setSyncError('Eroare de rețea la verificarea conflictelor. Reîncercați.')
+        return
       }
     }
 
@@ -83,8 +96,11 @@ export const SyncButton = () => {
       await syncAll()
       const timestamp = new Date().toISOString()
       finishSync(timestamp)
+
+      // Show transient "Salvat!" state, cancelling any pending timer first
+      if (recentlySavedTimerRef.current) clearTimeout(recentlySavedTimerRef.current)
       setRecentlySaved(true)
-      setTimeout(() => setRecentlySaved(false), 2000)
+      recentlySavedTimerRef.current = setTimeout(() => setRecentlySaved(false), 2000)
     } catch {
       setSyncError('Eroare la salvare. Verificați conexiunea.')
     }

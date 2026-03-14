@@ -25,7 +25,7 @@ import { ObiectivSection } from '../obiectiv'
 import { ProiectSection } from '../proiect'
 import { RiscuriSection } from '../riscuri'
 import { SumarSection } from '../sumar'
-import { ConflictDialog, SyncButton } from '../sync'
+import { SyncControls } from '../sync'
 
 type Props = { id: string }
 
@@ -329,7 +329,7 @@ export const EvaluarePage = ({ id }: Props) => {
         </div>
       </div>
 
-      <SyncButton />
+      <SyncControls />
 
       {/* Mobile FAB */}
       <button
@@ -350,7 +350,6 @@ export const EvaluarePage = ({ id }: Props) => {
       />
 
       {/* Conflict resolution dialog */}
-      <ConflictDialog />
     </EvaluareSyncProvider>
   )
 }

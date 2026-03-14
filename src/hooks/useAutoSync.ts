@@ -18,8 +18,13 @@ type UseAutoSyncResult = {
 }
 
 /**
- * Starts a timer when the form has unsaved changes (isDirty = true).
- * After `delayMs` of inactivity the `onSync` callback is invoked.
+ * Starts a countdown timer when `isDirty = true && !isSyncing`.
+ * After `delayMs` since the last state change that restarted the timer,
+ * the `onSync` callback is invoked automatically.
+ *
+ * Note: the timer resets whenever `isDirty` or `isSyncing` change —
+ * not on individual field edits. To get a true inactivity reset, the
+ * caller should update these values on each edit.
  *
  * Also registers a `beforeunload` handler that shows the browser's native
  * "Are you sure?" dialog when the user tries to leave with unsaved changes.

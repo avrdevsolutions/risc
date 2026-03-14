@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { Typography, Stack } from '@/components/ui'
+import { Select, Stack, Typography } from '@/components/ui'
 import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useSectionSync } from '@/hooks/useSectionSync'
@@ -136,20 +136,13 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                 Regim activitate <span className='text-error-500'>*</span>
               </label>
-              <select
+              <Select
                 value={regimActivitate}
-                onChange={(e) =>
-                  handleSelectChange(setRegimActivitate, 'cadruRegimActivitate', e.target.value)
-                }
-                className='form-input'
-              >
-                <option value=''>Selectați...</option>
-                {REGIM_ACTIVITATE.map((regim) => (
-                  <option key={regim} value={regim}>
-                    {regim}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => handleSelectChange(setRegimActivitate, 'cadruRegimActivitate', v)}
+                options={REGIM_ACTIVITATE}
+                placeholder='Selectați...'
+                aria-label='Regim activitate'
+              />
             </div>
             <div>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
@@ -175,39 +168,25 @@ export const CadruOrganizationalSection = ({ evaluare }: Props) => {
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                 Flux persoane
               </label>
-              <select
+              <Select
                 value={fluxPersoane}
-                onChange={(e) =>
-                  handleSelectChange(setFluxPersoane, 'cadruFluxPersoane', e.target.value)
-                }
-                className='form-input'
-              >
-                <option value=''>Selectați...</option>
-                {FLUX_PERSOANE.map((flux) => (
-                  <option key={flux} value={flux}>
-                    {flux}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => handleSelectChange(setFluxPersoane, 'cadruFluxPersoane', v)}
+                options={FLUX_PERSOANE}
+                placeholder='Selectați...'
+                aria-label='Flux persoane'
+              />
             </div>
             <div>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                 Flux bunuri/valori
               </label>
-              <select
+              <Select
                 value={fluxBunuri}
-                onChange={(e) =>
-                  handleSelectChange(setFluxBunuri, 'cadruFluxBunuri', e.target.value)
-                }
-                className='form-input'
-              >
-                <option value=''>Selectați...</option>
-                {FLUX_BUNURI.map((flux) => (
-                  <option key={flux} value={flux}>
-                    {flux}
-                  </option>
-                ))}
-              </select>
+                onChange={(v) => handleSelectChange(setFluxBunuri, 'cadruFluxBunuri', v)}
+                options={FLUX_BUNURI}
+                placeholder='Selectați...'
+                aria-label='Flux bunuri/valori'
+              />
             </div>
             <div>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>

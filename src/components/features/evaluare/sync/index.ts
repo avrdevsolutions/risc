@@ -1,2 +1,1 @@
-export { ConflictDialog } from './ConflictDialog'
-export { SyncButton } from './SyncButton'
+export { SyncControls } from './SyncControls'

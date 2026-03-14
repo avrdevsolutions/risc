@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { Typography, Stack } from '@/components/ui'
+import { Typography, Stack, Select } from '@/components/ui'
 import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useFormLocalPersist } from '@/hooks/useFormLocalPersist'
@@ -74,7 +74,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
   const { setField } = useEvaluareSyncContext()
   const localInit = useEvaluareFormStore.getState().getFormData(evaluare.id)
 
-  const { register, watch, reset, getValues } = useForm<ObiectivFormValues>({
+  const { register, watch, reset, getValues, setValue } = useForm<ObiectivFormValues>({
     resolver: zodResolver(ObiectivSchema),
     defaultValues: toFormValues(evaluare, localInit),
   })
@@ -124,6 +124,10 @@ export const ObiectivSection = ({ evaluare }: Props) => {
   const { markDirty } = useSectionSync('obiectiv', handleSave)
   useFormLocalPersist(watch)
 
+  const tipImprejmuire = watch('tipImprejmuire')
+  const tipAcces = watch('tipAcces')
+  const posibilitateDisimulare = watch('posibilitateDisimulare')
+
   const handleCheckboxChange = (
     list: string[],
     setList: (v: string[]) => void,
@@ -161,27 +165,33 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Zonă amplasare
                 </label>
-                <select {...register('tipImprejmuire')} className='form-input'>
-                  <option value=''>Selectați...</option>
-                  {ZONA_AMPLASARE.map((zona) => (
-                    <option key={zona} value={zona}>
-                      {zona}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  id='tipImprejmuire'
+                  value={tipImprejmuire}
+                  onChange={(v) => {
+                    setValue('tipImprejmuire', v)
+                    markDirty()
+                  }}
+                  options={ZONA_AMPLASARE}
+                  placeholder='Selectați...'
+                  aria-label='Zonă amplasare'
+                />
               </div>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                   Accesibilitate
                 </label>
-                <select {...register('tipAcces')} className='form-input'>
-                  <option value=''>Selectați...</option>
-                  {ACCESIBILITATE.map((acc) => (
-                    <option key={acc} value={acc}>
-                      {acc}
-                    </option>
-                  ))}
-                </select>
+                <Select
+                  id='tipAcces'
+                  value={tipAcces}
+                  onChange={(v) => {
+                    setValue('tipAcces', v)
+                    markDirty()
+                  }}
+                  options={ACCESIBILITATE}
+                  placeholder='Selectați...'
+                  aria-label='Accesibilitate'
+                />
               </div>
             </div>
 
@@ -230,14 +240,17 @@ export const ObiectivSection = ({ evaluare }: Props) => {
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
                 Posibilitate disimulare / fugă
               </label>
-              <select {...register('posibilitateDisimulare')} className='form-input'>
-                <option value=''>Selectați...</option>
-                {POSIBILITATE_DISIMULARE.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
+              <Select
+                id='posibilitateDisimulare'
+                value={posibilitateDisimulare}
+                onChange={(v) => {
+                  setValue('posibilitateDisimulare', v)
+                  markDirty()
+                }}
+                options={POSIBILITATE_DISIMULARE}
+                placeholder='Selectați...'
+                aria-label='Posibilitate disimulare / fugă'
+              />
             </div>
 
             <div>
