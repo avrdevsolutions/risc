@@ -5,9 +5,6 @@ export const users = sqliteTable('users', {
   email: text('email').unique().notNull(),
   name: text('name').notNull(),
   passwordHash: text('password_hash').notNull(),
-  role: text('role', { enum: ['evaluator', 'admin'] })
-    .notNull()
-    .default('evaluator'),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),
 })

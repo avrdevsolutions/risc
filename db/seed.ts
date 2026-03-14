@@ -24,7 +24,6 @@ const seed = async () => {
       email: 'admin@secureeval.ro',
       name: 'Administrator',
       passwordHash,
-      role: 'admin',
       createdAt: now,
       updatedAt: now,
     })

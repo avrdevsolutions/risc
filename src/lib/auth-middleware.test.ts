@@ -1,39 +1,72 @@
 import { describe, expect, it } from 'vitest'
 
-describe('middleware route protection patterns', () => {
-  const matcherRegex = /^(?!auth|api\/auth|_next\/static|_next\/image|favicon\.ico).*/
+/**
+ * The middleware matcher pattern from src/middleware.ts.
+ * Kept here as a constant so changes to the pattern are reflected in tests.
+ *
+ * The regex must match exactly the value exported by the real middleware config.
+ */
+const MATCHER_PATTERN =
+  '/((?!auth|api/auth|_next/static|_next/image|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|txt|xml|json)$).*)'
 
+/**
+ * Convert the Next.js path-matcher pattern string to a RegExp for testing.
+ * The pattern `/((?!...).*)` means: match `/` followed by content that
+ * doesn't start with one of the exclusion prefixes.
+ */
+const buildMatcherRegex = (pattern: string): RegExp => {
+  const inner = pattern.slice(1) // remove leading '/'
+  return new RegExp(`^/${inner}$`)
+}
+
+const protectedRegex = buildMatcherRegex(MATCHER_PATTERN)
+
+describe('middleware route protection matcher', () => {
   it('protects the home page', () => {
-    expect('/').toMatch(matcherRegex)
-    expect('').toMatch(matcherRegex)
+    expect('/').toMatch(protectedRegex)
   })
 
   it('protects the evaluari page', () => {
-    expect('/evaluari').toMatch(matcherRegex)
-    expect('/evaluari/some-id').toMatch(matcherRegex)
+    expect('/evaluari').toMatch(protectedRegex)
+    expect('/evaluari/some-id').toMatch(protectedRegex)
   })
 
   it('protects the templates page', () => {
-    expect('/templates').toMatch(matcherRegex)
+    expect('/templates').toMatch(protectedRegex)
   })
 
-  it('protects API routes except auth', () => {
-    expect('/api/evaluari').toMatch(matcherRegex)
-    expect('/api/templates').toMatch(matcherRegex)
-    expect('/api/evaluari/123').toMatch(matcherRegex)
+  it('protects API routes (except auth)', () => {
+    expect('/api/evaluari').toMatch(protectedRegex)
+    expect('/api/templates').toMatch(protectedRegex)
+    expect('/api/evaluari/123').toMatch(protectedRegex)
   })
 
-  it('allows auth routes through without protection', () => {
-    // auth routes should not match (so they are unprotected)
-    expect('auth/login').not.toMatch(matcherRegex)
-    expect('api/auth/signin').not.toMatch(matcherRegex)
-    expect('api/auth/callback/credentials').not.toMatch(matcherRegex)
+  it('excludes /auth/* routes from protection', () => {
+    expect('/auth/login').not.toMatch(protectedRegex)
+    expect('/auth/signup').not.toMatch(protectedRegex)
   })
 
-  it('allows Next.js internals through without protection', () => {
-    expect('_next/static/chunk.js').not.toMatch(matcherRegex)
-    expect('_next/image?url=...').not.toMatch(matcherRegex)
-    expect('favicon.ico').not.toMatch(matcherRegex)
+  it('excludes /api/auth/* routes from protection', () => {
+    expect('/api/auth/signin').not.toMatch(protectedRegex)
+    expect('/api/auth/callback/credentials').not.toMatch(protectedRegex)
+    expect('/api/auth/session').not.toMatch(protectedRegex)
+  })
+
+  it('excludes Next.js static asset paths', () => {
+    expect('/_next/static/chunk.js').not.toMatch(protectedRegex)
+    expect('/_next/image').not.toMatch(protectedRegex)
+  })
+
+  it('excludes favicon.ico', () => {
+    expect('/favicon.ico').not.toMatch(protectedRegex)
+  })
+
+  it('excludes public static file extensions (svg, png, txt, etc.)', () => {
+    expect('/logo.svg').not.toMatch(protectedRegex)
+    expect('/og-image.png').not.toMatch(protectedRegex)
+    expect('/robots.txt').not.toMatch(protectedRegex)
+    expect('/manifest.json').not.toMatch(protectedRegex)
+    expect('/banner.jpg').not.toMatch(protectedRegex)
   })
 })
 
@@ -72,33 +105,42 @@ describe('userId filtering logic', () => {
     expect(statusCode).toBe(200)
   })
 
-  it('allows access when userId is null (legacy data)', () => {
+  it('denies access when userId is null (no unowned resource access)', () => {
     const evaluare = { id: '1', userId: null }
     const requestingUserId = 'user-a'
 
-    // When userId is null (legacy data), we allow access (per the ownership check logic)
-    const isDenied = evaluare.userId !== null && evaluare.userId !== requestingUserId
-    expect(isDenied).toBe(false)
+    // Null userId means unowned — deny access to prevent cross-tenant exposure
+    const isDenied = !evaluare.userId || evaluare.userId !== requestingUserId
+    expect(isDenied).toBe(true)
   })
 })
 
 describe('API 401 responses', () => {
   it('returns 401 status code when no session', () => {
     const session = null
-    const status = !session ? 401 : 200
+    const userId = (session as null | { user?: { id?: string | null } })?.user?.id
+    const status = !userId ? 401 : 200
     expect(status).toBe(401)
   })
 
-  it('returns 401 status code when session has no user id', () => {
+  it('returns 401 when session exists but user id is missing', () => {
     const session = { user: {} }
-    const status = !session?.user ? 401 : 200
-    expect(status).toBe(200) // session exists but user has no id
+    const userId = (session as { user?: { id?: string | null } })?.user?.id
+    const status = !userId ? 401 : 200
+    expect(status).toBe(401)
   })
 
-  it('returns 401 when session user id is missing', () => {
+  it('returns 401 when session user id is null', () => {
     const session = { user: { id: null } }
     const userId = session?.user?.id
     const status = !userId ? 401 : 200
     expect(status).toBe(401)
+  })
+
+  it('returns 200 when session has valid user id', () => {
+    const session = { user: { id: 'user-123' } }
+    const userId = session?.user?.id
+    const status = !userId ? 401 : 200
+    expect(status).toBe(200)
   })
 })
