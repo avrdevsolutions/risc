@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import Link from 'next/link'
 
@@ -261,6 +261,26 @@ export const EvaluarePage = ({ id }: Props) => {
   const { data: evaluare, isLoading, isError } = useEvaluare(id)
   const update = useUpdateEvaluare(id)
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
+  // Disable browser scroll restoration and force scroll to top on mount so the
+  // page always starts at section 1 — not at the position the browser remembered
+  // from a previous visit (which could cause the IntersectionObserver to
+  // highlight a section deep in the page, e.g. "8. Concluzii").
+  // The previous scrollRestoration value is restored on unmount so other routes
+  // are not affected by this page-level override.
+  useEffect(() => {
+    const previousScrollRestoration =
+      'scrollRestoration' in history ? history.scrollRestoration : null
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual'
+    }
+    window.scrollTo(0, 0)
+    return () => {
+      if (previousScrollRestoration !== null) {
+        history.scrollRestoration = previousScrollRestoration
+      }
+    }
+  }, [])
 
   const handleToggleStatus = () => {
     if (!evaluare) return
