@@ -40,7 +40,15 @@ export const useEvaluareSyncStore = create<SyncState & SyncActions>()(
       (set) => ({
         ...initialState,
 
-        markDirty: () => set({ isDirty: true, syncError: null }, false, 'markDirty'),
+        markDirty: () =>
+          set(
+            (state) => {
+              if (state.isDirty && state.syncError === null) return state
+              return { isDirty: true, syncError: null }
+            },
+            false,
+            'markDirty',
+          ),
 
         startSync: () => set({ isSyncing: true, syncError: null }, false, 'startSync'),
 

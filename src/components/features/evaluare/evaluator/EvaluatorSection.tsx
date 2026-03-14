@@ -74,7 +74,6 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
     item: string,
   ) => {
     toggleItem(list, setList, item)
-    markDirty()
   }
 
   return (
@@ -166,7 +165,7 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
             <div className='border-t border-navy-100 pt-5'>
               <div>
                 <label className='mb-1.5 block text-sm font-medium text-navy-700'>
-                  Tip evaluare <span className='text-error-500'>*</span>
+                  Tip evaluare
                 </label>
                 <select {...register('tipEvaluare')} className='form-input'>
                   <option value=''>Selectați...</option>

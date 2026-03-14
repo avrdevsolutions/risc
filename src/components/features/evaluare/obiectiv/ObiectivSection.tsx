@@ -112,7 +112,6 @@ export const ObiectivSection = ({ evaluare }: Props) => {
     item: string,
   ) => {
     toggleItem(list, setList, item)
-    markDirty()
   }
 
   return (
