@@ -1,6 +1,7 @@
 import { Typography, Stack, Badge } from '@/components/ui'
-import { getRiskLevel, getRiskColor, getLabel, AMENINTARI } from '@/lib/constants'
+import { getRiskLevel, getRiskColor, AMENINTARI } from '@/lib/constants'
 import type { EvaluareWithRiscuri, Risc } from '@/lib/types'
+import { getLabel } from '@/lib/utils'
 
 type Props = { evaluare: EvaluareWithRiscuri }
 
@@ -189,9 +190,7 @@ export const SumarSection = ({ evaluare }: Props) => {
                       return (
                         <tr key={risc.id} className='border-b border-primary-50 last:border-0'>
                           <td className='px-3 py-2 text-navy-500'>{i + 1}</td>
-                          <td className='px-3 py-2 text-navy-700'>
-                            {getActivitateLabel(risc)}
-                          </td>
+                          <td className='px-3 py-2 text-navy-700'>{getActivitateLabel(risc)}</td>
                           <td className='px-3 py-2'>
                             {initialLevel ? (
                               <RiskLevelBadge level={initialLevel} />
@@ -233,7 +232,7 @@ export const SumarSection = ({ evaluare }: Props) => {
                     className='rounded-lg border border-primary-100 bg-primary-50 px-4 py-3'
                   >
                     <Typography variant='body-sm' className='font-medium text-navy-700'>
-                      {i + 1}. {risc.activitateCustom ?? risc.activitate ?? 'Risc nedenumit'}
+                      {i + 1}. {getActivitateLabel(risc)}
                     </Typography>
                     <Typography variant='caption' className='mt-1 text-navy-600'>
                       {risc.masuriSuplimentare}
