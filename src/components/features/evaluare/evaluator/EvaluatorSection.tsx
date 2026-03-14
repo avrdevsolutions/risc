@@ -15,6 +15,7 @@ import { EvaluatorSchema } from '@/lib/schemas'
 import type { EvaluatorFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
 import { parseJsonArray } from '@/lib/utils'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: Evaluare }
 
@@ -64,14 +65,14 @@ export const EvaluatorSection = ({ evaluare }: Props) => {
 
   useEffect(() => {
     const ev = evaluareRef.current
-    reset(toFormValues(ev, formData))
+    const localData = useEvaluareFormStore.getState().getFormData(evaluare.id)
+    reset(toFormValues(ev, localData))
     setObiective(
-      parseJsonArray((formData.obiectiveEvaluare as string | undefined) ?? ev.obiectiveEvaluare),
+      parseJsonArray((localData.obiectiveEvaluare as string | undefined) ?? ev.obiectiveEvaluare),
     )
     setMetode(
-      parseJsonArray((formData.metodeInstrumente as string | undefined) ?? ev.metodeInstrumente),
+      parseJsonArray((localData.metodeInstrumente as string | undefined) ?? ev.metodeInstrumente),
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [evaluare.id, reset])
 
   const handleSave = useCallback(async () => {

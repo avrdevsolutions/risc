@@ -14,6 +14,7 @@ import { TIP_UNITATE } from '@/lib/constants'
 import { ProiectSchema } from '@/lib/schemas'
 import type { ProiectFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: Evaluare }
 
@@ -59,8 +60,8 @@ export const ProiectSection = ({ evaluare }: Props) => {
   const fazaLucrarii = watch('fazaLucrarii')
 
   useEffect(() => {
-    reset(toFormValues(evaluareRef.current, formData))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const localData = useEvaluareFormStore.getState().getFormData(evaluare.id)
+    reset(toFormValues(evaluareRef.current, localData))
   }, [evaluare.id, reset])
 
   const handleSave = useCallback(async () => {

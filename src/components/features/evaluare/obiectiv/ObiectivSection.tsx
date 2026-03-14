@@ -20,6 +20,7 @@ import {
 } from '@/lib/constants'
 import type { Evaluare } from '@/lib/types'
 import { parseJsonArray } from '@/lib/utils'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 const ObiectivSchema = z.object({
   suprafataTotala: z.string().optional(),
@@ -86,12 +87,12 @@ export const ObiectivSection = ({ evaluare }: Props) => {
 
   useEffect(() => {
     const ev = evaluareRef.current
-    reset(toFormValues(ev, formData))
-    setCaiAcces(parseJsonArray((formData.caiAcces as string | undefined) ?? ev.caiAcces))
+    const localData = useEvaluareFormStore.getState().getFormData(evaluare.id)
+    reset(toFormValues(ev, localData))
+    setCaiAcces(parseJsonArray((localData.caiAcces as string | undefined) ?? ev.caiAcces))
     setVecinatatiBifate(
-      parseJsonArray((formData.vecinatatiBifate as string | undefined) ?? ev.vecinatatiBifate),
+      parseJsonArray((localData.vecinatatiBifate as string | undefined) ?? ev.vecinatatiBifate),
     )
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [evaluare.id, reset])
 
   const handleSave = useCallback(async () => {

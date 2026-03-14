@@ -13,6 +13,7 @@ import { useSectionSync } from '@/hooks/useSectionSync'
 import { AprobareSchema } from '@/lib/schemas'
 import type { AprobareFormValues } from '@/lib/schemas'
 import type { Evaluare } from '@/lib/types'
+import { useEvaluareFormStore } from '@/stores/evaluare-form-store'
 
 type Props = { evaluare: Evaluare }
 
@@ -49,8 +50,8 @@ export const AprobareSection = ({ evaluare }: Props) => {
   })
 
   useEffect(() => {
-    reset(toFormValues(evaluareRef.current, formData))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const localData = useEvaluareFormStore.getState().getFormData(evaluare.id)
+    reset(toFormValues(evaluareRef.current, localData))
   }, [evaluare.id, reset])
 
   const handleSave = useCallback(async () => {

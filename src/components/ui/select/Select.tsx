@@ -55,6 +55,7 @@ export const Select = ({
   const containerRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLUListElement>(null)
+  const listboxId = useRef(`select-listbox-${Math.random().toString(36).slice(2)}`).current
 
   const selectedOption = options.find((o) => o.value === value)
 
@@ -144,6 +145,7 @@ export const Select = ({
         disabled={disabled}
         aria-haspopup='listbox'
         aria-expanded={open}
+        aria-controls={listboxId}
         aria-label={ariaLabel ?? placeholder}
         onClick={handleOpen}
         onKeyDown={handleKeyDown}
@@ -193,6 +195,7 @@ export const Select = ({
           )}
           <ul
             ref={listRef}
+            id={listboxId}
             role='listbox'
             aria-label={ariaLabel ?? placeholder}
             className='overflow-y-auto p-1'

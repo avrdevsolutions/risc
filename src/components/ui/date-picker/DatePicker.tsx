@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react'
 
@@ -71,6 +71,11 @@ const getCalendarDays = (year: number, month: number): (Date | null)[] => {
   return days
 }
 
+const getToday = () => {
+  const d = new Date()
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
 type Props = {
   value?: string
   onChange?: (value: string) => void
@@ -95,7 +100,7 @@ export const DatePicker = ({
   disabled,
   'aria-label': ariaLabel,
 }: Props) => {
-  const today = new Date()
+  const today = useMemo(() => getToday(), [])
   const selectedDate = value ? parseIso(value) : null
 
   const [open, setOpen] = useState(false)
