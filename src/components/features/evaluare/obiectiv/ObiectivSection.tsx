@@ -7,7 +7,9 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
 import { Typography, Stack } from '@/components/ui'
+import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
+import { useFormLocalPersist } from '@/hooks/useFormLocalPersist'
 import { useSectionSync } from '@/hooks/useSectionSync'
 import {
   ZONA_AMPLASARE,
@@ -38,46 +40,58 @@ type ObiectivFormValues = z.infer<typeof ObiectivSchema>
 
 type Props = { evaluare: Evaluare }
 
-const toggleItem = (list: string[], setList: (val: string[]) => void, item: string) => {
-  setList(list.includes(item) ? list.filter((v) => v !== item) : [...list, item])
-}
-
-const toFormValues = (evaluare: Evaluare): ObiectivFormValues => ({
-  suprafataTotala: evaluare.suprafataTotala ?? '',
-  descriereAmplasare: evaluare.descriereAmplasare ?? '',
-  tipImprejmuire: evaluare.tipImprejmuire ?? '',
-  tipAcces: evaluare.tipAcces ?? '',
-  vecinNord: evaluare.vecinNord ?? '',
-  vecinEst: evaluare.vecinEst ?? '',
-  vecinSud: evaluare.vecinSud ?? '',
-  vecinVest: evaluare.vecinVest ?? '',
+const toFormValues = (
+  evaluare: Evaluare,
+  localData: Record<string, unknown>,
+): ObiectivFormValues => ({
+  suprafataTotala:
+    (localData.suprafataTotala as string | undefined) ?? evaluare.suprafataTotala ?? '',
+  descriereAmplasare:
+    (localData.descriereAmplasare as string | undefined) ?? evaluare.descriereAmplasare ?? '',
+  tipImprejmuire: (localData.tipImprejmuire as string | undefined) ?? evaluare.tipImprejmuire ?? '',
+  tipAcces: (localData.tipAcces as string | undefined) ?? evaluare.tipAcces ?? '',
+  vecinNord: (localData.vecinNord as string | undefined) ?? evaluare.vecinNord ?? '',
+  vecinEst: (localData.vecinEst as string | undefined) ?? evaluare.vecinEst ?? '',
+  vecinSud: (localData.vecinSud as string | undefined) ?? evaluare.vecinSud ?? '',
+  vecinVest: (localData.vecinVest as string | undefined) ?? evaluare.vecinVest ?? '',
   numarPuncteAcces:
-    evaluare.numarPuncteAcces != null ? String(evaluare.numarPuncteAcces) : '',
-  posibilitateDisimulare: evaluare.posibilitateDisimulare ?? '',
-  factoriExterni: evaluare.factoriExterni ?? '',
-  istoricIncidente: evaluare.istoricIncidente ?? '',
+    (localData.numarPuncteAcces as string | undefined) ??
+    (evaluare.numarPuncteAcces != null ? String(evaluare.numarPuncteAcces) : ''),
+  posibilitateDisimulare:
+    (localData.posibilitateDisimulare as string | undefined) ??
+    evaluare.posibilitateDisimulare ??
+    '',
+  factoriExterni: (localData.factoriExterni as string | undefined) ?? evaluare.factoriExterni ?? '',
+  istoricIncidente:
+    (localData.istoricIncidente as string | undefined) ?? evaluare.istoricIncidente ?? '',
 })
 
 export const ObiectivSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
+  const { formData, setField } = useEvaluareSyncContext()
 
-  const { register, reset, getValues } = useForm<ObiectivFormValues>({
+  const { register, watch, reset, getValues } = useForm<ObiectivFormValues>({
     resolver: zodResolver(ObiectivSchema),
-    defaultValues: toFormValues(evaluare),
+    defaultValues: toFormValues(evaluare, formData),
   })
 
-  const [caiAcces, setCaiAcces] = useState<string[]>(parseJsonArray(evaluare.caiAcces))
+  const [caiAcces, setCaiAcces] = useState<string[]>(
+    parseJsonArray((formData.caiAcces as string | undefined) ?? evaluare.caiAcces),
+  )
   const [vecinatatiBifate, setVecinatatiBifate] = useState<string[]>(
-    parseJsonArray(evaluare.vecinatatiBifate),
+    parseJsonArray((formData.vecinatatiBifate as string | undefined) ?? evaluare.vecinatatiBifate),
   )
 
   useEffect(() => {
     const ev = evaluareRef.current
-    reset(toFormValues(ev))
-    setCaiAcces(parseJsonArray(ev.caiAcces))
-    setVecinatatiBifate(parseJsonArray(ev.vecinatatiBifate))
+    reset(toFormValues(ev, formData))
+    setCaiAcces(parseJsonArray((formData.caiAcces as string | undefined) ?? ev.caiAcces))
+    setVecinatatiBifate(
+      parseJsonArray((formData.vecinatatiBifate as string | undefined) ?? ev.vecinatatiBifate),
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [evaluare.id, reset])
 
   const handleSave = useCallback(async () => {
@@ -92,7 +106,8 @@ export const ObiectivSection = ({ evaluare }: Props) => {
       vecinSud: formValues.vecinSud || null,
       vecinVest: formValues.vecinVest || null,
       numarPuncteAcces: (() => {
-        if (formValues.numarPuncteAcces === '' || formValues.numarPuncteAcces === undefined) return null
+        if (formValues.numarPuncteAcces === '' || formValues.numarPuncteAcces === undefined)
+          return null
         const parsed = parseInt(formValues.numarPuncteAcces, 10)
         return isNaN(parsed) ? null : parsed
       })(),
@@ -105,20 +120,25 @@ export const ObiectivSection = ({ evaluare }: Props) => {
   }, [update, getValues, caiAcces, vecinatatiBifate])
 
   const { markDirty } = useSectionSync('obiectiv', handleSave)
+  useFormLocalPersist(watch)
 
   const handleCheckboxChange = (
     list: string[],
     setList: (v: string[]) => void,
     item: string,
+    persistKey: string,
   ) => {
-    toggleItem(list, setList, item)
+    const updated = list.includes(item) ? list.filter((v) => v !== item) : [...list, item]
+    setList(updated)
+    setField(persistKey, JSON.stringify(updated))
+    markDirty()
   }
 
   return (
-    <section id='obiectiv-section' className='scroll-mt-20'>
+    <section id='obiectiv-section' className='scroll-mt-32'>
       <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
         <Typography variant='h3' className='mb-6 text-navy-900'>
-          Amplasare &amp; Factori Externi
+          3. Amplasare &amp; Factori Externi
         </Typography>
 
         <form noValidate onChange={markDirty}>
@@ -192,7 +212,7 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                     <input
                       type='checkbox'
                       checked={caiAcces.includes(cale)}
-                      onChange={() => handleCheckboxChange(caiAcces, setCaiAcces, cale)}
+                      onChange={() => handleCheckboxChange(caiAcces, setCaiAcces, cale, 'caiAcces')}
                       className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                     />
                     <Typography variant='body-sm' className='text-navy-700'>
@@ -274,7 +294,12 @@ export const ObiectivSection = ({ evaluare }: Props) => {
                       type='checkbox'
                       checked={vecinatatiBifate.includes(vecin)}
                       onChange={() =>
-                        handleCheckboxChange(vecinatatiBifate, setVecinatatiBifate, vecin)
+                        handleCheckboxChange(
+                          vecinatatiBifate,
+                          setVecinatatiBifate,
+                          vecin,
+                          'vecinatatiBifate',
+                        )
                       }
                       className='rounded border-primary-300 text-primary-600 focus:ring-primary-500'
                     />
@@ -317,4 +342,3 @@ export const ObiectivSection = ({ evaluare }: Props) => {
     </section>
   )
 }
-

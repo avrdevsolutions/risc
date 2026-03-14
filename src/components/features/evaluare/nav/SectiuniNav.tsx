@@ -4,13 +4,19 @@ import { useMemo } from 'react'
 
 import { useActiveSection } from '@/hooks/useActiveSection'
 import { SECTIUNI_NAVIGARE } from '@/lib/constants'
+import type { EvaluareWithRiscuri } from '@/lib/types'
 import { cn } from '@/lib/utils'
+
+import { computeProgress } from '../page/EvaluarePage'
 
 const SECTION_IDS = SECTIUNI_NAVIGARE.map((s) => s.id)
 
-export const SectiuniNav = () => {
+type Props = { evaluare: EvaluareWithRiscuri }
+
+export const SectiuniNav = ({ evaluare }: Props) => {
   const sectionIds = useMemo(() => SECTION_IDS, [])
   const activeId = useActiveSection(sectionIds)
+  const progress = computeProgress(evaluare)
 
   const scrollTo = (id: string) => {
     const el = document.getElementById(id)
@@ -18,9 +24,39 @@ export const SectiuniNav = () => {
   }
 
   return (
-    <nav className='sticky top-20 hidden w-56 shrink-0 lg:block' aria-label='Navigare secțiuni'>
-      <div className='rounded-2xl border border-navy-200 bg-white p-3 shadow-sm'>
-        <ul className='space-y-0.5'>
+    <nav
+      className='sticky hidden w-56 shrink-0 self-start lg:block'
+      style={{ top: '130px', maxHeight: 'calc(100vh - 150px)' }}
+      aria-label='Navigare secțiuni'
+    >
+      <div className='flex flex-col overflow-y-auto rounded-2xl border border-navy-200 bg-white shadow-sm'>
+        {/* Compact progress indicator */}
+        <div className='p-3'>
+          <div className='mb-1.5 flex items-center justify-between'>
+            <span className='text-xs font-semibold uppercase tracking-wider text-navy-400'>
+              Progres
+            </span>
+            <span className='text-sm font-bold text-primary-600'>{progress}%</span>
+          </div>
+          <div
+            className='h-1.5 overflow-hidden rounded-full bg-navy-100'
+            role='progressbar'
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label='Progres completare documentație'
+          >
+            <div
+              className='h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-500'
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+
+        <div className='border-t border-navy-100' />
+
+        {/* Section list */}
+        <ul className='space-y-0.5 p-2'>
           {SECTIUNI_NAVIGARE.map((s) => {
             const isActive = activeId === s.id
             return (
@@ -34,7 +70,9 @@ export const SectiuniNav = () => {
                       : 'text-navy-500 hover:bg-navy-50 hover:text-navy-800',
                   )}
                 >
-                  <span aria-hidden='true'>{s.emoji}</span>
+                  <span className='w-5 shrink-0 text-right font-mono text-xs text-navy-400'>
+                    {s.number}.
+                  </span>
                   <span>{s.label}</span>
                 </button>
               </li>

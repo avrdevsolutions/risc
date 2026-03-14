@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { AlertTriangle } from 'lucide-react'
 
 import { Typography, Stack } from '@/components/ui'
+import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useSectionSync } from '@/hooks/useSectionSync'
 import { getRiskLevel, AMENINTARI } from '@/lib/constants'
@@ -36,17 +37,30 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
+  const { formData, setField } = useEvaluareSyncContext()
 
-  const [nivelRiscGlobal, setNivelRiscGlobal] = useState(evaluare.nivelRiscGlobalAsumat ?? '')
+  const [nivelRiscGlobal, setNivelRiscGlobal] = useState(
+    (formData.nivelRiscGlobalAsumat as string | undefined) ?? evaluare.nivelRiscGlobalAsumat ?? '',
+  )
   const [nivelRiscRezidual, setNivelRiscRezidual] = useState(
-    evaluare.nivelRiscRezidualGlobal ?? '',
+    (formData.nivelRiscRezidualGlobal as string | undefined) ??
+      evaluare.nivelRiscRezidualGlobal ??
+      '',
   )
   const [termenImplementare, setTermenImplementare] = useState(
-    evaluare.termenImplementareGlobal ?? '',
+    (formData.termenImplementareGlobal as string | undefined) ??
+      evaluare.termenImplementareGlobal ??
+      '',
   )
-  const [concluziiGenerale, setConcluziiGenerale] = useState(evaluare.concluziiGenerale ?? '')
-  const [masuriObligatorii, setMasuriObligatorii] = useState(evaluare.masuriObligatorii ?? '')
-  const [masuriRecomandate, setMasuriRecomandate] = useState(evaluare.masuriRecomandate ?? '')
+  const [concluziiGenerale, setConcluziiGenerale] = useState(
+    (formData.concluziiGenerale as string | undefined) ?? evaluare.concluziiGenerale ?? '',
+  )
+  const [masuriObligatorii, setMasuriObligatorii] = useState(
+    (formData.masuriObligatorii as string | undefined) ?? evaluare.masuriObligatorii ?? '',
+  )
+  const [masuriRecomandate, setMasuriRecomandate] = useState(
+    (formData.masuriRecomandate as string | undefined) ?? evaluare.masuriRecomandate ?? '',
+  )
 
   useEffect(() => {
     const ev = evaluareRef.current
@@ -79,6 +93,12 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
 
   const { markDirty } = useSectionSync('concluzii', handleSave)
 
+  const handleChange = (setter: (v: string) => void, key: string, value: string) => {
+    setter(value)
+    setField(key, value)
+    markDirty()
+  }
+
   const counts = getRiskCounts(evaluare.riscuri)
 
   const summaryText =
@@ -87,10 +107,10 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
       : 'Nu au fost evaluate amenințări. Completați secțiunea Surse de Risc pentru a genera sumarul.'
 
   return (
-    <section id='concluzii-section' className='scroll-mt-20'>
+    <section id='concluzii-section' className='scroll-mt-32'>
       <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
         <Typography variant='h3' className='mb-6 text-navy-900'>
-          Concluzii
+          8. Concluzii
         </Typography>
 
         <Stack gap='6'>
@@ -128,7 +148,9 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
               </label>
               <select
                 value={nivelRiscGlobal}
-                onChange={(e) => { setNivelRiscGlobal(e.target.value); markDirty() }}
+                onChange={(e) =>
+                  handleChange(setNivelRiscGlobal, 'nivelRiscGlobalAsumat', e.target.value)
+                }
                 className={cn('form-input', !nivelRiscGlobal && 'text-navy-400')}
               >
                 <option value=''>Selectați...</option>
@@ -144,7 +166,9 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
               </label>
               <select
                 value={nivelRiscRezidual}
-                onChange={(e) => { setNivelRiscRezidual(e.target.value); markDirty() }}
+                onChange={(e) =>
+                  handleChange(setNivelRiscRezidual, 'nivelRiscRezidualGlobal', e.target.value)
+                }
                 className={cn('form-input', !nivelRiscRezidual && 'text-navy-400')}
               >
                 <option value=''>Selectați...</option>
@@ -161,7 +185,9 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
             <input
               type='date'
               value={termenImplementare}
-              onChange={(e) => { setTermenImplementare(e.target.value); markDirty() }}
+              onChange={(e) =>
+                handleChange(setTermenImplementare, 'termenImplementareGlobal', e.target.value)
+              }
               className='form-input'
             />
           </div>
@@ -172,7 +198,9 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
             </label>
             <textarea
               value={concluziiGenerale}
-              onChange={(e) => { setConcluziiGenerale(e.target.value); markDirty() }}
+              onChange={(e) =>
+                handleChange(setConcluziiGenerale, 'concluziiGenerale', e.target.value)
+              }
               rows={4}
               placeholder='Descrieți starea generală de securitate a obiectivului evaluat...'
               className='form-input'
@@ -185,7 +213,9 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
             </label>
             <textarea
               value={masuriObligatorii}
-              onChange={(e) => { setMasuriObligatorii(e.target.value); markDirty() }}
+              onChange={(e) =>
+                handleChange(setMasuriObligatorii, 'masuriObligatorii', e.target.value)
+              }
               rows={4}
               placeholder='Listați măsurile cu caracter obligatoriu și urgență ridicată...'
               className='form-input'
@@ -198,7 +228,9 @@ export const ConcluziiSection = ({ evaluare }: Props) => {
             </label>
             <textarea
               value={masuriRecomandate}
-              onChange={(e) => { setMasuriRecomandate(e.target.value); markDirty() }}
+              onChange={(e) =>
+                handleChange(setMasuriRecomandate, 'masuriRecomandate', e.target.value)
+              }
               rows={4}
               placeholder='Listați măsurile recomandate suplimentar...'
               className='form-input'

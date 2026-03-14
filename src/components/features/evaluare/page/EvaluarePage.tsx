@@ -4,7 +4,7 @@ import { useState } from 'react'
 
 import Link from 'next/link'
 
-import { ArrowLeft, CheckCircle, Circle, FileDown } from 'lucide-react'
+import { ArrowLeft, CheckCircle, Circle, FileDown, List, X } from 'lucide-react'
 
 import { Typography, Stack, Button, Badge } from '@/components/ui'
 import { EvaluareSyncProvider } from '@/context/EvaluareSyncContext'
@@ -28,7 +28,7 @@ import { SyncButton } from '../sync'
 
 type Props = { id: string }
 
-const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
+export const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
   const requiredFields: (string | null | undefined)[] = [
     evaluare.denumireProiect,
     evaluare.adresaLocatie,
@@ -55,45 +55,6 @@ const computeProgress = (evaluare: EvaluareWithRiscuri): number => {
   return Math.round((filledItems / totalItems) * 100)
 }
 
-const ProgressBar = ({ evaluare }: { evaluare: EvaluareWithRiscuri }) => {
-  const progress = computeProgress(evaluare)
-  const colorClass =
-    progress >= 80 ? 'text-success-500' : progress >= 40 ? 'text-accent-500' : 'text-error-500'
-  const barColor =
-    progress >= 80
-      ? 'from-success-500 to-success-600'
-      : progress >= 40
-        ? 'from-accent-500 to-accent-600'
-        : 'from-primary-500 to-primary-600'
-
-  return (
-    <div className='mb-6 rounded-2xl bg-navy-900 px-5 py-4 shadow-sm'>
-      <div className='mb-2.5 flex items-center justify-between'>
-        <Typography variant='body-sm' className='font-medium text-white' id='progress-label'>
-          Progres completare documentație
-        </Typography>
-        <span className={cn('text-sm font-bold', colorClass)}>{progress}% completat</span>
-      </div>
-      <div
-        className='h-2 overflow-hidden rounded-full bg-navy-700'
-        role='progressbar'
-        aria-valuenow={progress}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-labelledby='progress-label'
-      >
-        <div
-          className={cn(
-            'h-full rounded-full bg-gradient-to-r transition-all duration-300',
-            barColor,
-          )}
-          style={{ width: `${progress}%` }}
-        />
-      </div>
-    </div>
-  )
-}
-
 const StatusBar = ({
   evaluare,
   onMarkComplete,
@@ -103,7 +64,10 @@ const StatusBar = ({
   onMarkComplete: () => void
   isPending: boolean
 }) => (
-  <div className='mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-navy-200 bg-white p-4 shadow-sm'>
+  <div
+    className='sticky z-40 -mx-4 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-navy-200 bg-white/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8'
+    style={{ top: '56px' }}
+  >
     <Stack direction='row' align='center' gap='3'>
       <Link
         href='/evaluari'
@@ -190,13 +154,13 @@ const ExportSection = ({ id }: { id: string }) => {
   }
 
   return (
-    <section id='export-section' className='scroll-mt-20'>
+    <section id='export-section' className='scroll-mt-32'>
       <div className='rounded-2xl border border-navy-100 bg-white p-6 text-center shadow-sm'>
         <div className='mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl bg-primary-50'>
           <FileDown className='size-7 text-primary-500' />
         </div>
         <Typography variant='h3' className='mb-2 text-navy-900'>
-          Documentul este gata de export
+          11. Export
         </Typography>
         <Typography variant='body-sm' className='mb-6 text-navy-500'>
           Exportați raportul de evaluare în format Microsoft Word (.docx) — Conform Instrucțiunilor
@@ -216,28 +180,83 @@ const ExportSection = ({ id }: { id: string }) => {
   )
 }
 
-/** Mobile: horizontal pill bar fixed below the header */
-const MobilePillNav = () => {
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id)
+/** Mobile: bottom sheet navigation */
+const MobileBottomSheet = ({
+  isOpen,
+  onClose,
+  progress,
+}: {
+  isOpen: boolean
+  onClose: () => void
+  progress: number
+}) => {
+  const scrollTo = (sectionId: string) => {
+    const el = document.getElementById(sectionId)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    onClose()
   }
 
+  if (!isOpen) return null
+
   return (
-    <nav
-      className='fixed inset-x-0 top-16 z-40 flex gap-2 overflow-x-auto border-b border-navy-200 bg-white px-4 py-2 md:hidden'
-      aria-label='Navigare rapidă secțiuni'
-    >
-      {SECTIUNI_NAVIGARE.map((s) => (
-        <button
-          key={s.id}
-          onClick={() => scrollTo(s.id)}
-          className='whitespace-nowrap rounded-full border border-navy-200 px-3 py-1.5 text-sm text-navy-600 hover:border-primary-300 hover:bg-primary-50 hover:text-primary-700'
-        >
-          <span aria-hidden='true'>{s.emoji}</span> {s.label}
-        </button>
-      ))}
-    </nav>
+    <>
+      {/* Backdrop */}
+      <div
+        className='fixed inset-0 z-50 bg-navy-900/40 backdrop-blur-sm md:hidden'
+        onClick={onClose}
+        aria-hidden='true'
+      />
+      {/* Sheet */}
+      <div className='fixed inset-x-0 bottom-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-2xl bg-white shadow-2xl md:hidden'>
+        <div className='flex items-center justify-between border-b border-navy-100 px-4 py-3'>
+          <Typography variant='h4' className='text-navy-900'>
+            Navighează
+          </Typography>
+          <button
+            onClick={onClose}
+            className='rounded-lg p-1.5 text-navy-400 hover:bg-navy-50 hover:text-navy-700'
+            aria-label='Închide'
+          >
+            <X className='size-5' />
+          </button>
+        </div>
+        {/* Compact progress */}
+        <div className='px-4 py-3'>
+          <div className='mb-1.5 flex items-center justify-between'>
+            <span className='text-xs font-semibold uppercase tracking-wider text-navy-400'>
+              Progres
+            </span>
+            <span className='text-sm font-bold text-primary-600'>{progress}%</span>
+          </div>
+          <div
+            className='h-1.5 overflow-hidden rounded-full bg-navy-100'
+            role='progressbar'
+            aria-valuenow={progress}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div
+              className='h-full rounded-full bg-gradient-to-r from-primary-500 to-primary-400 transition-all duration-500'
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+        </div>
+        {/* Section list */}
+        <ul className='px-3 pb-6 pt-1'>
+          {SECTIUNI_NAVIGARE.map((s) => (
+            <li key={s.id}>
+              <button
+                onClick={() => scrollTo(s.id)}
+                className='flex w-full items-center gap-2.5 rounded-xl px-3 py-2.5 text-left text-sm text-navy-600 transition-colors hover:bg-navy-50 hover:text-navy-900'
+              >
+                <span className='w-5 text-right font-mono text-xs text-navy-400'>{s.number}.</span>
+                <span>{s.label}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </>
   )
 }
 
@@ -260,6 +279,7 @@ const LoadingSkeleton = () => (
 export const EvaluarePage = ({ id }: Props) => {
   const { data: evaluare, isLoading, isError } = useEvaluare(id)
   const update = useUpdateEvaluare(id)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const handleToggleStatus = () => {
     if (!evaluare) return
@@ -296,21 +316,21 @@ export const EvaluarePage = ({ id }: Props) => {
     )
   }
 
+  const progress = computeProgress(evaluare)
+
   return (
-    <EvaluareSyncProvider>
-      <MobilePillNav />
-      <div className='mx-auto max-w-screen-xl px-4 py-8 pt-24 sm:px-6 md:pt-8 lg:px-8'>
+    <EvaluareSyncProvider evaluareId={id}>
+      <div className='mx-auto max-w-screen-xl px-4 pb-8 pt-4 sm:px-6 lg:px-8'>
         <StatusBar
           evaluare={evaluare}
           onMarkComplete={handleToggleStatus}
           isPending={update.isPending}
         />
 
-        <div className='flex gap-6'>
-          <SectiuniNav />
+        <div className='flex gap-6 pt-6'>
+          <SectiuniNav evaluare={evaluare} />
 
           <div className='min-w-0 flex-1 space-y-6'>
-            <ProgressBar evaluare={evaluare} />
             <ProiectSection evaluare={evaluare} />
             <EvaluatorSection evaluare={evaluare} />
             <ObiectivSection evaluare={evaluare} />
@@ -326,6 +346,24 @@ export const EvaluarePage = ({ id }: Props) => {
         </div>
 
         <SyncButton />
+
+        {/* Mobile FAB */}
+        <button
+          onClick={() => setMobileNavOpen(true)}
+          className={cn(
+            'fixed bottom-20 right-4 z-40 flex size-11 items-center justify-center rounded-full bg-navy-900 text-white shadow-lg md:hidden',
+            'transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-500 focus-visible:ring-offset-2',
+          )}
+          aria-label='Deschide navigare secțiuni'
+        >
+          <List className='size-5' />
+        </button>
+
+        <MobileBottomSheet
+          isOpen={mobileNavOpen}
+          onClose={() => setMobileNavOpen(false)}
+          progress={progress}
+        />
       </div>
     </EvaluareSyncProvider>
   )

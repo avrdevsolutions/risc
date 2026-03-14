@@ -95,10 +95,10 @@ export const SumarSection = ({ evaluare }: Props) => {
   )
 
   return (
-    <section id='sumar-section' className='scroll-mt-20'>
+    <section id='sumar-section' className='scroll-mt-32'>
       <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
         <Typography variant='h3' className='mb-6 text-navy-900'>
-          Sumar &amp; Revizuire
+          6. Sumar Riscuri
         </Typography>
 
         <Stack gap='6'>

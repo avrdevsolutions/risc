@@ -632,15 +632,15 @@ export const CADRU_LEGAL = [
 ] as const
 
 export const SECTIUNI_NAVIGARE = [
-  { id: 'proiect-section', emoji: '🏢', label: 'Date Identificare' },
-  { id: 'evaluator-section', emoji: '👤', label: 'Evaluator & Metodă' },
-  { id: 'obiectiv-section', emoji: '📍', label: 'Amplasare & Factori Externi' },
-  { id: 'cadru-organizational-section', emoji: '🏛️', label: 'Cadru Organizațional' },
-  { id: 'riscuri-section', emoji: '⚠️', label: 'Surse de Risc' },
-  { id: 'sumar-section', emoji: '📊', label: 'Sumar Riscuri' },
-  { id: 'masuri-section', emoji: '🔒', label: 'Măsuri & Mecanisme' },
-  { id: 'concluzii-section', emoji: '📝', label: 'Concluzii' },
-  { id: 'aprobare-section', emoji: '✅', label: 'Semnături & Asumare' },
-  { id: 'documente-section', emoji: '📋', label: 'Documente Suport' },
-  { id: 'export-section', emoji: '📄', label: 'Export' },
+  { id: 'proiect-section', number: 1, label: 'Date Identificare' },
+  { id: 'evaluator-section', number: 2, label: 'Evaluator & Metodă' },
+  { id: 'obiectiv-section', number: 3, label: 'Amplasare & Factori Externi' },
+  { id: 'cadru-organizational-section', number: 4, label: 'Cadru Organizațional' },
+  { id: 'riscuri-section', number: 5, label: 'Surse de Risc' },
+  { id: 'sumar-section', number: 6, label: 'Sumar Riscuri' },
+  { id: 'masuri-section', number: 7, label: 'Măsuri & Mecanisme' },
+  { id: 'concluzii-section', number: 8, label: 'Concluzii' },
+  { id: 'aprobare-section', number: 9, label: 'Semnături & Asumare' },
+  { id: 'documente-section', number: 10, label: 'Documente Suport' },
+  { id: 'export-section', number: 11, label: 'Export' },
 ] as const

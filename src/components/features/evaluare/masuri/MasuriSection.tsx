@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Typography, Stack } from '@/components/ui'
+import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
 import { useUpdateEvaluare } from '@/hooks/use-evaluari'
 import { useSectionSync } from '@/hooks/useSectionSync'
 import {
@@ -18,10 +19,6 @@ import type { Evaluare } from '@/lib/types'
 import { parseJsonArray } from '@/lib/utils'
 
 type Props = { evaluare: Evaluare }
-
-const toggleItem = (list: string[], setList: (val: string[]) => void, value: string) => {
-  setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value])
-}
 
 type CheckboxGridProps = {
   items: readonly { value: string; label: string }[]
@@ -65,24 +62,42 @@ export const MasuriSection = ({ evaluare }: Props) => {
   const update = useUpdateEvaluare(evaluare.id)
   const evaluareRef = useRef(evaluare)
   evaluareRef.current = evaluare
+  const { formData, setField } = useEvaluareSyncContext()
 
   const [mecanofizice, setMecanofizice] = useState<string[]>(
-    parseJsonArray(evaluare.masuriMecanofizice),
+    parseJsonArray(
+      (formData.masuriMecanofizice as string | undefined) ?? evaluare.masuriMecanofizice,
+    ),
   )
   const [controlAcces, setControlAcces] = useState<string[]>(
-    parseJsonArray(evaluare.masuriControlAcces),
+    parseJsonArray(
+      (formData.masuriControlAcces as string | undefined) ?? evaluare.masuriControlAcces,
+    ),
   )
-  const [alarmare, setAlarmare] = useState<string[]>(parseJsonArray(evaluare.masuriAlarmare))
-  const [cctv, setCctv] = useState<string[]>(parseJsonArray(evaluare.masuriCctv))
-  const [pazaUmana, setPazaUmana] = useState<string[]>(parseJsonArray(evaluare.pazaUmana))
+  const [alarmare, setAlarmare] = useState<string[]>(
+    parseJsonArray((formData.masuriAlarmare as string | undefined) ?? evaluare.masuriAlarmare),
+  )
+  const [cctv, setCctv] = useState<string[]>(
+    parseJsonArray((formData.masuriCctv as string | undefined) ?? evaluare.masuriCctv),
+  )
+  const [pazaUmana, setPazaUmana] = useState<string[]>(
+    parseJsonArray((formData.pazaUmana as string | undefined) ?? evaluare.pazaUmana),
+  )
   const [numarAgenti, setNumarAgenti] = useState(
-    evaluare.numarAgenti != null ? String(evaluare.numarAgenti) : '',
+    (formData.numarAgenti as string | undefined) ??
+      (evaluare.numarAgenti != null ? String(evaluare.numarAgenti) : ''),
   )
   const [organizatorice, setOrganizatorice] = useState<string[]>(
-    parseJsonArray(evaluare.masuriOrganizatorice),
+    parseJsonArray(
+      (formData.masuriOrganizatorice as string | undefined) ?? evaluare.masuriOrganizatorice,
+    ),
   )
-  const [asigurari, setAsigurari] = useState<string[]>(parseJsonArray(evaluare.masuriAsigurari))
-  const [observatii, setObservatii] = useState(evaluare.observatiiMasuri ?? '')
+  const [asigurari, setAsigurari] = useState<string[]>(
+    parseJsonArray((formData.masuriAsigurari as string | undefined) ?? evaluare.masuriAsigurari),
+  )
+  const [observatii, setObservatii] = useState(
+    (formData.observatiiMasuri as string | undefined) ?? evaluare.observatiiMasuri ?? '',
+  )
 
   useEffect(() => {
     const ev = evaluareRef.current
@@ -128,11 +143,23 @@ export const MasuriSection = ({ evaluare }: Props) => {
 
   const { markDirty } = useSectionSync('masuri', handleSave)
 
+  const handleToggle = (
+    list: string[],
+    setList: (v: string[]) => void,
+    value: string,
+    key: string,
+  ) => {
+    const updated = list.includes(value) ? list.filter((v) => v !== value) : [...list, value]
+    setList(updated)
+    setField(key, JSON.stringify(updated))
+    markDirty()
+  }
+
   return (
-    <section id='masuri-section' className='scroll-mt-20'>
+    <section id='masuri-section' className='scroll-mt-32'>
       <div className='rounded-2xl border border-navy-100 bg-white p-6 shadow-sm'>
         <Typography variant='h3' className='mb-6 text-navy-900'>
-          Măsuri &amp; Mecanisme de Securitate
+          7. Măsuri &amp; Mecanisme
         </Typography>
 
         <Stack gap='2'>
@@ -141,7 +168,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_MECANOFIZICE}
               selected={mecanofizice}
-              onToggle={(v) => { toggleItem(mecanofizice, setMecanofizice, v); markDirty() }}
+              onToggle={(v) => handleToggle(mecanofizice, setMecanofizice, v, 'masuriMecanofizice')}
             />
           </SubSection>
 
@@ -150,7 +177,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_CONTROL_ACCES}
               selected={controlAcces}
-              onToggle={(v) => { toggleItem(controlAcces, setControlAcces, v); markDirty() }}
+              onToggle={(v) => handleToggle(controlAcces, setControlAcces, v, 'masuriControlAcces')}
             />
           </SubSection>
 
@@ -159,7 +186,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_ALARMARE}
               selected={alarmare}
-              onToggle={(v) => { toggleItem(alarmare, setAlarmare, v); markDirty() }}
+              onToggle={(v) => handleToggle(alarmare, setAlarmare, v, 'masuriAlarmare')}
             />
           </SubSection>
 
@@ -168,7 +195,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_CCTV}
               selected={cctv}
-              onToggle={(v) => { toggleItem(cctv, setCctv, v); markDirty() }}
+              onToggle={(v) => handleToggle(cctv, setCctv, v, 'masuriCctv')}
             />
           </SubSection>
 
@@ -177,7 +204,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={PAZA_UMANA}
               selected={pazaUmana}
-              onToggle={(v) => { toggleItem(pazaUmana, setPazaUmana, v); markDirty() }}
+              onToggle={(v) => handleToggle(pazaUmana, setPazaUmana, v, 'pazaUmana')}
             />
             <div className='mt-4'>
               <label className='mb-1.5 block text-sm font-medium text-navy-700'>
@@ -187,7 +214,11 @@ export const MasuriSection = ({ evaluare }: Props) => {
                 type='number'
                 min={0}
                 value={numarAgenti}
-                onChange={(e) => { setNumarAgenti(e.target.value); markDirty() }}
+                onChange={(e) => {
+                  setNumarAgenti(e.target.value)
+                  setField('numarAgenti', e.target.value)
+                  markDirty()
+                }}
                 placeholder='Ex: 2'
                 className='form-input w-48'
               />
@@ -199,7 +230,9 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_ORGANIZATORICE}
               selected={organizatorice}
-              onToggle={(v) => { toggleItem(organizatorice, setOrganizatorice, v); markDirty() }}
+              onToggle={(v) =>
+                handleToggle(organizatorice, setOrganizatorice, v, 'masuriOrganizatorice')
+              }
             />
           </SubSection>
 
@@ -208,7 +241,7 @@ export const MasuriSection = ({ evaluare }: Props) => {
             <CheckboxGrid
               items={MASURI_ASIGURARI}
               selected={asigurari}
-              onToggle={(v) => { toggleItem(asigurari, setAsigurari, v); markDirty() }}
+              onToggle={(v) => handleToggle(asigurari, setAsigurari, v, 'masuriAsigurari')}
             />
           </SubSection>
 
@@ -219,7 +252,11 @@ export const MasuriSection = ({ evaluare }: Props) => {
             </label>
             <textarea
               value={observatii}
-              onChange={(e) => { setObservatii(e.target.value); markDirty() }}
+              onChange={(e) => {
+                setObservatii(e.target.value)
+                setField('observatiiMasuri', e.target.value)
+                markDirty()
+              }}
               rows={3}
               placeholder='Descrieți orice măsuri suplimentare care nu se regăsesc în listele de mai sus...'
               className='form-input'
