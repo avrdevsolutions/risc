@@ -1,9 +1,12 @@
 'use client'
 
+import { useState } from 'react'
+
 import { AlertCircle, CheckCircle, Loader2, Save } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 
 import { useEvaluareSyncContext } from '@/context/EvaluareSyncContext'
+import { useAutoSync } from '@/hooks/useAutoSync'
 import { cn } from '@/lib/utils'
 import { useEvaluareSyncStore } from '@/stores/evaluare-sync-store'
 
@@ -16,32 +19,83 @@ const formatLastSync = (isoString: string | null): string => {
   return `acum ${Math.floor(diff / 86400)} zile`
 }
 
+const formatCountdown = (seconds: number): string => {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
 export const SyncButton = () => {
-  const { isDirty, isSyncing, syncError, lastSyncedAt, startSync, finishSync, setSyncError } =
-    useEvaluareSyncStore(
-      useShallow((s) => ({
-        isDirty: s.isDirty,
-        isSyncing: s.isSyncing,
-        syncError: s.syncError,
-        lastSyncedAt: s.lastSyncedAt,
-        startSync: s.startSync,
-        finishSync: s.finishSync,
-        setSyncError: s.setSyncError,
-      })),
-    )
+  const [recentlySaved, setRecentlySaved] = useState(false)
 
-  const { syncAll } = useEvaluareSyncContext()
+  const {
+    isDirty,
+    isSyncing,
+    syncError,
+    lastSyncedAt,
+    startSync,
+    finishSync,
+    setSyncError,
+    setConflictDetected,
+  } = useEvaluareSyncStore(
+    useShallow((s) => ({
+      isDirty: s.isDirty,
+      isSyncing: s.isSyncing,
+      syncError: s.syncError,
+      lastSyncedAt: s.lastSyncedAt,
+      startSync: s.startSync,
+      finishSync: s.finishSync,
+      setSyncError: s.setSyncError,
+      setConflictDetected: s.setConflictDetected,
+    })),
+  )
 
+  const { syncAll, evaluareId } = useEvaluareSyncContext()
+
+  /**
+   * Performs a sync with conflict detection.
+   * If DB was updated more recently than our last sync, shows the conflict dialog.
+   */
   const handleSync = async () => {
     if (isSyncing) return
+
+    // Conflict check: only needed if we have synced before
+    if (lastSyncedAt) {
+      try {
+        const checkRes = await fetch(`/api/evaluari/${evaluareId}`)
+        if (checkRes.ok) {
+          const { data: dbData } = (await checkRes.json()) as {
+            data?: { updatedAt?: string }
+          }
+          if (dbData?.updatedAt && new Date(dbData.updatedAt) > new Date(lastSyncedAt)) {
+            setConflictDetected(dbData.updatedAt)
+            return // Conflict dialog will handle resolution
+          }
+        }
+      } catch {
+        // Network error during conflict check — proceed with save anyway
+      }
+    }
+
+    // No conflict — proceed with sync
     startSync()
     try {
       await syncAll()
-      finishSync(new Date().toISOString())
+      const timestamp = new Date().toISOString()
+      finishSync(timestamp)
+      setRecentlySaved(true)
+      setTimeout(() => setRecentlySaved(false), 2000)
     } catch {
       setSyncError('Eroare la salvare. Verificați conexiunea.')
     }
   }
+
+  const { secondsUntilAutoSync } = useAutoSync({
+    evaluareId,
+    isDirty,
+    isSyncing,
+    onSync: handleSync,
+  })
 
   const tooltip = 'Salvează datele în baza de date pentru a le accesa de pe alt dispozitiv'
 
@@ -51,7 +105,7 @@ export const SyncButton = () => {
         <AlertCircle className='size-4 shrink-0 text-error-600' />
         <span className='text-sm font-medium text-error-700'>Eroare</span>
         <button
-          onClick={handleSync}
+          onClick={() => void handleSync()}
           className='ml-1 rounded-full bg-error-600 px-3 py-1 text-xs font-semibold text-white hover:bg-error-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-500 focus-visible:ring-offset-2'
         >
           Reîncearcă
@@ -71,23 +125,40 @@ export const SyncButton = () => {
 
   if (isDirty) {
     return (
-      <button
-        onClick={handleSync}
-        title={tooltip}
-        className={cn(
-          'fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full px-4 py-2.5 shadow-lg',
-          'border border-primary-400 bg-primary-500 text-white',
-          'hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
-          'transition-all duration-200',
+      <div className='fixed bottom-6 right-6 z-50 flex flex-col items-end gap-1'>
+        <button
+          onClick={() => void handleSync()}
+          title={tooltip}
+          className={cn(
+            'flex items-center gap-2 rounded-full px-4 py-2.5 shadow-lg',
+            'border border-primary-400 bg-primary-500 text-white',
+            'hover:bg-primary-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-2',
+            'transition-all duration-200',
+            'animate-pulse-save',
+          )}
+          aria-label='Salvează progresul în baza de date'
+        >
+          <Save className='size-4 shrink-0' />
+          <span className='text-sm font-semibold'>Salvează progresul</span>
+          <span className='ml-1 rounded-full bg-primary-400 px-1.5 py-0.5 text-xs'>
+            Modificări locale
+          </span>
+        </button>
+        {secondsUntilAutoSync !== null && (
+          <span className='pr-1 text-xs text-navy-400'>
+            Salvare automată în {formatCountdown(secondsUntilAutoSync)}
+          </span>
         )}
-        aria-label='Salvează progresul în baza de date'
-      >
-        <Save className='size-4 shrink-0' />
-        <span className='text-sm font-semibold'>Salvează progresul</span>
-        <span className='ml-1 rounded-full bg-primary-400 px-1.5 py-0.5 text-xs'>
-          Modificări locale
-        </span>
-      </button>
+      </div>
+    )
+  }
+
+  if (recentlySaved) {
+    return (
+      <div className='fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-full border border-success-100 bg-success-50 px-4 py-2.5 shadow-sm'>
+        <CheckCircle className='size-4 shrink-0 text-success-600' />
+        <span className='text-sm font-semibold text-success-700'>Salvat!</span>
+      </div>
     )
   }
 

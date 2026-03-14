@@ -25,7 +25,7 @@ import { ObiectivSection } from '../obiectiv'
 import { ProiectSection } from '../proiect'
 import { RiscuriSection } from '../riscuri'
 import { SumarSection } from '../sumar'
-import { SyncButton } from '../sync'
+import { ConflictDialog, SyncButton } from '../sync'
 
 type Props = { id: string }
 
@@ -39,62 +39,69 @@ const StatusBar = ({
   isPending: boolean
 }) => (
   <div
-    className='sticky z-40 -mx-4 mb-6 flex flex-wrap items-center justify-between gap-3 border-b border-navy-200 bg-white/95 px-4 py-3 backdrop-blur-sm sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8'
+    className='sticky z-40 w-full border-b border-navy-200 bg-white/95 backdrop-blur-sm'
     style={{ top: '56px' }}
   >
-    <Stack direction='row' align='center' gap='3'>
-      <Link
-        href='/evaluari'
-        className='flex items-center gap-1.5 text-sm font-medium text-navy-500 transition-colors hover:text-navy-800'
-      >
-        <ArrowLeft className='size-4' />
-        Înapoi
-      </Link>
-      <span className='text-navy-200'>|</span>
-      <div>
-        <Typography variant='h4' className='text-navy-900'>
-          {evaluare.denumireProiect ?? 'Evaluare nouă'}
-        </Typography>
-        {evaluare.adresaLocatie && (
-          <Typography variant='caption' className='text-navy-500'>
-            {evaluare.adresaLocatie}
+    <div className='mx-auto flex max-w-screen-xl items-center justify-between gap-2 px-3 py-2 sm:gap-3 sm:px-6 sm:py-3 lg:px-8'>
+      {/* Left: Back + Title */}
+      <Stack direction='row' align='center' gap='2' className='min-w-0 flex-1'>
+        <Link
+          href='/evaluari'
+          className='flex shrink-0 items-center gap-1.5 text-sm font-medium text-navy-500 transition-colors hover:text-navy-800'
+        >
+          <ArrowLeft className='size-4' />
+          <span>Înapoi</span>
+        </Link>
+        <span className='shrink-0 text-navy-200'>|</span>
+        <div className='min-w-0 flex-1'>
+          <Typography variant='h4' className='truncate text-sm text-navy-900 sm:text-base'>
+            {evaluare.denumireProiect ?? 'Evaluare nouă'}
           </Typography>
-        )}
-      </div>
-    </Stack>
+          {evaluare.adresaLocatie && (
+            <Typography variant='caption' className='hidden truncate text-navy-500 sm:block'>
+              {evaluare.adresaLocatie}
+            </Typography>
+          )}
+        </div>
+      </Stack>
 
-    <Stack direction='row' align='center' gap='3'>
-      <Badge variant={evaluare.status === 'completed' ? 'success' : 'warning'}>
-        {evaluare.status === 'completed' ? 'Finalizat' : 'Ciornă'}
-      </Badge>
-      <Typography variant='caption' className='text-navy-400'>
-        {evaluare.riscuri.length} amenințări identificate
-      </Typography>
-      {evaluare.status === 'draft' && (
-        <Button
-          variant='outline'
-          size='sm'
-          onClick={onMarkComplete}
-          loading={isPending}
-          className='border-success-500 text-success-600 hover:bg-success-50'
-        >
-          <CheckCircle className='size-4' />
-          Marchează finalizat
-        </Button>
-      )}
-      {evaluare.status === 'completed' && (
-        <Button
-          variant='ghost'
-          size='sm'
-          onClick={onMarkComplete}
-          loading={isPending}
-          className='text-navy-500'
-        >
-          <Circle className='size-4' />
-          Redeschide
-        </Button>
-      )}
-    </Stack>
+      {/* Right: Badge + Risk count (hidden on mobile) + Status button */}
+      <Stack direction='row' align='center' gap='2' className='shrink-0'>
+        <Badge variant={evaluare.status === 'completed' ? 'success' : 'warning'}>
+          {evaluare.status === 'completed' ? 'Finalizat' : 'Ciornă'}
+        </Badge>
+        {/* Risk count hidden on mobile — visible in sidebar progress */}
+        <Typography variant='caption' className='hidden text-navy-400 md:block'>
+          {evaluare.riscuri.length} amenințări identificate
+        </Typography>
+        {evaluare.status === 'draft' && (
+          <Button
+            variant='outline'
+            size='sm'
+            onClick={onMarkComplete}
+            loading={isPending}
+            className='border-success-500 text-success-600 hover:bg-success-50'
+          >
+            <CheckCircle className='size-4' />
+            {/* Shorter label on mobile */}
+            <span className='hidden sm:inline'>Marchează finalizat</span>
+            <span className='sm:hidden'>Finalizează</span>
+          </Button>
+        )}
+        {evaluare.status === 'completed' && (
+          <Button
+            variant='ghost'
+            size='sm'
+            onClick={onMarkComplete}
+            loading={isPending}
+            className='text-navy-500'
+          >
+            <Circle className='size-4' />
+            <span className='hidden sm:inline'>Redeschide</span>
+          </Button>
+        )}
+      </Stack>
+    </div>
   </div>
 )
 
@@ -145,7 +152,7 @@ const ExportSection = ({ id }: { id: string }) => {
             {exportError}
           </Typography>
         )}
-        <Button size='lg' onClick={handleExport} loading={isExporting}>
+        <Button size='lg' onClick={() => void handleExport()} loading={isExporting}>
           <FileDown className='size-5' />
           Descarcă Word (.docx)
         </Button>
@@ -294,14 +301,16 @@ export const EvaluarePage = ({ id }: Props) => {
 
   return (
     <EvaluareSyncProvider evaluareId={id}>
-      <div className='mx-auto max-w-screen-xl px-4 pb-8 pt-4 sm:px-6 lg:px-8'>
-        <StatusBar
-          evaluare={evaluare}
-          onMarkComplete={handleToggleStatus}
-          isPending={update.isPending}
-        />
+      {/* Full-width status bar — sits outside the constrained content area */}
+      <StatusBar
+        evaluare={evaluare}
+        onMarkComplete={handleToggleStatus}
+        isPending={update.isPending}
+      />
 
-        <div className='flex gap-6 pt-6'>
+      {/* Constrained content area — pb-20 ensures the floating SyncButton never overlaps content */}
+      <div className='mx-auto max-w-screen-xl px-4 pb-20 pt-6 sm:px-6 lg:px-8'>
+        <div className='flex gap-6'>
           <SectiuniNav evaluare={evaluare} />
 
           <div className='min-w-0 flex-1 space-y-6'>
@@ -318,27 +327,30 @@ export const EvaluarePage = ({ id }: Props) => {
             <ExportSection id={id} />
           </div>
         </div>
-
-        <SyncButton />
-
-        {/* Mobile FAB */}
-        <button
-          onClick={() => setMobileNavOpen(true)}
-          className={cn(
-            'fixed bottom-20 right-4 z-40 flex size-11 items-center justify-center rounded-full bg-navy-900 text-white shadow-lg md:hidden',
-            'transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-500 focus-visible:ring-offset-2',
-          )}
-          aria-label='Deschide navigare secțiuni'
-        >
-          <List className='size-5' />
-        </button>
-
-        <MobileBottomSheet
-          isOpen={mobileNavOpen}
-          onClose={() => setMobileNavOpen(false)}
-          progress={progress}
-        />
       </div>
+
+      <SyncButton />
+
+      {/* Mobile FAB */}
+      <button
+        onClick={() => setMobileNavOpen(true)}
+        className={cn(
+          'fixed bottom-20 right-4 z-40 flex size-11 items-center justify-center rounded-full bg-navy-900 text-white shadow-lg md:hidden',
+          'transition-transform hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy-500 focus-visible:ring-offset-2',
+        )}
+        aria-label='Deschide navigare secțiuni'
+      >
+        <List className='size-5' />
+      </button>
+
+      <MobileBottomSheet
+        isOpen={mobileNavOpen}
+        onClose={() => setMobileNavOpen(false)}
+        progress={progress}
+      />
+
+      {/* Conflict resolution dialog */}
+      <ConflictDialog />
     </EvaluareSyncProvider>
   )
 }
