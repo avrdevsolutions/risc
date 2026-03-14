@@ -12,7 +12,7 @@ export const Header = () => (
           as='span'
           className='block text-base font-semibold leading-none text-white'
         >
-          SSM Evaluări
+          SecureEval
         </Typography>
         <Typography variant='body-sm' as='span' className='hidden text-xs text-navy-400 sm:block'>
           Evaluări de securitate fizică

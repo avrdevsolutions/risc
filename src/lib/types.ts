@@ -43,6 +43,16 @@ export type Evaluare = {
   documenteAplicabile: string | null
   anexeSelectate: string | null
   observatiiDocumente: string | null
+  // Cadru Organizațional Intern (Cap. III)
+  cadruRegimActivitate: string | null
+  cadruProgramLucru: string | null
+  cadruFluxPersoane: string | null
+  cadruFluxBunuri: string | null
+  cadruNumarAngajati: number | null
+  cadruZoneFunctionale: string | null
+  cadruBunuriValori: string | null
+  cadruSistemeTehnice: string | null
+  cadruFactoriVulnerabilitate: string | null
 }
 
 export type Risc = {

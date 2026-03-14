@@ -42,6 +42,16 @@ export const evaluari = sqliteTable('evaluari', {
   documenteAplicabile: text('documente_aplicabile'),
   anexeSelectate: text('anexe_selectate'),
   observatiiDocumente: text('observatii_documente'),
+  // Cadru Organizațional Intern (Cap. III)
+  cadruRegimActivitate: text('cadru_regim_activitate'),
+  cadruProgramLucru: text('cadru_program_lucru'),
+  cadruFluxPersoane: text('cadru_flux_persoane'),
+  cadruFluxBunuri: text('cadru_flux_bunuri'),
+  cadruNumarAngajati: integer('cadru_numar_angajati'),
+  cadruZoneFunctionale: text('cadru_zone_functionale'),
+  cadruBunuriValori: text('cadru_bunuri_valori'),
+  cadruSistemeTehnice: text('cadru_sisteme_tehnice'),
+  cadruFactoriVulnerabilitate: text('cadru_factori_vulnerabilitate'),
 })
 
 export const riscuri = sqliteTable('riscuri', {

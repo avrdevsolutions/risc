@@ -143,6 +143,17 @@ export const FLUX_PERSOANE = [
 ] as const
 
 // ============================================
+// FLUX BUNURI / VALORI
+// ============================================
+export const FLUX_BUNURI = [
+  'Absent (fără transport valori)',
+  'Scăzut (ocazional, bunuri de mică valoare)',
+  'Mediu (transport periodic, valori moderate)',
+  'Ridicat (transport frecvent, valori semnificative)',
+  'Foarte ridicat (transport zilnic, numerar/valori mari)',
+] as const
+
+// ============================================
 // ZONE FUNCȚIONALE (multi-select)
 // ============================================
 export const ZONE_FUNCTIONALE = [
@@ -619,8 +630,11 @@ export const SECTIUNI_NAVIGARE = [
   { id: 'proiect-section', emoji: '🏢', label: 'Date Identificare' },
   { id: 'evaluator-section', emoji: '👤', label: 'Evaluator & Metodă' },
   { id: 'obiectiv-section', emoji: '📍', label: 'Amplasare & Factori Externi' },
+  { id: 'cadru-organizational-section', emoji: '🏛️', label: 'Cadru Organizațional' },
   { id: 'riscuri-section', emoji: '⚠️', label: 'Surse de Risc' },
   { id: 'sumar-section', emoji: '📊', label: 'Sumar Riscuri' },
+  { id: 'masuri-section', emoji: '🔒', label: 'Măsuri & Mecanisme' },
+  { id: 'concluzii-section', emoji: '📝', label: 'Concluzii' },
   { id: 'aprobare-section', emoji: '✅', label: 'Semnături & Asumare' },
   { id: 'documente-section', emoji: '📋', label: 'Documente Suport' },
   { id: 'export-section', emoji: '📄', label: 'Export' },
