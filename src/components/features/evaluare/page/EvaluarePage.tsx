@@ -63,12 +63,19 @@ const ProgressBar = ({ evaluare }: { evaluare: EvaluareWithRiscuri }) => {
   return (
     <div className='mb-6 rounded-2xl bg-navy-900 px-5 py-4 shadow-sm'>
       <div className='mb-2.5 flex items-center justify-between'>
-        <Typography variant='body-sm' className='font-medium text-white'>
+        <Typography variant='body-sm' className='font-medium text-white' id='progress-label'>
           Progres completare documentație
         </Typography>
         <span className={cn('text-sm font-bold', colorClass)}>{progress}% completat</span>
       </div>
-      <div className='h-2 overflow-hidden rounded-full bg-navy-700'>
+      <div
+        className='h-2 overflow-hidden rounded-full bg-navy-700'
+        role='progressbar'
+        aria-valuenow={progress}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-labelledby='progress-label'
+      >
         <div
           className={cn(
             'h-full rounded-full bg-gradient-to-r transition-all duration-300',

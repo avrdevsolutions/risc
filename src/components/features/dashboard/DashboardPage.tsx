@@ -42,7 +42,12 @@ const EvaluareCard = ({
     onClick={onOpen}
     role='button'
     tabIndex={0}
-    onKeyDown={(e) => e.key === 'Enter' && onOpen()}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        onOpen()
+      }
+    }}
     aria-label={`Deschide evaluarea: ${evaluare.denumireProiect ?? 'Evaluare nouă'}`}
   >
     <div className='flex items-start gap-3'>
