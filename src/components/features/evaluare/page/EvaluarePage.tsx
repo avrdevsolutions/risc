@@ -266,11 +266,20 @@ export const EvaluarePage = ({ id }: Props) => {
   // page always starts at section 1 — not at the position the browser remembered
   // from a previous visit (which could cause the IntersectionObserver to
   // highlight a section deep in the page, e.g. "8. Concluzii").
+  // The previous scrollRestoration value is restored on unmount so other routes
+  // are not affected by this page-level override.
   useEffect(() => {
+    const previousScrollRestoration =
+      'scrollRestoration' in history ? history.scrollRestoration : null
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual'
     }
     window.scrollTo(0, 0)
+    return () => {
+      if (previousScrollRestoration !== null) {
+        history.scrollRestoration = previousScrollRestoration
+      }
+    }
   }, [])
 
   const handleToggleStatus = () => {

@@ -14,7 +14,12 @@ const OBSERVER_READINESS_DELAY_MS = 500
  * browser scroll restoration) from incorrectly marking a section deep in the
  * page (e.g. "8. Concluzii") as active on load.
  *
- * @param sectionIds - ordered list of section element IDs to observe
+ * **`sectionIds` must be a stable reference** (e.g. derived from a module-level
+ * constant). The observer is set up once after the readiness delay and will not
+ * react to changes in the array after that point. Pass a memoized array if the
+ * IDs can change at runtime.
+ *
+ * @param sectionIds - ordered list of section element IDs to observe (stable reference)
  */
 export const useActiveSection = (sectionIds: string[]): string | null => {
   const [activeId, setActiveId] = useState<string | null>(sectionIds[0] ?? null)
