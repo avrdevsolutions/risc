@@ -1,7 +1,7 @@
 'use client'
 
 import { create } from 'zustand'
-import { devtools, persist } from 'zustand/middleware'
+import { createJSONStorage, devtools, persist } from 'zustand/middleware'
 
 /**
  * ADR-0020: Zustand store for sync UI state only.
@@ -85,6 +85,29 @@ export const useEvaluareSyncStore = create<SyncState & SyncActions>()(
       }),
       {
         name: 'evaluare-sync-store',
+        storage: createJSONStorage(() => ({
+          getItem: (name) => {
+            try {
+              return localStorage.getItem(name)
+            } catch {
+              return null
+            }
+          },
+          setItem: (name, value) => {
+            try {
+              localStorage.setItem(name, value)
+            } catch {
+              // Ignore persistence failures for sync UI state
+            }
+          },
+          removeItem: (name) => {
+            try {
+              localStorage.removeItem(name)
+            } catch {
+              // Ignore removal errors
+            }
+          },
+        })),
         // Only persist the status flags — not runtime sync state
         partialize: (state) => ({
           isDirty: state.isDirty,
