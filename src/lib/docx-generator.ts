@@ -167,7 +167,7 @@ const STATUS_LABEL: Record<string, string> = {
 // ─── page / font constants ───────────────────────────────────────────────────
 
 const FONT = 'Calibri'
-const PAGE_WIDTH_DXA = 9072 // usable width (11906 - 2×1440 margins)
+const PAGE_WIDTH_DXA = 11906 - 2 * 1440 // usable width = 9026 DXA (A4 - left/right margins)
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
@@ -181,22 +181,46 @@ const parseJsonArray = (raw: string | null | undefined): string[] => {
   }
 }
 
-/** Return the human-readable value or a [necompletat] italic run. */
-const val = (value: unknown): string => {
+/** Return the human-readable string value, or null if empty. */
+const val = (value: unknown): string | null => {
   if (value !== null && value !== undefined && String(value).trim()) return String(value).trim()
-  return '[necompletat]'
+  return null
 }
 
 /** TextRun for [necompletat] placeholder. */
 const necompletatRun = () =>
   new TextRun({ text: '[necompletat]', italics: true, color: '94A3B8', font: FONT, size: 22 })
 
+/** Return a TextRun — normal if value is present, italic/gray [necompletat] if not. */
+const valRun = (
+  value: unknown,
+  opts?: { size?: number; bold?: boolean; color?: string },
+): TextRun => {
+  const str = val(value)
+  if (str) {
+    return new TextRun({
+      text: str,
+      font: FONT,
+      size: opts?.size ?? 22,
+      bold: opts?.bold ?? false,
+      color: opts?.color,
+    })
+  }
+  return new TextRun({
+    text: '[necompletat]',
+    italics: true,
+    color: '94A3B8',
+    font: FONT,
+    size: opts?.size ?? 22,
+  })
+}
+
 /** Build a TextRun pair: bold label + value (or [necompletat]). */
 const labelValueRuns = (label: string, value: unknown): TextRun[] => {
-  const filled = value !== null && value !== undefined && String(value).trim()
+  const str = val(value)
   return [
     new TextRun({ text: `${label}: `, bold: true, font: FONT, size: 22 }),
-    filled ? new TextRun({ text: String(value).trim(), font: FONT, size: 22 }) : necompletatRun(),
+    str ? new TextRun({ text: str, font: FONT, size: 22 }) : necompletatRun(),
   ]
 }
 
@@ -209,10 +233,13 @@ const resolveAmenintareLabel = (v: string): string => AMENINTARI_LABEL_MAP[v] ??
 /** Strip # from hex for docx shading fill. */
 const hexColor = (hex: string) => hex.replace('#', '')
 
-/** Comma-separated labels from a JSON array of value keys. */
-const checkboxList = (raw: string | null | undefined, labelMap: Record<string, string>): string => {
+/** Comma-separated labels from a JSON array of value keys. Returns null when empty (for necompletat rendering). */
+const checkboxList = (
+  raw: string | null | undefined,
+  labelMap: Record<string, string>,
+): string | null => {
   const arr = parseJsonArray(raw)
-  if (!arr.length) return '[necompletat]'
+  if (!arr.length) return null
   return arr.map((v) => labelMap[v] ?? v).join(', ')
 }
 
@@ -265,9 +292,11 @@ const infoRow = (label: string, value: unknown) =>
   })
 
 /** Plain body paragraph. */
-const bodyParagraph = (text: string) =>
+const bodyParagraph = (text: string | null | undefined) =>
   new Paragraph({
-    children: [new TextRun({ text: text || '[necompletat]', font: FONT, size: 22 })],
+    children: text?.trim()
+      ? [new TextRun({ text: text.trim(), font: FONT, size: 22 })]
+      : [necompletatRun()],
     spacing: { after: 80 },
   })
 
@@ -292,17 +321,30 @@ const bulletItem = (text: string) =>
 const spacer = (after = 120) => new Paragraph({ text: '', spacing: { after } })
 
 /** Text paragraph inside a table cell. */
-const cellText = (text: string, opts?: { bold?: boolean; color?: string; size?: number }) =>
+const cellText = (
+  text: string | null | undefined,
+  opts?: { bold?: boolean; color?: string; size?: number },
+) =>
   new Paragraph({
-    children: [
-      new TextRun({
-        text,
-        font: FONT,
-        size: opts?.size ?? 20,
-        bold: opts?.bold ?? false,
-        color: opts?.color,
-      }),
-    ],
+    children: text?.trim()
+      ? [
+          new TextRun({
+            text: text.trim(),
+            font: FONT,
+            size: opts?.size ?? 20,
+            bold: opts?.bold ?? false,
+            color: opts?.color,
+          }),
+        ]
+      : [
+          new TextRun({
+            text: '[necompletat]',
+            italics: true,
+            color: '94A3B8',
+            font: FONT,
+            size: opts?.size ?? 20,
+          }),
+        ],
   })
 
 /** Table cell builder with standard margins and border. */
@@ -362,14 +404,7 @@ const buildHeader = (evaluare: DbEvaluare) =>
                     ],
                   }),
                   new Paragraph({
-                    children: [
-                      new TextRun({
-                        text: val(evaluare.denumireProiect),
-                        font: FONT,
-                        size: 16,
-                        color: '555555',
-                      }),
-                    ],
+                    children: [valRun(evaluare.denumireProiect, { size: 16, color: '555555' })],
                   }),
                 ],
                 borders: BORDER_NONE,
@@ -381,23 +416,17 @@ const buildHeader = (evaluare: DbEvaluare) =>
                     alignment: AlignmentType.RIGHT,
                     children: [
                       new TextRun({
-                        text: `Nr. ${val(evaluare.codProiect)}`,
+                        text: `Nr. `,
                         font: FONT,
                         size: 16,
                         color: '555555',
                       }),
+                      valRun(evaluare.codProiect, { size: 16, color: '555555' }),
                     ],
                   }),
                   new Paragraph({
                     alignment: AlignmentType.RIGHT,
-                    children: [
-                      new TextRun({
-                        text: val(evaluare.dataEvaluarii),
-                        font: FONT,
-                        size: 16,
-                        color: '555555',
-                      }),
-                    ],
+                    children: [valRun(evaluare.dataEvaluarii, { size: 16, color: '555555' })],
                   }),
                 ],
                 borders: BORDER_NONE,
@@ -485,7 +514,7 @@ const buildCoverPage = (evaluare: DbEvaluare): Paragraph[] => {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({ text: 'Unitate: ', bold: true, font: FONT, size: 26 }),
-        new TextRun({ text: val(evaluare.denumireProiect), font: FONT, size: 26 }),
+        valRun(evaluare.denumireProiect, { size: 26 }),
       ],
       spacing: { after: 160 },
     }),
@@ -493,7 +522,15 @@ const buildCoverPage = (evaluare: DbEvaluare): Paragraph[] => {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({ text: 'Adresa: ', bold: true, font: FONT, size: 22 }),
-        new TextRun({ text: adresa || '[necompletat]', font: FONT, size: 22 }),
+        adresa
+          ? new TextRun({ text: adresa, font: FONT, size: 22 })
+          : new TextRun({
+              text: '[necompletat]',
+              italics: true,
+              color: '94A3B8',
+              font: FONT,
+              size: 22,
+            }),
       ],
       spacing: { after: 120 },
     }),
@@ -501,7 +538,7 @@ const buildCoverPage = (evaluare: DbEvaluare): Paragraph[] => {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({ text: 'Data evaluării: ', bold: true, font: FONT, size: 22 }),
-        new TextRun({ text: val(evaluare.dataEvaluarii), font: FONT, size: 22 }),
+        valRun(evaluare.dataEvaluarii),
       ],
       spacing: { after: 120 },
     }),
@@ -509,7 +546,7 @@ const buildCoverPage = (evaluare: DbEvaluare): Paragraph[] => {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({ text: 'Evaluator: ', bold: true, font: FONT, size: 22 }),
-        new TextRun({ text: val(evaluare.numeEvaluator), font: FONT, size: 22 }),
+        valRun(evaluare.numeEvaluator),
       ],
       spacing: { after: 120 },
     }),
@@ -517,7 +554,7 @@ const buildCoverPage = (evaluare: DbEvaluare): Paragraph[] => {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({ text: 'Firmă evaluatoare: ', bold: true, font: FONT, size: 22 }),
-        new TextRun({ text: val(evaluare.firmaEvaluator), font: FONT, size: 22 }),
+        valRun(evaluare.firmaEvaluator),
       ],
       spacing: { after: 120 },
     }),
@@ -525,7 +562,7 @@ const buildCoverPage = (evaluare: DbEvaluare): Paragraph[] => {
       alignment: AlignmentType.CENTER,
       children: [
         new TextRun({ text: 'Nr. raport: ', bold: true, font: FONT, size: 22 }),
-        new TextRun({ text: val(evaluare.codProiect), font: FONT, size: 22 }),
+        valRun(evaluare.codProiect),
       ],
       spacing: { after: 120 },
     }),
@@ -717,7 +754,9 @@ const buildCapitolul3 = (evaluare: DbEvaluare): (Paragraph | Table)[] => {
     spacer(80),
 
     subTitle('c) Factori externi și istoric incidente'),
-    ...(evaluare.factoriExterni ? [bodyParagraph(evaluare.factoriExterni)] : []),
+    ...(evaluare.factoriExterni
+      ? [bodyParagraph(evaluare.factoriExterni)]
+      : [new Paragraph({ children: [necompletatRun()], spacing: { after: 80 } })]),
     ...(evaluare.istoricIncidente ? [infoRow('Istoric incidente', evaluare.istoricIncidente)] : []),
     spacer(80),
 
@@ -878,11 +917,9 @@ const buildRiscContent = (risc: DbRisc, index: number): (Paragraph | Table)[] =>
               cellText(
                 persoaneArr.length > 0
                   ? persoaneArr.join(', ')
-                  : val(
-                      risc.numarPersoaneExpuse !== null
-                        ? `${risc.numarPersoaneExpuse} persoane`
-                        : null,
-                    ),
+                  : risc.numarPersoaneExpuse !== null
+                    ? `${risc.numarPersoaneExpuse} persoane`
+                    : null,
               ),
               { widthDxa: W2 },
             ),
@@ -974,7 +1011,7 @@ const buildRiscContent = (risc: DbRisc, index: number): (Paragraph | Table)[] =>
                   risc.functieResponsabil ? `(${risc.functieResponsabil})` : null,
                 ]
                   .filter(Boolean)
-                  .join(' ') || '[necompletat]',
+                  .join(' ') || null,
               ),
               { widthDxa: W2 },
             ),
@@ -983,7 +1020,7 @@ const buildRiscContent = (risc: DbRisc, index: number): (Paragraph | Table)[] =>
         new TableRow({
           children: [
             tableCell(cellText('Termen implementare', { bold: true }), { widthDxa: W1 }),
-            tableCell(cellText(val(risc.termenImplementare)), { widthDxa: W2 }),
+            tableCell(cellText(risc.termenImplementare), { widthDxa: W2 }),
           ],
         }),
         new TableRow({
@@ -998,7 +1035,7 @@ const buildRiscContent = (risc: DbRisc, index: number): (Paragraph | Table)[] =>
   ]
 }
 
-const buildCapitolul4 = (evaluare: DbEvaluare, riscuri: DbRisc[]): (Paragraph | Table)[] => {
+const buildCapitolul4 = (_evaluare: DbEvaluare, riscuri: DbRisc[]): (Paragraph | Table)[] => {
   const sorted = [...riscuri].sort((a, b) => a.ordine - b.ordine)
 
   // Build dominant threats list
@@ -1270,10 +1307,11 @@ const buildCapitolul6 = (evaluare: DbEvaluare, riscuri: DbRisc[]): (Paragraph | 
   )
   const asigurariLabelMap = Object.fromEntries(MASURI_ASIGURARI.map((m) => [m.value, m.label]))
 
-  // Collect all supplementary measures from risks
-  const masuriSuplimentareAll = riscuri
-    .filter((r) => r.masuriSuplimentare)
-    .map((r, i) => `Amenințare ${i + 1}: ${r.masuriSuplimentare}`)
+  // Collect all supplementary measures from risks, using sorted ordine-based index (consistent with Cap. IV)
+  const sortedRiscuriForMasuri = [...riscuri].sort((a, b) => a.ordine - b.ordine)
+  const masuriSuplimentareAll = sortedRiscuriForMasuri
+    .map((r, i) => (r.masuriSuplimentare ? `Amenințare ${i + 1}: ${r.masuriSuplimentare}` : null))
+    .filter((x): x is string => x !== null)
 
   const buildMasuriSection = (
     heading: string,
@@ -1351,7 +1389,7 @@ const buildCapitolul7 = (evaluare: DbEvaluare): (Paragraph | Table)[] => {
               widthDxa: W1,
               shading: '#EFF6FF',
             }),
-            tableCell(cellText(val(evaluare.nivelRiscGlobalAsumat)), { widthDxa: W2 }),
+            tableCell(cellText(evaluare.nivelRiscGlobalAsumat), { widthDxa: W2 }),
           ],
         }),
         new TableRow({
@@ -1360,7 +1398,7 @@ const buildCapitolul7 = (evaluare: DbEvaluare): (Paragraph | Table)[] => {
               widthDxa: W1,
               shading: '#EFF6FF',
             }),
-            tableCell(cellText(val(evaluare.nivelRiscRezidualGlobal)), { widthDxa: W2 }),
+            tableCell(cellText(evaluare.nivelRiscRezidualGlobal), { widthDxa: W2 }),
           ],
         }),
         new TableRow({
@@ -1369,7 +1407,7 @@ const buildCapitolul7 = (evaluare: DbEvaluare): (Paragraph | Table)[] => {
               widthDxa: W1,
               shading: '#EFF6FF',
             }),
-            tableCell(cellText(val(evaluare.termenImplementareGlobal)), { widthDxa: W2 }),
+            tableCell(cellText(evaluare.termenImplementareGlobal), { widthDxa: W2 }),
           ],
         }),
       ],
