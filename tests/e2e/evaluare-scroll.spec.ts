@@ -27,8 +27,12 @@ test.describe('EvaluarePage scroll behavior', () => {
     const evaluareId = process.env.TEST_EVALUARE_ID ?? 'test-mock-id'
     await page.goto(`/evaluari/${evaluareId}`)
 
-    // Wait for the main content to be rendered
-    await page.waitForLoadState('networkidle')
+    // Wait for the main layout element to be present in the DOM rather than
+    // 'networkidle', which hangs under Next.js dev because the HMR event-stream
+    // keeps the network permanently active.
+    await page.waitForSelector('body', { state: 'attached' })
+    // Give any focus-stealing effects a moment to fire
+    await page.waitForTimeout(300)
 
     const scrollY = await page.evaluate(() => window.scrollY)
     // Should be at the top — not scrolled to section 8 (~9176px)
@@ -38,18 +42,24 @@ test.describe('EvaluarePage scroll behavior', () => {
   test('page does not auto-scroll to section 8 (Concluzii) on load', async ({ page }) => {
     const evaluareId = process.env.TEST_EVALUARE_ID ?? 'test-mock-id'
     await page.goto(`/evaluari/${evaluareId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForSelector('body', { state: 'attached' })
+    // Allow any mount effects to settle before measuring scroll position
+    await page.waitForTimeout(300)
 
-    // Section 8 heading should NOT be in the viewport
+    // The page must always start at the top — regardless of whether the
+    // Concluzii heading is present in the DOM or not.
+    const scrollY = await page.evaluate(() => window.scrollY)
+    expect(scrollY).toBeLessThan(200)
+
+    // Additionally, if the Concluzii heading is rendered it should be below
+    // the viewport fold (the user should not see it without scrolling).
     const sectiune8 = page.getByRole('heading', { name: /concluzii/i })
     if (await sectiune8.count() > 0) {
-      const isVisible = await sectiune8.isVisible()
-      if (isVisible) {
-        // It may be in the DOM but should not be in the viewport (i.e., scrolled into view)
-        const boundingBox = await sectiune8.boundingBox()
-        const viewportHeight = page.viewportSize()?.height ?? 768
-        // The heading should be below the fold (not visible at scroll position 0)
-        expect(boundingBox?.y).toBeGreaterThan(viewportHeight)
+      const boundingBox = await sectiune8.boundingBox()
+      const viewportHeight = page.viewportSize()?.height ?? 768
+      // The heading should be below the fold (not visible at scroll position 0)
+      if (boundingBox) {
+        expect(boundingBox.y).toBeGreaterThan(viewportHeight)
       }
     }
   })
@@ -57,7 +67,8 @@ test.describe('EvaluarePage scroll behavior', () => {
   test('Termen limită DatePicker trigger does not have focus on mount', async ({ page }) => {
     const evaluareId = process.env.TEST_EVALUARE_ID ?? 'test-mock-id'
     await page.goto(`/evaluari/${evaluareId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForSelector('body', { state: 'attached' })
+    await page.waitForTimeout(300)
 
     // The focused element should be the body or a link — not the DatePicker trigger
     const focusedElement = await page.evaluate(() => {
@@ -80,27 +91,28 @@ test.describe('EvaluarePage scroll behavior', () => {
   }) => {
     const evaluareId = process.env.TEST_EVALUARE_ID ?? 'test-mock-id'
     await page.goto(`/evaluari/${evaluareId}`)
-    await page.waitForLoadState('networkidle')
+    await page.waitForSelector('body', { state: 'attached' })
+    await page.waitForTimeout(300)
 
-    // Find the Termen limită DatePicker trigger (aria-haspopup=dialog)
+    // Find all DatePicker triggers (aria-haspopup=dialog).
+    // At least one trigger must exist for this test to be meaningful.
     const triggers = page.locator('button[aria-haspopup="dialog"]')
     const count = await triggers.count()
+    expect(count).toBeGreaterThan(0)
 
-    if (count > 0) {
-      const trigger = triggers.first()
-      // Open the calendar
-      await trigger.click()
+    const trigger = triggers.first()
+    // Open the calendar
+    await trigger.click()
 
-      // Verify calendar opened
-      const dialog = page.getByRole('dialog')
-      await expect(dialog).toBeVisible()
+    // Verify calendar opened
+    const dialog = page.getByRole('dialog')
+    await expect(dialog).toBeVisible()
 
-      // Close with Escape
-      await page.keyboard.press('Escape')
-      await expect(dialog).not.toBeVisible()
+    // Close with Escape
+    await page.keyboard.press('Escape')
+    await expect(dialog).not.toBeVisible()
 
-      // Trigger should have focus after close
-      await expect(trigger).toBeFocused()
-    }
+    // Trigger should have focus after close
+    await expect(trigger).toBeFocused()
   })
 })
