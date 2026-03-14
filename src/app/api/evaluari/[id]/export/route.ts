@@ -23,7 +23,7 @@ export const GET = async (_req: Request, { params }: Params) => {
 
     const buffer = await generateEvaluareDocx(evaluare, riscuriList)
 
-    const filename = `evaluare-risc-${evaluare.codProiect || evaluare.id}.docx`
+    const filename = `Raport_Securitate_${(evaluare.denumireProiect || 'Evaluare').replace(/[^a-zA-Z0-9]/g, '_')}_${new Date().toISOString().split('T')[0]}.docx`
 
     return new Response(new Uint8Array(buffer), {
       headers: {
